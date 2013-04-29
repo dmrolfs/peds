@@ -1,4 +1,4 @@
-package peds.commons.elision
+package peds.commons.partial
 
 import org.specs2._
 import grizzled.slf4j.Logging

@@ -1,18 +1,18 @@
-package peds.commons.elision
+package peds.commons.partial
 
 import org.specs2._
 import spray.json._
 import grizzled.slf4j.Logging
 
 
-class JsonElisionSpec() extends mutable.Specification with Logging {
+class JsonPartialSpec() extends mutable.Specification with Logging {
   import JsonElisionSpec._
   import JsonReducable._
 
 
   "An elided API" should {
     "filter simple list" in {
-      Reducer.elide( myers, "inquiryId, orderId" ) must_== 
+      elide( myers, "inquiryId, orderId" ) must_== 
         """{ 
           "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c", 
           "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c" 
@@ -20,7 +20,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter simple composite list" in {
-      Reducer.elide( myers, "person:name:(given,family)" ) must_== 
+      elide( myers, "person:name:(given,family)" ) must_== 
         """{
           "person": {
             "name": {
@@ -32,7 +32,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter simple mix of prime and composite list" in {
-      Reducer.elide( myers, "inquiryId,orderId,person:name:(given,family)" ) must_== 
+      elide( myers, "inquiryId,orderId,person:name:(given,family)" ) must_== 
         """{
           "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
           "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
@@ -47,7 +47,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
 
     "filter simple mix of prime and two simple composite list" in {
       trace( "myers data = "+myers )
-      Reducer.elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines" ) must_== 
+      elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines" ) must_== 
         """{
           "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
           "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
@@ -63,7 +63,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter and sort" in {
-      val actual = Reducer.elide( myers, "report:offenders+sort=fullname:address:addressLines" ) 
+      val actual = elide( myers, "report:offenders+sort=fullname:address:addressLines" ) 
       val expected =
         """{
           "report" : {
@@ -91,7 +91,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter and sort-desc" in {
-      Reducer.elide( myers, "report:offenders+sort-desc=fullname:address:addressLines" ) must_==
+      elide( myers, "report:offenders+sort-desc=fullname:address:addressLines" ) must_==
         """{
           "report" : {
             "offenders": [{
@@ -131,7 +131,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
           "zed": "do not include"
         }""".asJson
 
-      Reducer.elide( data, "bars" ) must_== 
+      elide( data, "bars" ) must_== 
         """{
           "bars": [{
             "alpha": "c",
@@ -145,7 +145,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
           }]
         }""".asJson
 
-      ( Reducer.elide( data, "bars+sort=foo" ) \ "bars" ) must_== ( 
+      ( elide( data, "bars+sort=foo" ) \ "bars" ) must_== ( 
         """{
           "bars": [{
             "alpha": "a",
@@ -159,7 +159,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
           }]
         }""".asJson \ "bars" )
 
-      ( Reducer.elide( data, "bars+sort=foo:alpha" ) \ "bars" ) must_== ( 
+      ( elide( data, "bars+sort=foo:alpha" ) \ "bars" ) must_== ( 
         """{ "bars": [{ "alpha": "a" }, { "alpha": "b" }, { "alpha": "c" }] }""".asJson \ "bars" )
     }
 
@@ -179,7 +179,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
           "zed": "do not include"
         }""".asJson
 
-      Reducer.elide( data, "bars" ) must_== 
+      elide( data, "bars" ) must_== 
         """{
           "bars": [{
             "alpha": "c",
@@ -193,7 +193,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
           }]
         }""".asJson
 
-      ( Reducer.elide( data, "bars+sort-desc=foo" ) \ "bars" ) must_== 
+      ( elide( data, "bars+sort-desc=foo" ) \ "bars" ) must_== 
         """{
           "bars": [{
             "alpha": "c",
@@ -207,7 +207,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
           }]
         }""".asJson \ "bars"
 
-      ( Reducer.elide( data, "bars+sort-desc=foo:alpha" ) \ "bars" ) must_== 
+      ( elide( data, "bars+sort-desc=foo:alpha" ) \ "bars" ) must_== 
         """{
           "bars": [{
             "alpha": "c"
@@ -220,7 +220,7 @@ class JsonElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter nested" in {
-      Reducer.elide( myers, "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)" ) must_== 
+      elide( myers, "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)" ) must_== 
         """{
           "person": { "name": { "family": "Myers", "given": "Michael" } },
           "report": {

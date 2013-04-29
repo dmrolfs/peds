@@ -1,20 +1,17 @@
-package peds.commons.elision
+package peds.commons.partial
 
 import scala.xml._
 import org.specs2._
 import grizzled.slf4j.Logging
-// import Reducable._
 
 
-class XmlElisionSpec() extends mutable.Specification with Logging {
+class XmlPartialSpec() extends mutable.Specification with Logging {
   import XmlElisionSpec._
 
   "An elided API" should {
     "filter simple list" in {
-      // implicit val x = XmlTransformable
-      // implicit val r: Reducable[Node, Node] = Reducable.xmlReducable
 
-      Reducer.elide( myers, "inquiryId, orderId" ) must beEqualToIgnoringSpace( Utility.trim(
+      elide( myers, "inquiryId, orderId" ) must beEqualToIgnoringSpace( Utility.trim(
         <reply>
           <inquiryId>381e07f0-453d-11e2-b04c-22000a91952c</inquiryId>
           <orderId>564eaf86-11ae-4d22-b4e8-26bc00484b8c</orderId>
@@ -23,13 +20,13 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter simple composite list" in {
-      Reducer.elide( myers, "person:name:(given,family)" ) must beEqualToIgnoringSpace( Utility.trim(
+      elide( myers, "person:name:(given,family)" ) must beEqualToIgnoringSpace( Utility.trim(
         <reply><person><name><family>Myers</family><given>Michael</given></name></person></reply>
       ))
     }
 
     "filter simple mix of prime and composite list" in {
-      Reducer.elide( myers, "inquiryId,orderId,person:name:(given,family)" ) must beEqualToIgnoringSpace( Utility.trim(
+      elide( myers, "inquiryId,orderId,person:name:(given,family)" ) must beEqualToIgnoringSpace( Utility.trim(
         <reply>
           <inquiryId>381e07f0-453d-11e2-b04c-22000a91952c</inquiryId>
           <orderId>564eaf86-11ae-4d22-b4e8-26bc00484b8c</orderId>
@@ -39,7 +36,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter simple mix of prime and two simple composite list" in {
-      Reducer.elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offender:address:addressLine" ) must beEqualToIgnoringSpace( Utility.trim(
+      elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offender:address:addressLine" ) must beEqualToIgnoringSpace( Utility.trim(
         <reply>
           <inquiryId>381e07f0-453d-11e2-b04c-22000a91952c</inquiryId>
           <orderId>564eaf86-11ae-4d22-b4e8-26bc00484b8c</orderId>
@@ -56,7 +53,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
 
     "simple filter and sort" in {
       val data = <top><bar><alpha>c</alpha><foo>3</foo></bar><bar><foo>2</foo><alpha>b</alpha></bar><bar><alpha>a</alpha><foo>1</foo></bar><zed>do not include</zed></top>
-      Reducer.elide( data, "bar" ) must beEqualToIgnoringSpace( Utility.trim( 
+      elide( data, "bar" ) must beEqualToIgnoringSpace( Utility.trim( 
         <top>
           <bar><alpha>c</alpha><foo>3</foo></bar>
           <bar><foo>2</foo><alpha>b</alpha></bar>
@@ -64,7 +61,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
         </top> 
       ) )
 
-      ( Reducer.elide( data, "bar+sort=foo" ) \ "bar" ) must_== ( Utility.trim(
+      ( elide( data, "bar+sort=foo" ) \ "bar" ) must_== ( Utility.trim(
         <top>
           <bar><alpha>a</alpha><foo>1</foo></bar>
           <bar><foo>2</foo><alpha>b</alpha></bar>
@@ -72,7 +69,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
         </top> 
       ) \ "bar" )
 
-      ( Reducer.elide( data, "bar+sort=foo:alpha" ) \ "bar" ) must_== ( Utility.trim(
+      ( elide( data, "bar+sort=foo:alpha" ) \ "bar" ) must_== ( Utility.trim(
         <top>
           <bar><alpha>a</alpha></bar>
           <bar><alpha>b</alpha></bar>
@@ -83,7 +80,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
 
     "simple filter and sort-desc" in {
       val data = <top><bar><alpha>c</alpha><foo>3</foo></bar><bar><foo>2</foo><alpha>b</alpha></bar><bar><alpha>a</alpha><foo>1</foo></bar><zed>do not include</zed></top>
-      Reducer.elide( data, "bar" ) must beEqualToIgnoringSpace( Utility.trim( 
+      elide( data, "bar" ) must beEqualToIgnoringSpace( Utility.trim( 
         <top>
           <bar><alpha>c</alpha><foo>3</foo></bar>
           <bar><foo>2</foo><alpha>b</alpha></bar>
@@ -91,7 +88,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
         </top> 
       ) )
 
-      ( Reducer.elide( data, "bar+sort-desc=foo" ) \ "bar" ) must_== ( Utility.trim(
+      ( elide( data, "bar+sort-desc=foo" ) \ "bar" ) must_== ( Utility.trim(
         <top>
           <bar><alpha>c</alpha><foo>3</foo></bar>
           <bar><foo>2</foo><alpha>b</alpha></bar>
@@ -99,7 +96,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
         </top> 
       ) \ "bar" )
 
-      ( Reducer.elide( data, "bar+sort-desc=foo:alpha" ) \ "bar" ) must_== ( Utility.trim(
+      ( elide( data, "bar+sort-desc=foo:alpha" ) \ "bar" ) must_== ( Utility.trim(
         <top>
           <bar><alpha>c</alpha></bar>
           <bar><alpha>b</alpha></bar>
@@ -109,7 +106,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter and sort" in {
-      val actual = Reducer.elide( myers, "report:offender+sort=fullname:address:addressLine" ) \\ "offender"
+      val actual = elide( myers, "report:offender+sort=fullname:address:addressLine" ) \\ "offender"
       val expected = Utility.trim(
         <reply>
           <report>
@@ -125,7 +122,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter and sort-desc" in {
-      val actual = Reducer.elide( myers, "report:offender+sort-desc=fullname:address:addressLine" ) \\ "offender"
+      val actual = elide( myers, "report:offender+sort-desc=fullname:address:addressLine" ) \\ "offender"
       val expected = Utility.trim(
         <reply>
           <report>
@@ -141,7 +138,7 @@ class XmlElisionSpec() extends mutable.Specification with Logging {
     }
 
     "filter nested" in {
-      Reducer.elide( myers, "person:(name:(given,family)),report:offender:offensesByDegree:Other:(description,date)" ) must beEqualToIgnoringSpace( Utility.trim(
+      elide( myers, "person:(name:(given,family)),report:offender:offensesByDegree:Other:(description,date)" ) must beEqualToIgnoringSpace( Utility.trim(
         <reply>
           <person><name><family>Myers</family><given>Michael</given></name></person>
           <report>

@@ -1,0 +1,2 @@
+dob.format=Date (YYYY-MM-DD)
+error.dob=Date formatted as YYYY-MM-DD expected

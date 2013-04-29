@@ -46,6 +46,8 @@ object Build extends Build {
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
+      compile( akkaActor ) ++
+      compile ( akkaSlf4j ) ++
       // compile( logbackclassic ) ++
       // compile( grizzledSlf4j ) ++
       compile( sprayCan ) ++

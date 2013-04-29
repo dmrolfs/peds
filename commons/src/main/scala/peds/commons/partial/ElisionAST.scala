@@ -1,4 +1,4 @@
-package peds.commons.elision
+package peds.commons.partial
 
 import scala.util.parsing.combinator._
 

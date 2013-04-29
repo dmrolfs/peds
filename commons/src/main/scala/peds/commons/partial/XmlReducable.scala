@@ -1,4 +1,4 @@
-package peds.commons.elision
+package peds.commons.partial
 
 import scala.annotation.tailrec
 import scala.xml.{Elem, Node}
