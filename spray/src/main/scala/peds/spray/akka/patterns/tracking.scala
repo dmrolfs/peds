@@ -14,7 +14,7 @@
 //  * limitations under the License.
 //  */
 
-// package dr.commons.akka.patterns.api
+// package peds.spray.akka.patterns.api
 
 // import java.util.{UUID, Date}
 // import scala.concurrent.Future

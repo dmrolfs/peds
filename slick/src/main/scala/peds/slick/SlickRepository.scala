@@ -1,4 +1,4 @@
-package dr.commons.slick
+package peds.slick
 
 import scala.slick.driver.MySQLDriver.simple._
 import scala.slick.session.Database

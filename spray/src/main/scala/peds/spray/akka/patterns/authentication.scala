@@ -14,7 +14,7 @@
 //  * limitations under the License.
 //  */
 
-// package dr.commons.akka.patterns.api
+// package peds.spray.akka.patterns.api
 
 // import java.util.UUID //DMR: change
 // import scala.concurrent.Future
@@ -23,7 +23,7 @@
 // import spray.routing.{HttpService, RequestContext, AuthenticationFailedRejection, AuthenticationRequiredRejection}
 // import spray.routing.authentication.Authentication
 // import spray.http.HttpRequest
-// import dr.commons.domain._
+// import peds.spray.domain._
 // import org.cakesolutions.akkapatterns.core.authentication.TokenCheck
 
 
