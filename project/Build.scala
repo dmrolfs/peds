@@ -11,7 +11,7 @@ object Build extends Build {
     .settings( basicSettings: _* )
     .settings( noPublishing: _* )
 
-  lazy val commons = Project( "commons", file( "commons" ) )
+  lazy val commons = Project( "peds-commons", file( "commons" ) )
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
@@ -26,7 +26,7 @@ object Build extends Build {
       test( specs2 )
     )
 
-  lazy val slick = Project( "slick", file( "slick" ) )
+  lazy val slick = Project( "peds-slick", file( "slick" ) )
     .dependsOn( commons )
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
@@ -41,7 +41,7 @@ object Build extends Build {
       test( specs2 ) 
     )
 
-  lazy val spray = Project( "spray", file( "spray" ) )
+  lazy val spray = Project( "peds-spray", file( "spray" ) )
     .dependsOn( commons )
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
@@ -59,7 +59,7 @@ object Build extends Build {
       test( specs2 ) 
     )
 
-  lazy val play = Project( "play", file( "play" ) )
+  lazy val play = Project( "peds-play", file( "play" ) )
     .dependsOn( commons )
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=

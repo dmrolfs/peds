@@ -3,7 +3,7 @@ import Keys._
 
 object BuildSettings {
 
-  val VERSION = "0.1.3"
+  val VERSION = "0.1.4"
 
   lazy val noPublishing = seq(
     publish := (),
@@ -12,7 +12,7 @@ object BuildSettings {
 
   lazy val basicSettings = seq(
     version := VERSION,
-    organization := "Damon Rolfs",
+    organization := "peds",
     description := "A Scala library providing common and generally applicable support for system development, including utilities, data structures, algorithms and archetypes.",
     startYear := Some(2013),
     licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -36,6 +36,6 @@ object BuildSettings {
   lazy val moduleSettings = basicSettings ++ seq(
     version := VERSION,
     isSnapshot := true,
-    publishTo := Some( Resolver.file("file", new File(Path.userHome.absolutePath + "/projects/dmrolfs.github.com/snapshots")) )
+    publishTo := Some( Resolver.file("file", new File( Path.userHome.absolutePath + "/dev/dmrolfs.github.com/snapshots" ) ) )
   )
 }

@@ -39,6 +39,9 @@ class Trace( val logger: GrizzledLogger ) {
 
 
 object Trace {
+
+  def apply( logger: GrizzledLogger ): Trace = new Trace( logger )
+  
   /** Get the logger with the specified name. Use `RootName` to get the
    * root logger.
    *
