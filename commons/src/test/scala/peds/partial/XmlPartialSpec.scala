@@ -2,10 +2,11 @@ package peds.commons.partial
 
 import scala.xml._
 import org.specs2._
+import org.specs2.matcher.XmlMatchers
 import grizzled.slf4j.Logging
 
 
-class XmlPartialSpec() extends mutable.Specification with Logging {
+class XmlPartialSpec() extends mutable.Specification with XmlMatchers with Logging {
   import XmlElisionSpec._
 
   "An elided API" should {
@@ -137,8 +138,9 @@ class XmlPartialSpec() extends mutable.Specification with Logging {
       actual must_== expected
     }
 
-    "filter nested" in {
-      elide( myers, "person:(name:(given,family)),report:offender:offensesByDegree:Other:(description,date)" ) must beEqualToIgnoringSpace( Utility.trim(
+    "filter nested" in { 
+      val actual = elide( myers, "person:(name:(given,family)),report:offender:offensesByDegree:Other:(description,date)" )
+      val expected = Utility.trim(
         <reply>
           <person><name><family>Myers</family><given>Michael</given></name></person>
           <report>
@@ -151,7 +153,9 @@ class XmlPartialSpec() extends mutable.Specification with Logging {
             </offensesByDegree></offender>
           </report>
         </reply>
-      ) )
+      )
+
+      actual must beEqualToIgnoringSpace( expected )
     }
   }
 }
