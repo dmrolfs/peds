@@ -7,7 +7,7 @@ object Build extends Build {
   import Dependencies._
 
   lazy val root = Project( "root", file( "." ) )
-    .aggregate( commons, slick, spray )
+    .aggregate( commons, archetype, slick, spray )
     .settings( basicSettings: _* )
     .settings( noPublishing: _* )
 
@@ -21,6 +21,22 @@ object Build extends Build {
       compile( grizzledSlf4j ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
+      // compile( jscience ) ++
+      // compile( sprayJson ) ++
+      test( specs2 )
+    )
+
+  lazy val archetype = Project( "peds-archetype", file( "archetype" ) )
+    .settings( moduleSettings: _* )
+    .settings( libraryDependencies ++=
+      compile( config ) ++
+      compile( eeioUUID ) ++
+      compile( logbackclassic ) ++
+      compile( sprayJson ) ++
+      compile( grizzledSlf4j ) ++
+      compile( joda ) ++
+      compile( jodaConvert ) ++
+      compile( scalaTime ) ++
       // compile( jscience ) ++
       // compile( sprayJson ) ++
       test( specs2 )

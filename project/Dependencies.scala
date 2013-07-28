@@ -29,6 +29,7 @@ object Dependencies {
   val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
   val mysqlConnector = "mysql" % "mysql-connector-java" % "5.1.25"
   val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.8"
+  val scalaTime = "scala-time" %% "scala-time" % "0.3.1"
   val slickPersistence = "com.typesafe.slick" %% "slick" % "1.0.0"
   val specs2 = "org.specs2" %% "specs2" % "2.1.1"
   val sprayHttp = sprayModule( "spray-http" )
