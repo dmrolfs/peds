@@ -3,7 +3,7 @@ import Keys._
 
 object BuildSettings {
 
-  val VERSION = "0.1.5"
+  val VERSION = "0.1.6"
 
   lazy val noPublishing = seq(
     publish := (),
