@@ -6,7 +6,7 @@ trait Criteria[E] {
   type Predicate
 
   def filter: Option[Predicate]
-  def sortBy[T}: Option[E => T]
+  def sortBy[T]: Option[E => T]
   def pageStart: Int
   def pageSize: Int
 }
