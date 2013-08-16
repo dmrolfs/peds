@@ -1,7 +1,7 @@
-package peds.commons.util
+package peds.commons
 
 
 trait ModuleLifecycle {
-  def start( ctx: AnyRef ): Unit = { }
-  def stop( ctx: AnyRef ): Unit = { }
+  def start( ctx: Option[AnyRef] = None ): Unit = { }
+  def stop( ctx: Option[AnyRef] = None ): Unit = { }
 }
