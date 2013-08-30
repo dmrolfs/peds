@@ -73,9 +73,6 @@ object Trace {
   val stackLabel = "fnstack"
   lazy val stackTrace = Trace( stackLabel )
   
-  @deprecated( "use Trace.block[T}", "")
-  def traceBlock[T]( label: => Any )( block: => T ): T = Trace.block[T]( label )( block )
-
   def block[T]( label: => Any )( block: => T ): T = {
     if ( stackTrace.isEnabled ) {
       enter( label )

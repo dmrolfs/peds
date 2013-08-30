@@ -1,12 +1,12 @@
 package peds.commons.repository
 
 
-trait Criteria[E] {
-  type Query
+trait Criteria[Q] extends (Q => Q) {
+  // type Query
   type Predicate
 
   def filter: Option[Predicate]
-  def sortBy[T]: Option[E => T]
-  def pageStart: Int
-  def pageSize: Int
+  // def sortBy: Option[E => T]
+  def pageStart: Option[Int]
+  def pageSize: Option[Int]
 }

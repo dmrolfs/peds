@@ -9,7 +9,7 @@ import peds.commons.util.NonFatal
  * example:
  * <code>def output[T]( what: T )( implicit c: ConvertFrom[T, Node] ) = new XmlSerializer[T]{}.serialize(what)</code>
  */
-@deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
+// @deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
 trait XmlSerializer[T] extends Serializer[T, Node] {
   /**
    * Serializes the given object into XML

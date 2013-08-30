@@ -23,7 +23,7 @@ import java.io.{ ObjectOutputStream, ByteArrayOutputStream, ObjectInputStream, B
  * avoid strange match errors and inequalities which arise from different class loaders loading
  * the same class.
  */
-@deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
+// @deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
 trait Deserializer[Format, T] {
 
   /**

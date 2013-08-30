@@ -9,7 +9,7 @@ import peds.commons.log.Trace
  * example:
  * <code>def input[T]( src: Node )( implicit c: ConvertFrom[Node, T] ) = new XmlDeserializer[T]{}.deserialize(src)</code>
  */
-@deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
+// @deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
 trait XmlDeserializer[T] extends Deserializer[Node, T] {
   /**
    * Produces an object from a Format type, with an optional type-hint;
