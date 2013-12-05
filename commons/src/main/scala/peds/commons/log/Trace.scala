@@ -3,28 +3,24 @@ package peds.commons.log
 import grizzled.slf4j.{Logger => GrizzledLogger}
 
 
-class Trace( val logger: GrizzledLogger ) {
-  
-  /** Get the name associated with this logger.
-   *
-   * @return the name.
-   */
-  @inline final def name = logger.name
+class Trace[L: Traceable]( val name: String, logger: L ) {
   
   /** Determine whether trace logging is enabled.
    * In the future modify to determine enabled based on logger.name
    */
-  @inline final def isEnabled = logger.isTraceEnabled
+  @inline final def isEnabled: Boolean = implicitly[Traceable[L]].isEnabled( logger )
   
-  @inline final def apply( msg: => Any ): Unit = if ( isEnabled ) logger.trace( msg )
-  @inline final def apply( msg: => Any, t: => Throwable ): Unit = if ( isEnabled ) logger.trace( msg, t )
+  @inline final def apply( msg: => Any ): Unit = if ( isEnabled ) implicitly[Traceable[L]].trace( logger, msg )
+  @inline final def apply( msg: => Any, t: => Throwable ): Unit = {
+    if ( isEnabled ) implicitly[Traceable[L]].trace( logger, msg, t )
+  }
 
   /** Issue a trace logging message.
    *
    * @param msg  the message object. `toString()` is called to convert it
    *             to a loggable string.
    */
-  @inline final def msg( msg: => Any ): Unit = if ( isEnabled ) logger.trace( msg )
+  @inline final def msg( msg: => Any ): Unit = apply( msg )
   
   /** Issue a trace logging message, with an exception.
    *
@@ -32,15 +28,16 @@ class Trace( val logger: GrizzledLogger ) {
    *             to a loggable string.
    * @param t    the exception to include with the logged message.
    */
-  @inline final def msg( msg: => Any, t: => Throwable ): Unit = if ( isEnabled ) logger.trace( msg, t )
+  @inline final def msg( msg: => Any, t: => Throwable ): Unit = apply( msg, t )
 
-  @inline final def block[T]( label: => Any )( block: => T ): T = Trace.block[T]( name + "." + label )( block )
+  @inline final def block[R]( label: => Any )( block: => R ): R = Trace.block[R]( name + "." + label )( block )
 }
 
 
 object Trace {
+  type DefaultLogger = GrizzledLogger
 
-  def apply( logger: GrizzledLogger ): Trace = new Trace( logger )
+  def apply[L: Traceable]( name: String, logger: L ): Trace[L] = new Trace( name, logger )
   
   /** Get the logger with the specified name. Use `RootName` to get the
    * root logger.
@@ -49,7 +46,7 @@ object Trace {
    *
    * @return the `Trace`.
    */
-  def apply( name: String ): Trace = new Trace( GrizzledLogger(name) )
+  def apply( name: String ): Trace[DefaultLogger] = new Trace( name, GrizzledLogger(name) )
 
   /** Get the logger for the specified class, using the class's fully
    * qualified name as the logger name.
@@ -58,14 +55,14 @@ object Trace {
    *
    * @return the `Trace`.
    */
-  def apply( cls: Class[_] ): Trace = new Trace( GrizzledLogger(cls) )
+  def apply( cls: Class[_] ): Trace[DefaultLogger] = new Trace( cls.getSimpleName, GrizzledLogger(cls) )
 
   /** Get the logger for the specified class type, using the class's fully
    * qualified name as the logger name.
    *
    * @return the `Trace`.
    */
-  def apply[C]( implicit m: Manifest[C] ): Trace = new Trace( GrizzledLogger[C] )
+  def apply[C]( implicit m: Manifest[C] ): Trace[DefaultLogger] = new Trace( m.runtimeClass.getSimpleName, GrizzledLogger[C] )
   
   import peds.commons.util.ThreadLocal
   import collection._
@@ -73,10 +70,10 @@ object Trace {
   val stackLabel = "fnstack"
   lazy val stackTrace = Trace( stackLabel )
   
-  def block[T]( label: => Any )( block: => T ): T = {
+  def block[R]( label: => Any )( block: => R ): R = {
     if ( stackTrace.isEnabled ) {
       enter( label )
-      val result: T = block
+      val result: R = block
       exit( result )
       result
     } else {
@@ -87,7 +84,7 @@ object Trace {
   def enter( label: String ) {
     if ( stackTrace.isEnabled ) {
       scopeStack withValue { s =>
-        stackTrace.logger.trace( " " * (s.length * 2) + "+ %s".format(label) )
+        stackTrace( " " * (s.length * 2) + "+ %s".format(label) )
         s push label
       }
     }
@@ -103,7 +100,7 @@ object Trace {
           case _: Unit => 
           case x => record += " = %s".format( x )
         }
-        stackTrace.logger.trace( record )
+        stackTrace( record )
       }
     }
   }
