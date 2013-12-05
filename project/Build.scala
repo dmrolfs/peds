@@ -21,12 +21,15 @@ object Build extends Build {
       compile( grizzledSlf4j ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
+      compile( shapeless ) ++
+      compile( akkaActor ) ++
       // compile( jscience ) ++
       // compile( sprayJson ) ++
       test( specs2 )
     )
 
   lazy val archetype = Project( "peds-archetype", file( "archetype" ) )
+    .dependsOn( commons )
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
@@ -37,6 +40,7 @@ object Build extends Build {
       compile( joda ) ++
       compile( jodaConvert ) ++
       compile( scalaTime ) ++
+      compile( shapeless ) ++
       // compile( jscience ) ++
       // compile( sprayJson ) ++
       test( specs2 )
