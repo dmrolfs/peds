@@ -3,7 +3,7 @@ package peds.commons.collection
 import com.eaio.uuid.UUID
 import util.Random
 import org.specs2._
-import grizzled.slf4j.Logging
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
 object CommonStream {
@@ -11,7 +11,7 @@ object CommonStream {
 }
 
 
-class BloomFilterUnitSpec extends mutable.Specification with Logging {
+class BloomFilterUnitSpec extends mutable.Specification with LazyLogging {
 
   "A BloomFilter" should {
     "maintain size" in {
@@ -192,13 +192,11 @@ class BloomFilterUnitSpec extends mutable.Specification with Logging {
        bf1 !=== bf3
        bf3 !=== bf2
        
-       val str = (new UUID).toString
-       val b = str.getBytes( "UTF-16" )
-       val bfs = BloomFilter[String]() + str
-       val bfb = BloomFilter[Array[Byte]]() + b
-       bfs !== bfb
-       val bfb2 = BloomFilter[Array[Byte]]() + str.getBytes( "UTF-16" )
-       bfb === bfb2
+       val pi = 3.1415926535897932384264
+       val bfp1 = BloomFilter[Double]() + pi
+       val bfp2 = BloomFilter[Double]() + 3.1415926535897932384264
+       logger.info( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" )
+       bfp1 === bfp2
      }
      
      "has a deterministic hashcode" in {

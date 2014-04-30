@@ -7,7 +7,7 @@ object Build extends Build {
   import Dependencies._
 
   lazy val root = Project( "root", file( "." ) )
-    .aggregate( commons, archetype, slick, spray )
+    .aggregate( commons, archetype )
     .settings( basicSettings: _* )
     .settings( noPublishing: _* )
 
@@ -17,8 +17,8 @@ object Build extends Build {
       compile( config ) ++
       compile( eeioUUID ) ++
       compile( logbackclassic ) ++
-      compile( sprayJson ) ++
-      compile( grizzledSlf4j ) ++
+      compile( json4sJackson ) ++
+      compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
       compile( shapeless ) ++
@@ -35,10 +35,11 @@ object Build extends Build {
       compile( config ) ++
       compile( eeioUUID ) ++
       compile( logbackclassic ) ++
-      compile( sprayJson ) ++
-      compile( grizzledSlf4j ) ++
+      compile( json4sJackson ) ++
+      compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
+      compile( rillit ) ++
       compile( scalaTime ) ++
       compile( shapeless ) ++
       // compile( jscience ) ++
@@ -72,7 +73,7 @@ object Build extends Build {
       // compile( grizzledSlf4j ) ++
       compile( sprayCan ) ++
       compile( sprayRouting ) ++
-      compile( sprayJson ) ++
+      compile( json4sJackson ) ++
       // compile( joda ) ++
       // compile( jodaConvert ) ++
       // compile( jscience ) ++

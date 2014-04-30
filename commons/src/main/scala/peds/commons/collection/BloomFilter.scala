@@ -2,8 +2,7 @@ package peds.commons.collection
 
 import java.io.{InputStream, OutputStream}
 import collection.immutable.BitSet
-import grizzled.slf4j.Logging
-import grizzled.slf4j.Logger
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
 class BloomFilter[T] private ( 
@@ -11,8 +10,13 @@ class BloomFilter[T] private (
   val width: Int,
   val k: Int, 
   private val hashable: Hashable, 
-  private val buckets: BitSet
-)( implicit val manifest: Manifest[T] ) extends ( (T) => Boolean ) with Serializable with Logging {
+  /*private*/ val buckets: BitSet
+)( implicit val manifest: Manifest[T] ) 
+extends ( (T) => Boolean ) 
+with Equals 
+with Serializable 
+with LazyLogging {
+
   import BloomFilter._
   
   require( size >= 0 )
@@ -129,36 +133,48 @@ class BloomFilter[T] private (
   
 
   override def equals( other: Any ) = other match {
-    case that: BloomFilter[_] => {
-      val result = ( that canEqual this ) && 
-                   ( that.manifest == manifest ) &&
-                   ( that.size == size ) &&
-                   ( that.width == width ) &&
-                   ( that.k == k ) &&
-                   ( that.hashable == hashable ) &&
-                   ( that.buckets.size == buckets.size )
-      
-      ( 0 until buckets.size ).foldLeft( result ) { (acc, i) =>
-        acc && ( buckets(i) == that.buckets(i) )
+    case that: BloomFilter[T] => {
+logger.info( s"this == other: manifest = ${this.manifest == other.asInstanceOf[BloomFilter[T]].manifest}" )
+logger.info( s"this == other: size = ${this.size == other.asInstanceOf[BloomFilter[T]].size}" )
+logger.info( s"this == other: width = ${this.width == other.asInstanceOf[BloomFilter[T]].width}" )
+logger.info( s"this == other: k = ${this.k == other.asInstanceOf[BloomFilter[T]].k}" )
+logger.info( s"this == other: hashable = ${this.hashable == other.asInstanceOf[BloomFilter[T]].hashable}" )
+logger.info( s"this == other: buckets = ${this.buckets == other.asInstanceOf[BloomFilter[T]].buckets}" )
+logger.info( s"this | other: buckets.size = ${this.buckets.size} | ${other.asInstanceOf[BloomFilter[T]].buckets.size}" )
+
+      if ( this eq that ) true
+      else {
+        val result = (
+          ( that.## == this.## ) &&
+          ( that canEqual this ) && 
+          ( that.manifest == manifest ) &&
+          ( that.size == size ) &&
+          ( that.width == width ) &&
+          ( that.k == k ) &&
+          ( that.hashable == hashable ) &&
+          ( that.buckets.size == buckets.size )
+        )
+logger.info( s"first result = $result" )
+        ( 0 until buckets.size ).foldLeft( result ) { (acc, i) =>
+          acc && ( buckets(i) == that.buckets(i) )
+        }
       }
     }
     
     case _ => false
   }
   
-  protected def canEqual( that: Any ) = that.isInstanceOf[BloomFilter[_]]
+  override def canEqual( that: Any ) = that.isInstanceOf[BloomFilter[T]]
   
   override def hashCode = {
-    ( 0 until width ).foldLeft( size ^ k ^ width ) { (acc, i) =>
+    ( 0 until width ).foldLeft( manifest.## ^ size ^ width ^ k ) { (acc, i) =>
       acc ^ ( if ( buckets(i) ) i else 0 )
     }
   }
 }
 
 
-object BloomFilter {
-  private[this] val logger = Logger[this.type]
-  
+object BloomFilter extends LazyLogging {
   def apply[T]()( implicit manifest: Manifest[T] ): BloomFilter[T] = apply[T]( 0.05, 100 )( manifest )
   
   /**
@@ -306,33 +322,19 @@ object BloomFilter {
         BloomSpecification( calculateOptimalK(minBuckets), minBuckets )
       }
       else {
-// logger.trace( "maxBucketsPerElement="+maxBucketsPerElement )
-// logger.trace( "acceptable Accuracy="+acceptableAccuracy )
-
         val buckets: Option[Int] = ( minBuckets to maxBucketsPerElement.intValue ).find { curB =>
           val curK = calculateOptimalK( curB )
-// logger.trace( "curB="+curB )
-// logger.trace( "curK="+curK )
-// logger.trace( "cur accuracy="+calculateAccuracy(curK, curB) )
           calculateAccuracy( curK, curB ) >= acceptableAccuracy
         }
-
-        // logger.trace( "buckets ended at "+buckets )
 
         var k: Option[Int] = None
         for ( b <- buckets ) {
           // Now that the number of buckets is sufficient, see if we can relax K
           // without losing too much precision.
           k = ( minK to calculateOptimalK(b) ).find { curK =>
-// logger.trace( "curK="+curK )
-// logger.trace( "cur accuracy="+calculateAccuracy(curK, b) )
             calculateAccuracy( curK, b ) >= acceptableAccuracy 
           }
         }
-
-// logger.trace( "for spec...buckets="+buckets )
-// logger.trace( "for spec...k="+k )
-// logger.trace( "for spec accuracy="+calculateAccuracy(k.get, buckets.get) )
 
         ( k, buckets ) match {
           case ( Some(k), Some(buckets) ) => BloomSpecification( k, buckets )
@@ -435,22 +437,4 @@ object MurmurHashable extends Hashable {
 
     ( for ( i <- 0 until numHashes ) yield math.abs( ( hash1 + ( i * hash2 ) ) % max ) ).toArray
   }
-
-//   def hashes[T]( numHashes: Int )( max: Int )( value: T ): Array[Int] = {
-//     require( numHashes > 0 )
-//     require( max > 0 )
-
-//     val hash1 = new MH[T]( numHashes ^ max )
-//     hash1( value )
-    
-//     val hash2 = new MH[T]( hash1.hash )
-//     hash2( value )
-    
-//     val result = ( for( i <- 0 until numHashes ) yield {
-//       math.abs( (hash1.hash + i*hash2.hash) % max )
-//     } ).toArray
-    
-// //    trace( "hashes("+k+")("+max+")("+value+")="+result.mkString(",") )
-//     result
-//   }
 }

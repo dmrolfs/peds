@@ -16,7 +16,8 @@
 
 package peds.spray.domain
 
-import spray.json._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 // import com.mongodb.DB
 import peds.spray.UuidMarshalling
 

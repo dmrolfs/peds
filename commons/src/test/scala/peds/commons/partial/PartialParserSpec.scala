@@ -1,12 +1,12 @@
 package peds.commons.partial
 
 import org.specs2._
-import grizzled.slf4j.Logging
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
-class ElisionParserSpec() extends mutable.Specification with Logging {
-  "An Elision Spec Parser" should {
-    val parser = new ElisionParser
+class PartialParserSpec() extends mutable.Specification with LazyLogging {
+  "An Partial Spec Parser" should {
+    val parser = new PartialParser
 
     "produce an empty composite with empty spec" in {
       parser.parse( "" ) must_== CompositeCriterion.empty

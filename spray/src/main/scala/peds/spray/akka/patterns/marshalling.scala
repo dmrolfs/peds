@@ -19,7 +19,8 @@ package peds.spray.akka.patterns
 
 // import java.util.{UUID, Date}
 // import java.net.URI
-import spray.json._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 // import spray.httpx.SprayJsonSupport
 // import spray.httpx.marshalling.{CollectingMarshallingContext, MetaMarshallers, Marshaller}
 // import spray.http.{HttpEntity, StatusCode}

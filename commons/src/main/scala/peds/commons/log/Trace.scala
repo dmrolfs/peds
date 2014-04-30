@@ -1,6 +1,7 @@
 package peds.commons.log
 
-import grizzled.slf4j.{Logger => GrizzledLogger}
+import scala.reflect.ClassTag
+import com.typesafe.scalalogging.slf4j.{Logger => TypesafeLogger}
 
 
 class Trace[L: Traceable]( val name: String, logger: L ) {
@@ -35,7 +36,9 @@ class Trace[L: Traceable]( val name: String, logger: L ) {
 
 
 object Trace {
-  type DefaultLogger = GrizzledLogger
+  import org.slf4j.{LoggerFactory => Slf4jLoggerFactory}
+
+  type DefaultLogger = TypesafeLogger
 
   def apply[L: Traceable]( name: String, logger: L ): Trace[L] = new Trace( name, logger )
   
@@ -46,7 +49,7 @@ object Trace {
    *
    * @return the `Trace`.
    */
-  def apply( name: String ): Trace[DefaultLogger] = new Trace( name, GrizzledLogger(name) )
+  def apply( name: String ): Trace[DefaultLogger] = new Trace( name, TypesafeLogger( Slf4jLoggerFactory getLogger name ) )
 
   /** Get the logger for the specified class, using the class's fully
    * qualified name as the logger name.
@@ -55,14 +58,20 @@ object Trace {
    *
    * @return the `Trace`.
    */
-  def apply( cls: Class[_] ): Trace[DefaultLogger] = new Trace( cls.getSimpleName, GrizzledLogger(cls) )
+  def apply( cls: Class[_] ): Trace[DefaultLogger] = {
+    new Trace( cls.getSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger cls) )
+  }
 
   /** Get the logger for the specified class type, using the class's fully
    * qualified name as the logger name.
    *
    * @return the `Trace`.
    */
-  def apply[C]( implicit m: Manifest[C] ): Trace[DefaultLogger] = new Trace( m.runtimeClass.getSimpleName, GrizzledLogger[C] )
+  def apply[C: ClassTag](): Trace[DefaultLogger] = {
+    val clazz = implicitly[ClassTag[C]].runtimeClass
+    new Trace( clazz.getSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger clazz ) )
+  }
+
   
   import peds.commons.util.ThreadLocal
   import collection._

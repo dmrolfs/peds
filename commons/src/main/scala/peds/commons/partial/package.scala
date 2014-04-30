@@ -15,11 +15,11 @@ package object partial extends XmlReducable with JsonReducable {
 
   @implicitNotFound( msg = "Cannot find Reducable type class for ${A}" )
   trait Reducable[A] {
-    def elide( data: A, spec: ElisionCriteria ): A
+    def elide( data: A, spec: PartialCriteria ): A
   }
 
 
   def elide[A: Reducable]( data: A, spec: String ): A = {
-    implicitly[Reducable[A]].elide( data, (new ElisionParser).parse( spec ) )
+    implicitly[Reducable[A]].elide( data, (new PartialParser).parse( spec ) )
   }
 }

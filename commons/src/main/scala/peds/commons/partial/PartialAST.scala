@@ -3,17 +3,17 @@ package peds.commons.partial
 import scala.util.parsing.combinator._
 
 
-sealed abstract class ElisionCriteria( val properties: Map[String, String] = Map() ) extends Equals {
+sealed abstract class PartialCriteria( val properties: Map[String, String] = Map() ) extends Equals {
   def getProperty( property: String ): Option[String] = properties get property
 
-  def get( field: String ): Option[ElisionCriteria]
+  def get( field: String ): Option[PartialCriteria]
   def contains( field: String ): Boolean
   def isComposite: Boolean
-  def withProperties: Map[String, ElisionCriteria]
+  def withProperties: Map[String, PartialCriteria]
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[ElisionCriteria]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[PartialCriteria]
   override def equals( rhs: Any ): Boolean = rhs match {
-    case that: ElisionCriteria => {
+    case that: PartialCriteria => {
       if ( this eq that ) true
       else {
         ( that.## == this.## ) &&
@@ -31,14 +31,14 @@ sealed abstract class ElisionCriteria( val properties: Map[String, String] = Map
 }
 
 
-case class CompositeCriterion( private val props: Map[String, String], private val subCriteria: (String, ElisionCriteria)* ) 
-extends ElisionCriteria( props ) 
+case class CompositeCriterion( private val props: Map[String, String], private val subCriteria: (String, PartialCriteria)* ) 
+extends PartialCriteria( props ) 
 with Equals {
-  private val mySubCriteria: Map[String, ElisionCriteria] = Map( subCriteria:_* )
-  override def get( field: String ): Option[ElisionCriteria] = mySubCriteria get field
+  private val mySubCriteria: Map[String, PartialCriteria] = Map( subCriteria:_* )
+  override def get( field: String ): Option[PartialCriteria] = mySubCriteria get field
   override def contains( field: String ): Boolean = mySubCriteria.isEmpty || ( mySubCriteria contains field )
   override def isComposite: Boolean = true
-  override def withProperties: Map[String, ElisionCriteria] = mySubCriteria filter { !_._2.properties.isEmpty }
+  override def withProperties: Map[String, PartialCriteria] = mySubCriteria filter { !_._2.properties.isEmpty }
 
   override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[CompositeCriterion]
   override def equals( rhs: Any ): Boolean = {
@@ -82,11 +82,11 @@ object CompositeCriterion {
 }
 
 
-case class PrimeCriterion( private val props: Map[String, String] = Map() ) extends ElisionCriteria( props ) with Equals {
-  override def get( field: String ): Option[ElisionCriteria] = None
+case class PrimeCriterion( private val props: Map[String, String] = Map() ) extends PartialCriteria( props ) with Equals {
+  override def get( field: String ): Option[PartialCriteria] = None
   override def contains( field: String ): Boolean = true
   override def isComposite: Boolean = false
-  override def withProperties: Map[String, ElisionCriteria] = Map.empty
+  override def withProperties: Map[String, PartialCriteria] = Map.empty
 
   override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[PrimeCriterion]
   override def equals( rhs: Any ): Boolean = {
@@ -109,20 +109,20 @@ object PrimeCriterion {
 }
 
 
-class ElisionParser extends RegexParsers with PackratParsers {
+class PartialParser extends RegexParsers with PackratParsers {
   val field = """[\w_-]+""".r
 
-  def parse( input: String ): ElisionCriteria = CompositeCriterion( Map(), ( parseAll( criteria, input ).getOrElse( Seq.empty ) ):_* )
+  def parse( input: String ): PartialCriteria = CompositeCriterion( Map(), ( parseAll( criteria, input ).getOrElse( Seq.empty ) ):_* )
 
-  def criteria: Parser[Seq[(String, ElisionCriteria)]] = rep1sep( criterion, "," ) | "(" ~> rep1sep( criterion, "," ) <~ ")"
-  def criterion: Parser[(String, ElisionCriteria)] = ( composite | prime )
+  def criteria: Parser[Seq[(String, PartialCriteria)]] = rep1sep( criterion, "," ) | "(" ~> rep1sep( criterion, "," ) <~ ")"
+  def criterion: Parser[(String, PartialCriteria)] = ( composite | prime )
 
-  def composite: Parser[(String, ElisionCriteria)] = field ~ opt( properties ) ~ ":" ~ criteria ^^ { 
+  def composite: Parser[(String, PartialCriteria)] = field ~ opt( properties ) ~ ":" ~ criteria ^^ { 
     case f ~ Some( props ) ~ ":" ~ crit => f -> CompositeCriterion( Map( props:_* ), crit:_* ) 
     case f ~ None ~ ":" ~ crit => f -> CompositeCriterion( Map(), crit:_* )
   }
 
-  def prime: Parser[(String, ElisionCriteria)] = field ~ opt( properties ) ^^ { 
+  def prime: Parser[(String, PartialCriteria)] = field ~ opt( properties ) ^^ { 
     case f ~ optProps => ( f -> PrimeCriterion( Map( ( optProps getOrElse Seq() ):_* ) ) )
   }
 

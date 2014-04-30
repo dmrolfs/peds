@@ -9,11 +9,11 @@ trait Transformable[A] {
 
   def execute: PartialFunction[(A, ElemPropValue), A]
 
-  def transform( data: A, spec: ElisionCriteria ): A = /*trace.block( "transform" )*/ {
+  def transform( data: A, spec: PartialCriteria ): A = /*trace.block( "transform" )*/ {
     epvsFor( spec ).foldLeft( data ){ (d, epv) => if ( execute.isDefinedAt( (d, epv) ) ) execute( (d, epv) ) else d }
   }
 
-  private def epvsFor( spec: ElisionCriteria ): List[ElemPropValue] = {
+  private def epvsFor( spec: PartialCriteria ): List[ElemPropValue] = {
     val parent = Nil.zipAll( spec.properties.toList, "", null )
     val children = spec.withProperties.map{ kv => 
       Nil.zipAll( kv._2.properties.toList, kv._1, null ) 
@@ -33,5 +33,5 @@ object Transformable {
 case class NilTransformable[A]() extends Transformable[A] {
   import Transformable._
   override def execute: PartialFunction[(A, ElemPropValue), A] = { case (data, _) => data }
-  override def transform( data: A, spec: ElisionCriteria ): A = data
+  override def transform( data: A, spec: PartialCriteria ): A = data
 }

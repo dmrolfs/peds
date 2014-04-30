@@ -23,7 +23,8 @@ import com.eaio.uuid.{UUID => EUUID}
 import spray.httpx.SprayJsonSupport
 import spray.httpx.marshalling.{CollectingMarshallingContext, MetaMarshallers, Marshaller}
 import spray.http.{HttpEntity, StatusCode}
-import spray.json._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import peds.spray.domain._
 

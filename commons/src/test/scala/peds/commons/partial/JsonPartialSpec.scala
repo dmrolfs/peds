@@ -1,26 +1,28 @@
 package peds.commons.partial
 
 import org.specs2._
-import spray.json._
-import grizzled.slf4j.Logging
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
-class JsonPartialSpec() extends mutable.Specification with Logging {
+class JsonPartialSpec() extends mutable.Specification with LazyLogging {
   import JsonElisionSpec._
   import JsonReducable._
 
 
   "An elided API" should {
     "filter simple list" in {
-      elide( myers, "inquiryId, orderId" ) must_== 
+      elide( myers, "inquiryId, orderId" ) must_== parse(
         """{ 
           "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c", 
           "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c" 
-        }""".asJson
+        }"""
+      )
     }
 
     "filter simple composite list" in {
-      elide( myers, "person:name:(given,family)" ) must_== 
+      elide( myers, "person:name:(given,family)" ) must_== parse(
         """{
           "person": {
             "name": {
@@ -28,11 +30,12 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
               "given": "Michael"
             }
           }
-        }""".asJson
+        }"""
+      )
     }
 
     "filter simple mix of prime and composite list" in {
-      elide( myers, "inquiryId,orderId,person:name:(given,family)" ) must_== 
+      elide( myers, "inquiryId,orderId,person:name:(given,family)" ) must_== parse(
         """{
           "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
           "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
@@ -42,12 +45,13 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
               "given": "Michael"
             }
           }
-        }""".asJson
+        }"""
+      )
     }
 
     "filter simple mix of prime and two simple composite list" in {
       trace( "myers data = "+myers )
-      elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines" ) must_== 
+      elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines" ) must_== parse(
         """{
           "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
           "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
@@ -59,12 +63,13 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
               { "address": { "addressLines": ["227 N WALLACE AVE"] } },
               { "address": { "addressLines": ["204 MORNINGSIDE DR"] } }
             ]}
-        }""".asJson
+        }"""
+      )
     }
 
     "filter and sort" in {
       val actual = elide( myers, "report:offenders+sort=fullname:address:addressLines" ) 
-      val expected =
+      val expected = parse(
         """{
           "report" : {
             "offenders": [{
@@ -85,13 +90,14 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
               }
             }]
           }
-        }""".asJson
+        }"""
+      )
 
       actual must_== expected
     }
 
     "filter and sort-desc" in {
-      elide( myers, "report:offenders+sort-desc=fullname:address:addressLines" ) must_==
+      elide( myers, "report:offenders+sort-desc=fullname:address:addressLines" ) must_== parse(
         """{
           "report" : {
             "offenders": [{
@@ -112,11 +118,12 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
               }
             }]
           }
-        }""".asJson
+        }"""
+      )
     }
 
     "simple filter and sort" in {
-      val data =
+      val data = parse(
         """{
           "bars": [{
             "alpha": "c",
@@ -129,9 +136,10 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
             "foo": "1"
           }],
           "zed": "do not include"
-        }""".asJson
+        }"""
+      )
 
-      elide( data, "bars" ) must_== 
+      elide( data, "bars" ) must_== parse(
         """{
           "bars": [{
             "alpha": "c",
@@ -143,9 +151,10 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
             "alpha": "a",
             "foo": "1"
           }]
-        }""".asJson
+        }"""
+      )
 
-      ( elide( data, "bars+sort=foo" ) \ "bars" ) must_== ( 
+      ( elide( data, "bars+sort=foo" ) \ "bars" ) must_== parse( 
         """{
           "bars": [{
             "alpha": "a",
@@ -157,14 +166,16 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
             "alpha": "c",
             "foo": "3"
           }]
-        }""".asJson \ "bars" )
+        }"""
+      ) \ "bars"
 
-      ( elide( data, "bars+sort=foo:alpha" ) \ "bars" ) must_== ( 
-        """{ "bars": [{ "alpha": "a" }, { "alpha": "b" }, { "alpha": "c" }] }""".asJson \ "bars" )
+      ( elide( data, "bars+sort=foo:alpha" ) \ "bars" ) must_== parse( 
+        """{ "bars": [{ "alpha": "a" }, { "alpha": "b" }, { "alpha": "c" }] }"""
+      ) \ "bars"
     }
 
     "simple filter and sort-desc" in {
-      val data = 
+      val data = parse(
         """{
           "bars": [{
             "alpha": "c",
@@ -177,9 +188,10 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
             "foo": "1"
           }],
           "zed": "do not include"
-        }""".asJson
+        }"""
+      )
 
-      elide( data, "bars" ) must_== 
+      elide( data, "bars" ) must_== parse(
         """{
           "bars": [{
             "alpha": "c",
@@ -191,9 +203,10 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
             "alpha": "a",
             "foo": "1"
           }]
-        }""".asJson
+        }"""
+      )
 
-      ( elide( data, "bars+sort-desc=foo" ) \ "bars" ) must_== 
+      ( elide( data, "bars+sort-desc=foo" ) \ "bars" ) must_== parse(
         """{
           "bars": [{
             "alpha": "c",
@@ -205,9 +218,10 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
             "alpha": "a",
             "foo": "1"
           }]
-        }""".asJson \ "bars"
+        }"""
+      ) \ "bars"
 
-      ( elide( data, "bars+sort-desc=foo:alpha" ) \ "bars" ) must_== 
+      ( elide( data, "bars+sort-desc=foo:alpha" ) \ "bars" ) must_== parse(
         """{
           "bars": [{
             "alpha": "c"
@@ -216,11 +230,12 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
           }, {
             "alpha": "a"
           }]
-        }""".asJson \ "bars"
+        }"""
+      ) \ "bars"
     }
 
     "filter nested" in {
-      elide( myers, "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)" ) must_== 
+      elide( myers, "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)" ) must_== parse(
         """{
           "person": { "name": { "family": "Myers", "given": "Michael" } },
           "report": {
@@ -262,7 +277,8 @@ class JsonPartialSpec() extends mutable.Specification with Logging {
               }
             ]
           }
-        }""".asJson
+        }"""
+      )
     }
   }
 }
@@ -365,6 +381,6 @@ object JsonElisionSpec {
   }
 }"""
 
-  val myers = source.asJson
+  val myers = parse( source )
 
 }

@@ -1,47 +1,48 @@
 package peds.commons.partial
 
 import scala.annotation.tailrec
-import spray.json._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 
 trait JsonReducable {
   import JsonReducable._
 
-  implicit def jsonReducable( implicit xform: Transformable[JsValue] ): Reducable[JsValue] = new Reducable[JsValue] {
-    override def elide( data: JsValue, spec: ElisionCriteria ): JsValue = {
+  implicit def jsonReducable( implicit xform: Transformable[JValue] ): Reducable[JValue] = new Reducable[JValue] {
+    override def elide( data: JValue, spec: PartialCriteria ): JValue = {
       data match {
-        case o: JsObject => /*trace.block( "elide-OBJECT("+spec+")" )*/ { 
-          @tailrec def loop( nodes: List[JsField], spec: ElisionCriteria, elisions: Vector[JsField] ): Vector[JsField] = {
+        case o: JObject => /*trace.block( "elide-OBJECT("+spec+")" )*/ { 
+          @tailrec def loop( nodes: List[JField], spec: PartialCriteria, partials: Vector[JField] ): Vector[JField] = {
             // trace( "loop-head="+nodes.headOption.getOrElse("{}") )
             // trace( "loop-spec="+spec )
-            // trace( "loop-elisions="+elisions )
+            // trace( "loop-partials="+partials )
             nodes match {
               case head :: tail if spec.contains( head._1 ) => { 
                 // trace( "head MATCH spec. head="+head )
                 val nextSpec = spec.get( head._1 ).getOrElse( spec )
-                loop( tail, spec, elisions :+ ( head._1 -> elide( head._2, nextSpec ) ) )
+                loop( tail, spec, partials :+ ( head._1 -> elide( head._2, nextSpec ) ) )
               }
 
               case head :: tail => {
                 // trace( "NO MATCH. head="+head)
-                loop( tail, spec, elisions )
+                loop( tail, spec, partials )
               }
 
-              case Nil => elisions
+              case Nil => partials
             }
           }
 
-          val elisions = loop( 
-            xform.transform( o, spec ).asJsObject.fields.toList, 
+          val partials = loop( 
+            xform.transform( o, spec ).asInstanceOf[JObject].obj, 
             spec, 
             Vector.empty 
           )
-          JsObject( elisions.toMap )
+          JObject( partials:_* )
         }
 
-        // case a: JsArray => trace.block( "elide-ARRAY("+spec+")" ) { new JsArray( a.elements.map( elide( _, spec ) ) ) }
+        // case a: JArray => trace.block( "elide-ARRAY("+spec+")" ) { new JArray( a.elements.map( elide( _, spec ) ) ) }
         // case json => trace.block( "elide-PRIMITIVE("+spec+")" ) { json }
-        case a: JsArray => new JsArray( a.elements.map( elide( _, spec ) ) )
+        case a: JArray => JArray( a.arr map { elide( _, spec ) } )
         case json => json 
       }
     }
@@ -61,85 +62,87 @@ object JsonReducable {
   }
 
 
-  implicit class SearchableJsValue( val underlying: JsValue ) extends AnyVal with Searchable[JsValue] {
-    type SimpleResult = JsValue
-    type RecursiveResult = Seq[JsValue]
+  implicit class SearchableJValue( val underlying: JValue ) extends AnyVal with Searchable[JValue] {
+    type SimpleResult = JValue
+    type RecursiveResult = Seq[JValue]
 
-    override def \( fieldName: String ): SimpleResult = trace.block( """#### JsValue.\ ####""" ) {JsString( s"""'$fieldName' is undefined on object: $this""" ) }
-    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JsValue.\\ ####""" ) {Nil}
+    override def \( fieldName: String ): SimpleResult = trace.block( """#### JValue.\ ####""" ) {JString( s"""'$fieldName' is undefined on object: $this""" ) }
+    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JValue.\\ ####""" ) {Nil}
   }
 
 
-  implicit class SearchableJsObject( val underlying: JsObject ) extends AnyVal with Searchable[JsObject] {
-    type SimpleResult = JsValue
-    type RecursiveResult = Seq[JsValue]
+  implicit class SearchableJObject( val underlying: JObject ) extends AnyVal with Searchable[JObject] {
+    type SimpleResult = JValue
+    type RecursiveResult = Seq[JValue]
 
-    override def \( fieldName: String ): SimpleResult = trace.block( """#### JsObject.\ ####""" ) {underlying.fields.get( fieldName ).getOrElse( 
-          JsString( s"""'$fieldName' is undefined on object: $this""" )
-        )}
+    override def \( fieldName: String ): SimpleResult = trace.block( """#### JObject.\ ####""" ) {
+      underlying.obj find { _._1 == fieldName } map { _._2 } getOrElse { JNothing /*JString( s"""'$fieldName' is undefined on object: $this""" )*/ }
+    }
 
-    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JsObject.\\ ####""" ) {
-      underlying.fields.foldLeft( Seq[JsValue]() ){ (o, pair) => 
-        pair match {
-          case (key, value: JsObject) if key == fieldName => o ++ ( value +: ( value \\ fieldName ) )
-          case (key, value: JsArray) if key == fieldName => o ++ ( value +: ( value \\ fieldName ) )
-          case (_, value: JsObject) => o ++ (value \\ fieldName)
-          case (_, value: JsArray) => o ++ (value \\ fieldName)
-          case _ => o :+ JsString( s"""'$fieldName' is undefined on object: $this""" )
+    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JObject.\\ ####""" ) {
+      underlying.obj.foldLeft( Seq[JValue]() ){ (o, nameValue) => 
+        nameValue match {
+          case (key, value: JObject) if key == fieldName => o ++ ( value +: ( value \\ fieldName ) )
+          case (key, value: JArray) if key == fieldName => o ++ ( value +: ( value \\ fieldName ) )
+          case (_, value: JObject) => o ++ (value \\ fieldName)
+          case (_, value: JArray) => o ++ (value \\ fieldName)
+          case _ => o :+ JNothing /*JString( s"""'$fieldName' is undefined on object: $this""" )*/
         }
       }
     }
   }
 
-  implicit class SearchableJsArray( val underlying: JsArray ) extends AnyVal with Searchable[JsArray] {
-    type SimpleResult = JsValue
-    type RecursiveResult = Seq[JsValue]
+  implicit class SearchableJArray( val underlying: JArray ) extends AnyVal with Searchable[JArray] {
+    type SimpleResult = JValue
+    type RecursiveResult = Seq[JValue]
 
-    override def \( fieldName: String ): SimpleResult = trace.block( """#### JsArray.\ ####""" ) {JsString( s"""'$fieldName' is undefined on object: $this""" ) }
+    override def \( fieldName: String ): SimpleResult = trace.block( """#### JArray.\ ####""" ) {JString( s"""'$fieldName' is undefined on object: $this""" ) }
 
-    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JsArray.\\ ####""" ) {underlying.elements.flatMap{ 
-          case o: JsObject => o \\ fieldName 
-          case a: JsArray => a \\ fieldName
-          case _ => Seq( JsString( s"""'$fieldName' is undefined on object: $this""" ) )
-        }}
+    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JArray.\\ ####""" ) {
+      underlying.arr flatMap { 
+        case o: JObject => o \\ fieldName 
+        case a: JArray => a \\ fieldName
+        case _ => Seq( JNothing /* JString( s"""'$fieldName' is undefined on object: $this""" )*/ )
+      }
+    }
   }
 
-  // type JsField = (String, JsValue)
+  // type JsField = (String, JValue)
 
-  case object JsonTransformable extends Transformable[JsValue] {
+  case object JsonTransformable extends Transformable[JValue] {
     import Transformable._
     lazy val trace = peds.commons.log.Trace( "JsonTransformable" )
 
     override def execute = sort
 
-    def sort: PartialFunction[(JsValue, ElemPropValue), JsValue] = {
-      case (data: JsObject, epv) if epv._2 == "sort-asc" => sortByEpv( data, epv )( JsValueOrdering )
-      case (data: JsObject, epv) if epv._2 == "sort-desc" => sortByEpv( data, epv )( JsValueOrdering.reverse )
+    def sort: PartialFunction[(JValue, ElemPropValue), JValue] = {
+      case (data: JObject, epv) if epv._2 == "sort-asc" => sortByEpv( data, epv )( JValueOrdering )
+      case (data: JObject, epv) if epv._2 == "sort-desc" => sortByEpv( data, epv )( JValueOrdering.reverse )
     }
 
-    private def sortByEpv( data: JsObject, epv: ElemPropValue )( implicit ord: Ordering[JsValue] ): JsObject = trace.block( "sortByEpv" ) {
+    private def sortByEpv( data: JObject, epv: ElemPropValue )( implicit ord: Ordering[JValue] ): JObject = trace.block( "sortByEpv" ) {
       // trace( "data="+data )
       // trace( "epv="+epv )
 
-      val (incl, excl) = data.fields.partition( _._1 == epv._1 )
+      val (incl, excl) = data.obj.partition( _._1 == epv._1 )
       // trace( "incl data="+incl )
 
       val xIncl = for ( (prop, value) <- incl  ) yield {
         // trace( prop+"="+value )
         if ( prop == epv._1 ) trace.block( "%%%%% WATCH %%%%%" ) {
           val result = value match {
-            // case v: JsArray => trace(s"JsArray[${v.elements.size}]");new JsArray( v.elements sortBy { c => trace.block("""array.\"""){c \ epv._3} } )
-            case v: JsArray => {
-              val elems = v.elements sortBy { c => 
+            // case v: JArray => trace(s"JArray[${v.elements.size}]");new JArray( v.elements sortBy { c => trace.block("""array.\"""){c \ epv._3} } )
+            case v: JArray => {
+              val elems = v.arr sortBy { c => 
                 c match {
-                  case co: JsObject => co.fields.get( epv._3 ).getOrElse( JsNull )
-                  case _ => JsNull
+                  case co: JObject => co.obj find { _._1 == epv._3 } map { _._2 } getOrElse JNull 
+                  case _ => JNull
                 }
               } 
-              new JsArray( elems )
+              new JArray( elems )
             }
 
-            case o: JsObject => trace(s"JsObject${o.fields.size}");o
+            case o: JObject => trace(s"JObject${o.obj.size}");o
 
             case j => trace("no match");j
           }
@@ -149,14 +152,16 @@ trace( "IN LOOP" )
         else prop -> value
       }
 
-      JsObject( ( excl.toSeq ++ xIncl ).toMap )
+      JObject( ( excl.toSeq ++ xIncl ):_* )
     }
 
-    object JsValueOrdering extends Ordering[JsValue] {
-      override def compare( lhs: JsValue, rhs: JsValue ): Int = (lhs, rhs) match {
-        case (l: JsString, r: JsString) => l.value compareTo r.value
-        case (l: JsNumber, r: JsNumber) => l.value compare r.value
-        case (l: JsBoolean, r: JsBoolean) => l.value compareTo r.value
+    object JValueOrdering extends Ordering[JValue] {
+      override def compare( lhs: JValue, rhs: JValue ): Int = (lhs, rhs) match {
+        case (l: JString, r: JString) => l.s compareTo r.s
+        case (l: JBool, r: JBool) => l.value compareTo r.value
+        case (l: JDouble, r: JDouble) => l.num compare r.num
+        case (l: JDecimal, r: JDecimal) => l.num compare r.num
+        case (l: JInt, r: JInt) => l.num compare r.num
         case _ => -1
       }
     }

@@ -1,7 +1,7 @@
 package peds.commons.collection
 
 import org.specs2._
-import grizzled.slf4j.Logging
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
 /**
@@ -15,7 +15,7 @@ import grizzled.slf4j.Logging
  * If these values are wrong, someone needs to update Wikipedia,
  * because I'm use their results to validate my implementation!
  */
-class StringWithSimilaritySpec extends mutable.Specification with Logging {
+class StringWithSimilaritySpec extends mutable.Specification with LazyLogging {
 	"A String With Similarity" should {
 		"Matching window returns valid distance" in {
 			val one = "martha"

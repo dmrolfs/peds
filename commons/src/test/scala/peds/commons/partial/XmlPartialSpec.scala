@@ -3,10 +3,10 @@ package peds.commons.partial
 import scala.xml._
 import org.specs2._
 import org.specs2.matcher.XmlMatchers
-import grizzled.slf4j.Logging
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
-class XmlPartialSpec() extends mutable.Specification with XmlMatchers with Logging {
+class XmlPartialSpec() extends mutable.Specification with XmlMatchers with LazyLogging {
   import XmlElisionSpec._
 
   "An elided API" should {
