@@ -1,7 +1,7 @@
 package peds.archetype
 
 import scala.collection.mutable
-import org.joda.time.LocalDate
+import org.joda.time.DateTime
 
 
 case object NameUsage extends Enumeration {
@@ -20,8 +20,8 @@ case class PersonName(
   val suffix: Option[String] = None, 
   val preferredName: Option[String] = None,
   val use: Option[NameUsage] = None,
-  override val validFrom: Option[LocalDate] = None,
-  override val validTo: Option[LocalDate] = None
+  override val validFrom: Option[DateTime] = None,
+  override val validTo: Option[DateTime] = None
 ) extends Effectivity with Equals {
   def fullName: String = {
     val pre = prefix.map{ _ + " " } getOrElse ""
@@ -66,8 +66,8 @@ case class PersonName(
 case class OrganizationName(
   val name: String,
   val use: Option[NameUsage] = None,
-  override val validFrom: Option[LocalDate] = None,
-  override val validTo: Option[LocalDate] = None
+  override val validFrom: Option[DateTime] = None,
+  override val validTo: Option[DateTime] = None
 ) extends Effectivity with Equals {
   def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[OrganizationName]
 

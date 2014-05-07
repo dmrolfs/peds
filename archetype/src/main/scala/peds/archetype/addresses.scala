@@ -2,7 +2,7 @@ package peds.archetype
 
 import scala.collection.mutable
 import java.util.Locale
-import org.joda.time.LocalDate
+import org.joda.time.DateTime
 
 
 trait Address extends Effectivity with Equals {
@@ -31,8 +31,8 @@ trait Address extends Effectivity with Equals {
 
 case class EmailAddress( 
   val email: String, 
-  override val validFrom: Option[LocalDate] = None, 
-  override val validTo: Option[LocalDate] = None
+  override val validFrom: Option[DateTime] = None, 
+  override val validTo: Option[DateTime] = None
 ) extends Address {
   override def address: String = email
 
@@ -47,8 +47,8 @@ case class GeographicAddress(
   val zipOrPostCode: String, 
   val country: Option[Locale] = None,
   val description: Option[String] = None,
-  override val validFrom: Option[LocalDate] = None, 
-  override val validTo: Option[LocalDate] = None
+  override val validFrom: Option[DateTime] = None, 
+  override val validTo: Option[DateTime] = None
 ) extends Address {
   override def address: String = {
     val elements = addressLines ++ List( city, regionOrState ) ++ country.map( List( _ ) ).getOrElse( List.empty )
@@ -94,8 +94,8 @@ case class GeocodeAddress(
 //dmr: add height and crs if needed but optional w default to None
   // val height: Option[Double] = None, 
   // val crsID: Option[String] = None,
-  override val validFrom: Option[LocalDate] = None, 
-  override val validTo: Option[LocalDate] = None
+  override val validFrom: Option[DateTime] = None, 
+  override val validTo: Option[DateTime] = None
 ) extends Address {
   override def address: String = f"$latitude%+f $longitude%+f"
 
@@ -125,8 +125,8 @@ case class GeocodeAddress(
 
 case class WebPageAddress( 
   val url: String, 
-  override val validFrom: Option[LocalDate] = None, 
-  override val validTo: Option[LocalDate] = None
+  override val validFrom: Option[DateTime] = None, 
+  override val validTo: Option[DateTime] = None
 ) extends Address {
   override def address: String = url
 
@@ -140,8 +140,8 @@ case class TelecomAddress(
   val extension: Option[String], 
   val physicalType: String, 
   val locale: Locale = Locale.US, 
-  override val validFrom: Option[LocalDate] = None, 
-  override val validTo: Option[LocalDate] = None
+  override val validFrom: Option[DateTime] = None, 
+  override val validTo: Option[DateTime] = None
 ) extends Address {
   override def address: String = {
     import TelecomAddress._
