@@ -1,22 +1,14 @@
 package peds.archetype.domain.model.core
 
-// import scala.concurrent.Future
-// import org.joda.{time => joda}
-import rillit._
-// import peds.commons.Clock
+import shapeless.Lens
 
 
-trait Entity {
-  type That <: Entity
-
-  type ID
-  def idClass: Class[_]
-
-  def id: Option[ID]
-  def idLens: Lens[That, Option[ID]]
-
+trait Entity extends Identifiable {
+  override type That <: Entity
   def name: String
   def nameLens: Lens[That, String]
+
+  override def toString: String = getClass.getSimpleName + s"(${name})"
 }
 
 object Entity {

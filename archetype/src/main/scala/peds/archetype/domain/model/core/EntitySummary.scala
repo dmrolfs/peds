@@ -17,7 +17,7 @@ case class EntitySummary(
   }
 
   def this( entity: Entity, metaProperties: (Symbol, Any)* ) = {
-    this( entity.id.get, entity.getClass, Map( ( metaProperties :+ ( EntitySummary.name -> entity.name ) ):_* ) )
+    this( entity.id, entity.getClass, Map( ( metaProperties :+ ( EntitySummary.name -> entity.name ) ):_* ) )
   }
 
   override def compare( rhs: EntitySummary ): Int = this.## compare rhs.##
