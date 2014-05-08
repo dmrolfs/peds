@@ -1,4 +1,4 @@
-package peds.commons
+package peds.commons.module
 
 
 trait ModuleLifecycle {
