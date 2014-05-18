@@ -36,6 +36,8 @@ case class EffectiveRange(
   def this( validFrom: LocalDate, validTo: LocalDate ) = {
     this( Some(validFrom.toDateTimeAtStartOfDay), Some(validTo.toDateTimeAtStartOfDay) )
   }
+
+  def unary_!(): Boolean = effective()
 }
 
 object EffectiveRange {
