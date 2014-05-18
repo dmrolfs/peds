@@ -1,14 +1,15 @@
 package peds.archetype.party
 
 import org.joda.time.LocalDate
+import peds.archetype.domain.model.core.Entity
 import peds.archetype.{Address, OrganizationName, PersonName}
 import relationship.{PartyRole, PartyRoleLike}
 
 
-trait Party extends Equals {
+trait Party extends Entity with Equals {
   type ID
 
-  def id: Option[ID]
+  def id: ID
   def name: String
   def addresses: Seq[Address]
   // def roles: Seq[PartyRoleLike[ID]]
