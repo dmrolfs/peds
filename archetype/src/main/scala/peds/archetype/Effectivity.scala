@@ -17,13 +17,11 @@ trait Effectivity {
 
   def effectiveOn( date: => LocalDate = { LocalDate.now } ): Boolean = effective( date.toDateTimeAtStartOfDay )
 
-  def effective( datetime: => DateTime = { DateTime.now } ): Boolean = {
-    (validFrom, validTo) match {
-      case (None, None) => true
-      case (Some(f), None) => ( f <= datetime )
-      case (None, Some(t)) => ( datetime < t )
-      case (Some(f), Some(t)) => ( f <= datetime ) && ( datetime < t )
-    }
+  def effective( datetime: => DateTime = { DateTime.now } ): Boolean = (validFrom, validTo) match {
+    case (None, None) => true
+    case (Some(f), None) => ( f <= datetime )
+    case (None, Some(t)) => ( datetime < t )
+    case (Some(f), Some(t)) => ( f <= datetime ) && ( datetime < t )
   }
 
   def isExpired( datetime: => DateTime = { DateTime.now } ): Boolean = validTo map { _ <= datetime } getOrElse false
