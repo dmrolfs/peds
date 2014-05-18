@@ -32,7 +32,7 @@ trait Party extends Equals {
 
   override def hashCode: Int = 41 * ( 41 + id.## )
 
-  override def toString: String = s"""${getClass.getSimpleName}(id-${id}: ${name})"""
+  override def toString: String = s"""${getClass.getSimpleName}(id-${id}:${name})"""
 }
 
 

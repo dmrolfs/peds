@@ -30,6 +30,25 @@ trait Effectivity {
 }
 
 
+case class EffectiveRange( 
+  override val validFrom: Option[DateTime] = None, 
+  override val validTo: Option[DateTime] = None 
+) extends Effectivity {
+  def this( validFrom: DateTime, validTo: DateTime ) = this( Some(validFrom), Some(validTo) )
+  def this( validFrom: LocalDate, validTo: LocalDate ) = {
+    this( Some(validFrom.toDateTimeAtStartOfDay), Some(validTo.toDateTimeAtStartOfDay) )
+  }
+}
+
+object EffectiveRange {
+  def apply( validFrom: DateTime, validTo: DateTime ): EffectiveRange = new EffectiveRange( validFrom, validTo )
+
+  def apply( validFrom: LocalDate, validTo: LocalDate ): EffectiveRange = {
+    new EffectiveRange( validFrom.toDateTimeAtStartOfDay, validTo.toDateTimeAtStartOfDay )
+  }
+}
+
+
 case class Enablement( 
   enabled: Boolean, 
   override val validFrom: Option[DateTime] = None, 
@@ -40,5 +59,11 @@ case class Enablement(
     "enablement cannot be valid to a date before its start" 
   )
   
+  def toBoolean: Boolean = enabled && effective()
+
   override def toString: String = s"""(${if ( enabled ) "enabled" else "disabled"} for [${validFrom getOrElse ""}, ${validTo getOrElse ""}))"""
+}
+
+object Enablement {
+  implicit def enablement2Boolean( e: Enablement ): Boolean = e.toBoolean
 }
