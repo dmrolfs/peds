@@ -7,10 +7,6 @@ import relationship.{PartyRole, PartyRoleLike}
 
 
 trait Party extends Entity with Equals {
-  type ID
-
-  def id: ID
-  def name: String
   def addresses: Seq[Address]
   // def roles: Seq[PartyRoleLike[ID]]
   def roles: Seq[PartyRole]
