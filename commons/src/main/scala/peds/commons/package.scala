@@ -5,7 +5,8 @@ import scala.util._
 
 
 package object commons {
-  implicit def rillit2Shapeless[A,B]( lens: rillit.Lens[A,B] ): shapeless.Lens[A,B] = new shapeless.Lens[A, B] {
+  implicit def rillit2Shapeless[A,B]( lenser: rillit.InitializedLenser[A,B] ): shapeless.Lens[A,B] = new shapeless.Lens[A, B] {
+    val lens: rillit.Lens[A,B] = lenser()
     override def get( that: A ): B = lens.get( that )
     override def set( that: A )( value: B ): A = lens.set( that, value )
   }
