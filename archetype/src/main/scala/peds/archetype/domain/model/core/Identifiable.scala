@@ -1,6 +1,6 @@
 package peds.archetype.domain.model.core
 
-import shapeless.Lens
+// import shapeless.Lens
 
 
 trait Identifiable {
@@ -11,5 +11,5 @@ trait Identifiable {
 
   def id: ID
   // def idLens: Lens[this.type, ID]
-  def idLens: Lens[That, ID]
+  // def idLens: Lens[That, ID]
 }
