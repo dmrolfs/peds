@@ -22,6 +22,7 @@ object Build extends Build {
       compile( joda ) ++
       compile( jodaConvert ) ++
       compile( shapeless ) ++
+      compile( rillit ) ++
       compile( akkaActor ) ++
       // compile( jscience ) ++
       // compile( sprayJson ) ++

@@ -1,15 +1,13 @@
 package peds
 
 import scala.concurrent.Future
-import scala.util.{Try, Success, Failure}
-import org.joda.{time => joda}
+import scala.util._
 
 
 package object commons {
-  trait Clock extends ( () => joda.DateTime )
-
-  case object SimpleClock extends Clock {
-    override def apply(): joda.DateTime = joda.DateTime.now
+  implicit def rillit2Shapeless[A,B]( lens: rillit.Lens[A,B] ): shapeless.Lens[A,B] = new shapeless.Lens[A, B] {
+    override def get( that: A ): B = lens.get( that )
+    override def set( that: A )( value: B ): A = lens.set( that, value )
   }
 
   def flatten[T]( xs: Seq[Try[T]] ): Try[Seq[T]] = {

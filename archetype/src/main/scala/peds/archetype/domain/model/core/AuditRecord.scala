@@ -1,9 +1,7 @@
 package peds.archetype.domain.model.core
 
-// import scala.concurrent.Future
 import org.joda.{time => joda}
-// import rillit._
-import peds.commons.Clock
+import peds.commons.util.Clock
 
 
 trait AuditedEntity extends Entity {
