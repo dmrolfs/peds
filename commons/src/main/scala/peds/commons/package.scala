@@ -1,6 +1,5 @@
 package peds
 
-import scala.concurrent.Future
 import scala.util._
 
 
@@ -16,12 +15,5 @@ package object commons {
 
     if ( fs.isEmpty ) Success( ss map { _.get } )
     else Failure[Seq[T]]( fs( 0 ).exception ) // Only keep the first failure
-  }
-
-  def tryToFuture[T]( t: => Try[T] ): Future[T] = {
-    t match{
-      case Success(s) => Future successful { s }
-      case Failure(ex) => Future failed { ex }
-    }
   }
 }
