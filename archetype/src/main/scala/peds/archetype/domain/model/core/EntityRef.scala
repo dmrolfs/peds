@@ -1,26 +1,23 @@
 package peds.archetype.domain.model.core
 
-// import scala.concurrent.Future
-// import org.joda.{time => joda}
 import rillit._
-// import peds.commons.Clock
 import scala.language.existentials
 
 
-case class EntitySummary( 
+case class EntityRef( 
   id: Entity#ID, 
-  clazz: Class[_], 
+  clazz: Class[_ <: Entity], 
   meta: Map[Symbol, Any] = Map.empty 
-) extends Equals with Ordered[EntitySummary] {
-  def this( id: Entity#ID, clazz: Class[_], metaProperties: (Symbol, Any)* ) = {
+) extends Equals with Ordered[EntityRef] {
+  def this( id: Entity#ID, clazz: Class[_ <: Entity], metaProperties: (Symbol, Any)* ) = {
     this( id, clazz, Map( metaProperties:_* ) )
   }
 
   def this( entity: Entity, metaProperties: (Symbol, Any)* ) = {
-    this( entity.id, entity.getClass, Map( ( metaProperties :+ ( EntitySummary.name -> entity.name ) ):_* ) )
+    this( entity.id, entity.getClass, Map( ( metaProperties :+ ( EntityRef.name -> entity.name ) ):_* ) )
   }
 
-  override def compare( rhs: EntitySummary ): Int = this.## compare rhs.##
+  override def compare( rhs: EntityRef ): Int = this.## compare rhs.##
 
   override def hashCode: Int = {
     41 * (
@@ -30,10 +27,10 @@ case class EntitySummary(
     )
   }
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[EntitySummary]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[EntityRef]
 
   override def equals( rhs: Any ): Boolean = rhs match {
-    case that: EntitySummary => {
+    case that: EntityRef => {
       if ( this eq that ) true
       else {
         ( that.## == this.## ) &&
@@ -47,8 +44,8 @@ case class EntitySummary(
   }
 
   override def toString: String = {
-    import EntitySummary._
-    var result = "EntitySummary("
+    import EntityRef._
+    var result = "EntityRef("
     result += meta.get(name) map { name => s"name=$name" } getOrElse s"id=$id"
     result += s", class=${clazz.getSimpleName}"
     if ( !meta.isEmpty ) result += s", meta=${meta}"
@@ -57,14 +54,14 @@ case class EntitySummary(
   }
 }
 
-object EntitySummary {
+object EntityRef {
   val name: Symbol = 'name
 
-  def apply( id: Entity#ID, clazz: Class[_], metaProperties: (Symbol, Any)* ): EntitySummary = {
-    new EntitySummary( id, clazz, metaProperties:_* )
+  def apply( id: Entity#ID, clazz: Class[_ <: Entity], metaProperties: (Symbol, Any)* ): EntityRef = {
+    new EntityRef( id, clazz, metaProperties:_* )
   }
   
-  def apply( entity: Entity, metaProperties: (Symbol, Any)* ): EntitySummary = {
-    new EntitySummary( entity, metaProperties:_* )
+  def apply( entity: Entity, metaProperties: (Symbol, Any)* ): EntityRef = {
+    new EntityRef( entity, metaProperties:_* )
   }
 }

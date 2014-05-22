@@ -13,5 +13,5 @@ trait Entity extends Identifiable {
 }
 
 object Entity {
-  implicit def summarizeEntity( e: Entity ): EntitySummary = EntitySummary( e )
+  implicit def referenceEntity( e: Entity ): EntityRef = EntityRef( e )
 }
