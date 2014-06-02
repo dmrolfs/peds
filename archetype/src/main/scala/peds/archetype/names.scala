@@ -63,6 +63,10 @@ case class PersonName(
 }
 
 
+object OrganizationName {
+  val Undefined: OrganizationName = OrganizationName( name = "" )
+}
+
 case class OrganizationName(
   val name: String,
   val use: Option[NameUsage] = None,
