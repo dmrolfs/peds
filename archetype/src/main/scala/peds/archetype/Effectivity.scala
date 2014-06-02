@@ -65,5 +65,8 @@ case class Enablement(
 }
 
 object Enablement {
+  val SimpleEnabled: Enablement = Enablement( true )
+  val SimpleDisabled: Enablement = Enablement( false )
+
   implicit def enablement2Boolean( e: Enablement ): Boolean = e.toBoolean
 }
