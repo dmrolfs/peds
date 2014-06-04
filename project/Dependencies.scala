@@ -27,6 +27,7 @@ object Dependencies {
 
   val config = "com.typesafe" % "config" % "1.0.0"
   val eeioUUID = "com.eaio.uuid" % "uuid" % "3.4"
+  val codec = "commons-codec" % "commons-codec" % "1.9"
   // val json4sNative = "org.json4s" %% "json4s-native" % "3.2.7"
   val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.2.9"
   val scalalogging = "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"

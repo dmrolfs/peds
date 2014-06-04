@@ -16,6 +16,7 @@ object Build extends Build {
     .settings( libraryDependencies ++=
       compile( config ) ++
       compile( eeioUUID ) ++
+      compile( codec ) ++
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
       compile( scalalogging ) ++
