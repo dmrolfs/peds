@@ -21,13 +21,13 @@ object ShortUUID {
 
   implicit def short2UUID( short: ShortUUID ): UUID = short.toUUID
 
-  val nilShortUUID: ShortUUID = UUID.nilUUID
+  val nilUUID: ShortUUID = UUID.nilUUID
 }
 
 case class ShortUUID( value: String ) {
   def this() = this( ShortUUID.uuidToShort( new UUID ).toString )
 
-  def isNil: Boolean = this == ShortUUID.nilShortUUID
+  def isNil: Boolean = this == ShortUUID.nilUUID
 
   def toUUID: UUID = {
     val bytes = Base64 decodeBase64 value
