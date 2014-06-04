@@ -7,6 +7,8 @@ import java.nio.ByteBuffer
 
 
 object ShortUUID {
+  def apply(): ShortUUID = new UUID
+
   implicit def uuidToShort( uuid: UUID ): ShortUUID = {
     val bb = ByteBuffer allocate 16
     bb putLong uuid.getClockSeqAndNode
@@ -23,6 +25,7 @@ object ShortUUID {
 }
 
 case class ShortUUID( value: String ) {
+  def this() = this( ShortUUID.uuidToShort( new UUID ).toString )
 
   def isNil: Boolean = this == ShortUUID.nilShortUUID
 
