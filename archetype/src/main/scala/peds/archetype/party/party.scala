@@ -4,6 +4,7 @@ import org.joda.time.LocalDate
 import peds.archetype.domain.model.core.Entity
 import peds.archetype.{Address, OrganizationName, PersonName}
 import relationship.{PartyRole, PartyRoleLike}
+import peds.commons.util._
 
 
 trait Party extends Entity with Equals {
@@ -29,7 +30,7 @@ trait Party extends Entity with Equals {
 
   override def hashCode: Int = 41 * ( 41 + id.## )
 
-  override def toString: String = s"""${getClass.getSimpleName}(id-${id}:${name})"""
+  override def toString: String = s"""${getClass.safeSimpleName}(id-${id}:${name})"""
 }
 
 

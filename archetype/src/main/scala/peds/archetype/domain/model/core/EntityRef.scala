@@ -2,6 +2,7 @@ package peds.archetype.domain.model.core
 
 import rillit._
 import scala.language.existentials
+import peds.commons.util._
 
 
 case class EntityRef( 
@@ -47,7 +48,7 @@ case class EntityRef(
     import EntityRef._
     var result = "EntityRef("
     result += meta.get(name) map { name => s"name=$name" } getOrElse s"id=$id"
-    result += s", class=${clazz.getSimpleName}"
+    result += s", class=${clazz.safeSimpleName}"
     if ( !meta.isEmpty ) result += s", meta=${meta}"
     result += ")"
     result

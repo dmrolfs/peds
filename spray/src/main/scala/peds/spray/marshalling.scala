@@ -26,6 +26,7 @@ import spray.http.{HttpEntity, StatusCode}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
+import peds.commons.util._
 import peds.spray.domain._
 
 
@@ -271,12 +272,12 @@ case class SingleValueCaseClassFormat[T <: {def value : V}, V](construct: V => T
 // https://github.com/spray/spray-json/issues/41
 case class NoParamCaseClassFormat[T](instance: T) extends RootJsonFormat[T] {
 
-  override def write(obj: T) = JsString(instance.getClass.getSimpleName)
+  override def write(obj: T) = JsString(instance.getClass.safeSimpleName)
 
   override def read(json: JsValue) = json match {
     case JsString(x) =>
-      if(x != instance.getClass.getSimpleName)
-        deserializationError("Expected %s, but got %s" format (instance.getClass.getSimpleName, x))
+      if(x != instance.getClass.safeSimpleName)
+        deserializationError("Expected %s, but got %s" format (instance.getClass.safeSimpleName, x))
       instance
     case x => deserializationError("Expected JsString, but got " + x)
   }

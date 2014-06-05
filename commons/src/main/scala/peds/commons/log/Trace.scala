@@ -2,6 +2,7 @@ package peds.commons.log
 
 import scala.reflect.ClassTag
 import com.typesafe.scalalogging.slf4j.{Logger => TypesafeLogger}
+import peds.commons.util._
 
 
 class Trace[L: Traceable]( val name: String, logger: L ) {
@@ -59,7 +60,7 @@ object Trace {
    * @return the `Trace`.
    */
   def apply( cls: Class[_] ): Trace[DefaultLogger] = {
-    new Trace( cls.getSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger cls) )
+    new Trace( cls.safeSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger cls) )
   }
 
   /** Get the logger for the specified class type, using the class's fully
@@ -69,7 +70,7 @@ object Trace {
    */
   def apply[C: ClassTag](): Trace[DefaultLogger] = {
     val clazz = implicitly[ClassTag[C]].runtimeClass
-    new Trace( clazz.getSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger clazz ) )
+    new Trace( clazz.safeSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger clazz ) )
   }
 
   
