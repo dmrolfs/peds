@@ -24,7 +24,7 @@ object ShortUUID {
   val nilUUID: ShortUUID = UUID.nilUUID
 }
 
-case class ShortUUID( value: String ) {
+case class ShortUUID( value: String ) extends Equals {
   def this() = this( ShortUUID.uuidToShort( new UUID ).toString )
 
   def isNil: Boolean = this == ShortUUID.nilUUID
@@ -39,5 +39,22 @@ case class ShortUUID( value: String ) {
     new UUID( time, clock )
   }
 
-  override def toString: String = value
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[ShortUUID]
+
+  override def equals( rhs: Any ): Boolean = rhs match {
+    case that: ShortUUID => {
+      if ( this eq that ) true
+      else {
+        ( that.## == this.## ) &&
+        ( that canEqual this ) &&
+        ( that.value == this.value )
+      }
+    }
+
+    case _ => false
+  }
+
+  override def hashCode: Int = 41 * ( 41 + value.## )
+
+  override def toString: String = if ( this == ShortUUID.nilUUID ) "<nil short uuid>" else value
 }

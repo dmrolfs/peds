@@ -2,5 +2,5 @@ package peds.commons.module
 
 
 trait AuditedModule {
-  type AuditContext
+  type AuditContext <: Serializable
 }

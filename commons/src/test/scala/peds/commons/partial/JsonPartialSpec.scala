@@ -1,9 +1,9 @@
 package peds.commons.partial
 
 import org.specs2._
-import org.json4s._
 import org.json4s.jackson.JsonMethods._
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import org.json4s.JsonDSL._
+import com.typesafe.scalalogging.LazyLogging
 
 
 class JsonPartialSpec() extends mutable.Specification with LazyLogging {

@@ -3,7 +3,7 @@ package peds.commons.collection
 import com.eaio.uuid.UUID
 import util.Random
 import org.specs2._
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 
 object CommonStream {

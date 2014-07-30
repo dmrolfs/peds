@@ -1,6 +1,5 @@
 package peds.archetype.domain.model.core
 
-import rillit._
 import scala.language.existentials
 import peds.commons.util._
 

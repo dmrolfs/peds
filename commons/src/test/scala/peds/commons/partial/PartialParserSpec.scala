@@ -1,7 +1,7 @@
 package peds.commons.partial
 
 import org.specs2._
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 
 class PartialParserSpec() extends mutable.Specification with LazyLogging {

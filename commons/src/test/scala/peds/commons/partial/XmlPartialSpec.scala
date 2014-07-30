@@ -3,7 +3,7 @@ package peds.commons.partial
 import scala.xml._
 import org.specs2._
 import org.specs2.matcher.XmlMatchers
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 
 class XmlPartialSpec() extends mutable.Specification with XmlMatchers with LazyLogging {

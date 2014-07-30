@@ -2,7 +2,7 @@ package peds.commons.collection
 
 import java.io.{InputStream, OutputStream}
 import collection.immutable.BitSet
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 
 class BloomFilter[T] private ( 

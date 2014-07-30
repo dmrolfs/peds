@@ -1,7 +1,7 @@
 package peds.commons.log
 
 import scala.reflect.ClassTag
-import com.typesafe.scalalogging.slf4j.{Logger => TypesafeLogger}
+import com.typesafe.scalalogging.{Logger => TypesafeLogger}
 import peds.commons.util._
 
 

@@ -13,7 +13,7 @@ trait Party extends Entity with Equals {
   def roles: Seq[PartyRole]
   // def preferences: Seq[Preference]
 
-  def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Party]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Party]
 
   override def equals( rhs: Any ): Boolean = rhs match {
     case that: Party => {
