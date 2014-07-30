@@ -15,7 +15,7 @@ object Build extends Build {
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
-      compile( eeioUUID ) ++
+      compile( eaio ) ++
       compile( codec ) ++
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
@@ -23,10 +23,7 @@ object Build extends Build {
       compile( joda ) ++
       compile( jodaConvert ) ++
       compile( shapeless ) ++
-      compile( rillit ) ++
       compile( akkaActor ) ++
-      // compile( jscience ) ++
-      // compile( sprayJson ) ++
       test( specs2 )
     )
 
@@ -35,17 +32,14 @@ object Build extends Build {
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
-      compile( eeioUUID ) ++
+      compile( eaio ) ++
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
-      compile( rillit ) ++
       compile( scalaTime ) ++
       compile( shapeless ) ++
-      // compile( jscience ) ++
-      // compile( sprayJson ) ++
       test( specs2 )
     )
 
@@ -54,13 +48,8 @@ object Build extends Build {
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
-      // compile( logbackclassic ) ++
-      // compile( grizzledSlf4j ) ++
       compile( slickPersistence ) ++
       compile( mysqlConnector ) ++
-      // compile( joda ) ++
-      // compile( jodaConvert ) ++
-      // compile( jscience ) ++
       test( specs2 ) 
     )
 
@@ -71,14 +60,9 @@ object Build extends Build {
       compile( config ) ++
       compile( akkaActor ) ++
       compile ( akkaSlf4j ) ++
-      // compile( logbackclassic ) ++
-      // compile( grizzledSlf4j ) ++
       compile( sprayCan ) ++
       compile( sprayRouting ) ++
       compile( json4sJackson ) ++
-      // compile( joda ) ++
-      // compile( jodaConvert ) ++
-      // compile( jscience ) ++
       test( specs2 ) 
     )
 
@@ -87,11 +71,6 @@ object Build extends Build {
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
-      // compile( logbackclassic ) ++
-      // compile( grizzledSlf4j ) ++
-      // compile( joda ) ++
-      // compile( jodaConvert ) ++
-      // compile( jscience ) ++
       test( specs2 ) 
     )
 }
