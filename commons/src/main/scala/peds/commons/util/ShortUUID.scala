@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 
 
 object ShortUUID {
-  def apply(): ShortUUID = new UUID
+  def apply(): ShortUUID = uuidToShort( new UUID )
 
   implicit def uuidToShort( uuid: UUID ): ShortUUID = {
     val bb = ByteBuffer allocate 16
@@ -21,7 +21,7 @@ object ShortUUID {
 
   implicit def short2UUID( short: ShortUUID ): UUID = short.toUUID
 
-  val nilUUID: ShortUUID = UUID.nilUUID
+  val nilUUID: ShortUUID = uuidToShort( UUID.nilUUID )
 }
 
 case class ShortUUID( value: String ) extends Equals {
