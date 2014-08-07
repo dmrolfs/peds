@@ -1,4 +1,4 @@
-package peds.commons.util
+package peds.commons.identifier
 
 import com.eaio.uuid.UUID
 import org.specs2._
