@@ -7,7 +7,7 @@ object Build extends Build {
   import Dependencies._
 
   lazy val root = Project( "root", file( "." ) )
-    .aggregate( commons, archetype )
+    .aggregate( commons, akka, archetype )
     .settings( basicSettings: _* )
     .settings( noPublishing: _* )
 
@@ -25,6 +25,17 @@ object Build extends Build {
       compile( shapeless ) ++
       compile( akkaActor ) ++
       test( specs2 )
+    )
+
+  lazy val akka = Project( "peds-akka", file( "akka" ) )
+    .dependsOn( commons )
+    .settings( moduleSettings: _* )
+    .settings( libraryDependencies ++=
+      compile( config ) ++
+      compile( akkaActor ) ++
+      compile( akkaSlf4j ) ++
+      test( akkaTestKit ) ++
+      test( scalatest ) 
     )
 
   lazy val archetype = Project( "peds-archetype", file( "archetype" ) )
@@ -66,11 +77,4 @@ object Build extends Build {
       test( specs2 ) 
     )
 
-  lazy val play = Project( "peds-play", file( "play" ) )
-    .dependsOn( commons )
-    .settings( moduleSettings: _* )
-    .settings( libraryDependencies ++=
-      compile( config ) ++
-      test( specs2 ) 
-    )
 }

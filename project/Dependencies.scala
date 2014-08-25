@@ -17,7 +17,7 @@ object Dependencies {
   val sprayVersion = "1.3.1"
   def sprayModule( id: String ) = "io.spray" % id % sprayVersion
 
-  val akkaVersion = "2.3.4"
+  val akkaVersion = "2.3.5"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
@@ -30,6 +30,7 @@ object Dependencies {
   val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.2.10"
   val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.0.0"
   val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.2"
+  val scalatest = "org.scalatest" %% "scalatest" % "2.1.7"
   val specs2 = "org.specs2" %% "specs2" % "2.3.13"
   val sprayHttp = sprayModule( "spray-http" )
   val sprayCan = sprayModule( "spray-can" )
