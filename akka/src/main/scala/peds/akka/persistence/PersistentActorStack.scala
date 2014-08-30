@@ -2,9 +2,10 @@ package peds.akka.persistence
 
 import akka.actor.Actor.Receive
 import akka.persistence.PersistentActor
+import peds.akka.ActorStack
 
 
-trait PersistentActorStack extends PersistentActor {
+trait PersistentActorStack extends PersistentActor with ActorStack {
   def wrappedReceiveCommand: Receive
   def wrappedReceiveRecover: Receive
 
