@@ -10,3 +10,4 @@ script:
 notifications:
   email:
     - github.10.dmrolfs@xoxy.net
+
