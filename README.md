@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/dmrolfs/peds.png?label=ready&title=Ready)](https://waffle.io/dmrolfs/peds)
 peds
 ====
 
