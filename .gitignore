@@ -14,3 +14,4 @@ project/plugins/project/
 *.sublime-project
 *.sublime-workspace
 icon?
+.sync.db

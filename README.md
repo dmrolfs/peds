@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/dmrolfs/peds.svg?branch=master)](https://travis-ci.org/dmrolfs/peds)
 [![Stories in Ready](https://badge.waffle.io/dmrolfs/peds.png?label=ready&title=Ready)](https://waffle.io/dmrolfs/peds)
 peds
 ====
