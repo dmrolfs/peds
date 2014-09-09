@@ -1,5 +1,8 @@
 import sbt._
 import Keys._
+import scoverage.ScoverageSbtPlugin.instrumentSettings
+import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
+
 
 object Build extends Build {
 
@@ -9,6 +12,8 @@ object Build extends Build {
   lazy val root = Project( "root", file( "." ) )
     .aggregate( commons, akka, archetype )
     .settings( basicSettings: _* )
+    .settings( instrumentSettings: _* )
+    .settings( coverallsSettings: _* )
     .settings( noPublishing: _* )
 
   lazy val commons = Project( "peds-commons", file( "commons" ) )
