@@ -10,5 +10,5 @@ trait SilentPublisher extends EventPublisher { outer: Actor with ActorLogging =>
   )(
     implicit workId: WorkId = WorkId(),
     messageNumber: MessageNumber = MessageNumber( -1 )
-  ): Unit = { log.info( s"silent publish by ${self.path}: $event" ) }
+  ): Unit = { log.debug( s"silent publish by ${self.path}: $event" ) }
 }
