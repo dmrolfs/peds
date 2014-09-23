@@ -6,9 +6,7 @@ import akka.persistence.AtLeastOnceDelivery.{ UnconfirmedDelivery, UnconfirmedWa
 import peds.akka.envelope._
 
 
-trait ReliablePublisher extends PersistentActor with AtLeastOnceDelivery with EventPublisher with ActorLogging { 
-  outer: Enveloping =>
-
+trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtLeastOnceDelivery with Enveloping =>
   def destination: ActorPath
 
   //DMR don't want to override default b/h here. instead, concrete class can
@@ -26,8 +24,6 @@ trait ReliablePublisher extends PersistentActor with AtLeastOnceDelivery with Ev
     implicit workId: WorkId = WorkId(),
     messageNumber: MessageNumber = MessageNumber( -1 )
   ): Unit = {
-    // val envelope = AggregateRoot.message2AggregateEnvelope( event, outer.meta.aggregateIdOf( self ), outer.meta )
-
     deliver( 
       destination, 
       deliveryId => {
@@ -37,18 +33,18 @@ trait ReliablePublisher extends PersistentActor with AtLeastOnceDelivery with Ev
     )
   }
 
-
-  override def publishProtocol: Receive = {
+  override def around( r: Receive ): Receive = {
     case Confirm( deliveryId ) => {
       log info s"confirmed delivery: $deliveryId"
       confirmDelivery( deliveryId )
     }
 
-    case UnconfirmedWarning( unconfirmedDeliveries ) => {
-      log warning s"unconfirmed deliveries: ${unconfirmedDeliveries}"
-      handleUnconfirmedDeliveries( unconfirmedDeliveries )
+    case UnconfirmedWarning( unconfirmed ) => {
+      log warning s"unconfirmed deliveries: ${unconfirmed}"
+      handleUnconfirmedDeliveries( unconfirmed )
     }
   }
+
 
   def handleUnconfirmedDeliveries( unconfirmedDeliveries: Seq[UnconfirmedDelivery] ): Unit = { 
     for { ud <- unconfirmedDeliveries } {

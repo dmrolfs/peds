@@ -5,7 +5,7 @@ import shapeless.syntax.typeable._
 import peds.akka.envelope._
 
 
-trait LocalPublisher extends EventPublisher { outer: Actor with ActorLogging =>
+trait LocalPublisher extends EventPublisher {
   override def publish(
     event: Any
   )(

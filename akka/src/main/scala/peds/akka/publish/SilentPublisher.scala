@@ -4,7 +4,7 @@ import akka.actor.{ Actor, ActorLogging }
 import peds.akka.envelope._
 
 
-trait SilentPublisher extends EventPublisher { outer: Actor with ActorLogging =>
+trait SilentPublisher extends EventPublisher { 
   override def publish(
     event: Any
   )(
