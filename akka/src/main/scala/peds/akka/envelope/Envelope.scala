@@ -33,11 +33,11 @@ object Envelope extends StrictLogging {
   implicit def message2Envelope(
     message: Any
   )(
-    implicit fromComponentType: ComponentType,
-    fromComponentPath: ComponentPath,
-    workId: WorkId,
-    messageNumber: MessageNumber,
-    version: EnvelopeVersion,
+    implicit fromComponentType: ComponentType = ComponentType.unknown,
+    fromComponentPath: ComponentPath = ComponentPath.unknown,
+    workId: WorkId = WorkId.unknown,
+    messageNumber: MessageNumber = MessageNumber( -1 ),
+    version: EnvelopeVersion = EnvelopeVersion(),
     properties: Map[Symbol, Any] = Map()
   ): Envelope = trace.block( s"message2Envelope($message)" ) {
     message match {

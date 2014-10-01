@@ -19,7 +19,7 @@ trait Enveloping {
 
   implicit def messageNumber: MessageNumber = currentMessageNumberVar
   protected def messageNumber_=( messageNum: MessageNumber ): Unit = { currentMessageNumberVar = messageNum }
-  @transient private[this] var currentMessageNumberVar: MessageNumber = MessageNumber( -1 )
+  @transient private[this] var currentMessageNumberVar: MessageNumber = MessageNumber.unknown
 
   def envelopeHeader: Option[EnvelopeHeader] = currentHeaderVar
   protected def envelopeHeader_=( header: Option[EnvelopeHeader] ): Unit = { currentHeaderVar = header }
