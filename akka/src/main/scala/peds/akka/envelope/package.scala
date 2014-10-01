@@ -6,7 +6,7 @@ import peds.commons.identifier.ShortUUID
 import peds.commons.log.Trace
 
 
-package object envelope extends StrictLogging {
+package object envelope extends AskSupport with StrictLogging {
   val trace = Trace( "Envelope", logger )
 
   // The version of the envelope protocol
@@ -62,6 +62,9 @@ package object envelope extends StrictLogging {
     def increment: MessageNumber = MessageNumber( value + 1 )
   }
 
+  object MessageNumber {
+    val unknown = MessageNumber( -1 )
+  }
 
   // Here we create an implicit class that extends the functionality of the
   // ActorRef, which will provide the hook we need in order to convert from the
