@@ -56,15 +56,15 @@ object Build extends Build {
       test( specs2 )
     )
 
-  lazy val slick = Project( "peds-slick", file( "slick" ) )
-    .dependsOn( commons )
-    .settings( moduleSettings: _* )
-    .settings( libraryDependencies ++=
-      compile( config ) ++
-      compile( slickPersistence ) ++
-      compile( mysqlConnector ) ++
-      test( specs2 ) 
-    )
+  // lazy val slick = Project( "peds-slick", file( "slick" ) )
+  //   .dependsOn( commons )
+  //   .settings( moduleSettings: _* )
+  //   .settings( libraryDependencies ++=
+  //     compile( config ) ++
+  //     compile( slickPersistence ) ++
+  //     compile( mysqlConnector ) ++
+  //     test( specs2 ) 
+  //   )
 
   lazy val spray = Project( "peds-spray", file( "spray" ) )
     .dependsOn( commons )
