@@ -40,18 +40,21 @@ case class EmailAddress(
 }
 
 
+case class PostalCode( value: String )
+
 case class GeographicAddress( 
   val addressLines: Seq[String], 
   val city: String, 
   val regionOrState: String, 
-  val zipOrPostCode: String, 
-  val country: Option[Locale] = None,
+  val postalCode: PostalCode, 
+  val country: String,
   val description: Option[String] = None,
+  val locale: Option[Locale] = None,
   override val validFrom: Option[DateTime] = None, 
   override val validTo: Option[DateTime] = None
 ) extends Address {
   override def address: String = {
-    val elements = addressLines ++ List( city, regionOrState ) ++ country.map( List( _ ) ).getOrElse( List.empty )
+    val elements = addressLines ++ List( city, regionOrState, postalCode ) ++ List( country )
     elements mkString ","
   }
 
@@ -66,7 +69,7 @@ case class GeographicAddress(
         ( this.addressLines == that.addressLines ) &&
         ( this.city == that.city ) &&
         ( this.regionOrState == that.regionOrState ) &&
-        ( this.zipOrPostCode == that.zipOrPostCode ) &&
+        ( this.postalCode == that.postalCode ) &&
         ( this.country == that.country )
       }
     }
@@ -82,7 +85,7 @@ case class GeographicAddress(
             41 + addressLines.##
           ) + city.##
         ) + regionOrState.##
-      ) + zipOrPostCode.##
+      ) + postalCode.##
     ) + country.##
   }
 }
