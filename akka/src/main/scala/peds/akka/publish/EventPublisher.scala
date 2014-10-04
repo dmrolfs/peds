@@ -6,6 +6,7 @@ import peds.akka.envelope._
 
 
 trait EventPublisher extends ActorStack with ActorLogging {
+  //todo: refactor this into a Functional form that can be composed
   def publish( 
     event: Any
   )(
