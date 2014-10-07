@@ -34,22 +34,18 @@ trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtL
   }
 
   override def around( r: Receive ): Receive = {
-    trace( "ReliablePublisher.around" )
+    case Confirm( deliveryId ) => trace.block( "ReliablePublisher.around(Confirm)" ) {
+      log info s"confirmed delivery: $deliveryId"
+      confirmDelivery( deliveryId )
+    }
 
-    {
-      case Confirm( deliveryId ) => trace.block( "ReliablePublisher.around(Confirm)" ) {
-        log info s"confirmed delivery: $deliveryId"
-        confirmDelivery( deliveryId )
-      }
+    case UnconfirmedWarning( unconfirmed ) => trace.block( "ReliablePublisher.around(UnconfirmedWarning)" ) {
+      log warning s"unconfirmed deliveries: ${unconfirmed}"
+      handleUnconfirmedDeliveries( unconfirmed )
+    }
 
-      case UnconfirmedWarning( unconfirmed ) => trace.block( "ReliablePublisher.around(UnconfirmedWarning)" ) {
-        log warning s"unconfirmed deliveries: ${unconfirmed}"
-        handleUnconfirmedDeliveries( unconfirmed )
-      }
-
-      case msg => trace.block( "ReliablePublisher.around(_)" ) {
-        super.around( r )( msg )
-      }
+    case msg => trace.block( "ReliablePublisher.around(_)" ) {
+      super.around( r )( msg )
     }
   }
 
