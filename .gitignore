@@ -1,7 +1,12 @@
+.sync.db*
+icon?
 *.class
 *.log
 
 # sbt specific
+.cache/
+.history/
+.lib/
 dist/*
 target/
 lib_managed/
@@ -11,7 +16,10 @@ project/plugins/project/
 
 # Scala-IDE specific
 .scala_dependencies
+.worksheet
+.idea/
+.idea_modules/
+*.iml
+.scala_dependencies
 *.sublime-project
 *.sublime-workspace
-icon?
-.sync.db*
