@@ -9,12 +9,12 @@ object BuildSettings {
 
   val VERSION = "0.1.6"
 
-  lazy val noPublishing = seq(
+  lazy val noPublishing = Seq(
     publish := (),
     publishLocal := ()
   )
 
-  lazy val basicSettings = seq(
+  lazy val basicSettings = Seq(
     version := VERSION,
     organization := "com.github.dmrolfs",
     description := "A Scala library providing common and generally applicable support for system development, including utilities, data structures, algorithms and archetypes.",
@@ -38,7 +38,7 @@ object BuildSettings {
     )
   )
 
-  lazy val moduleSettings = basicSettings ++ instrumentSettings ++ coverallsSettings ++ seq(
+  lazy val moduleSettings = basicSettings ++ instrumentSettings ++ coverallsSettings ++ Seq(
     version := VERSION,
     isSnapshot := true,
     publishTo := Some( Resolver.file("file", new File( Path.userHome.absolutePath + "/dev/dmrolfs.github.com/snapshots" ) ) )
