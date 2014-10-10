@@ -6,18 +6,37 @@ import peds.commons.identifier.ShortUUID
 import peds.commons.log.Trace
 
 
+/**
+ * The enveloping package creates an envelope that carries a great deal more information than just the sender of the message. 
+ * The envelope contains the following:
+ *   - The class type of the sender
+ *   - The unique identifier of the sender
+ *   - The unique identifier of the intended recipient
+ *   - The class type of the message being sent
+ *   - The timestamp of the creation time of the message
+ *   - A unique identifier for the current “unit of work” in which this message is participating
+ *   - A sequence number that indicates where this message sits in the timeline of the unit of work
+ *   - A version number for the protocol version of the envelope
+ *   - The message itself
+ *
+ * Importantly, all of this information to be supplied without burdening the code that sends the message. However, instead of
+ * the regular Akka `tell` and `!` operations, programmers must use the `send` operation to wrap the message in a envelope.
+ * {{{someActor send SomeMessage( "Hello there, Mr. Actor" )}}}
+ */
 package object envelope extends AskSupport with StrictLogging {
   val trace = Trace( "Envelope", logger )
 
-  // The version of the envelope protocol
+  /** The version of the envelope protocol */
   case class EnvelopeVersion( version: Int = 1 )
   
-  // We shouldn't have to supply this, generally, just pull it in from
-  // the implicit scope
+  /**
+   * Defines the envelope schema version number. We shouldn't have to supply this, generally, just pull it in from the implicit
+   * scope
+   */
   implicit val envelopeVersion = EnvelopeVersion()
 
 
-  // Defines the "type" of component in a message (e.g. MessageForwarder)
+  /** Defines the "type" of component in a message (e.g. MessageForwarder) */
   case class ComponentType( componentType: String )
 
   object ComponentType {
@@ -25,13 +44,10 @@ package object envelope extends AskSupport with StrictLogging {
   }
   
 
-  // Defines the identity of the given component (e.g. /path/to/MessageForwarder)
+  /** Defines the identity of the given component (e.g. /path/to/MessageForwarder) */
   case class ComponentPath( path: String ) {
-    def this( ap: ActorPath ) = this( ap.elements.mkString( "/", "/", "" ) ) // DMR DRY THIS UP
-
-  // // Rips off the unneeded bits from the Actor path in order to
-  // // create a unique Id
-  // def makeAnIdForActorRef(path: ActorPath): String = path.elements.mkString("/", "/", "")
+    // def this( ap: ActorPath ) = this( ap.elements.mkString( "/", "/", "" ) ) // DMR DRY THIS UP
+    def this( ap: ActorPath ) = this( ap.toString )
   }
 
   object ComponentPath {
@@ -41,7 +57,7 @@ package object envelope extends AskSupport with StrictLogging {
   }
   
 
-  // Defines the type of message being sent (e.g. SendEmail)
+  /** Defines the type of message being sent (e.g. SendEmail) */
   case class MessageType( messageType: String )
 
   object MessageType {
@@ -49,7 +65,7 @@ package object envelope extends AskSupport with StrictLogging {
   }
   
 
-  // Defines the work identifier that this message is part of
+  /** Defines the work identifier that this message is part of */
   case class WorkId( workId: ShortUUID = ShortUUID() )
 
   object WorkId {
@@ -57,7 +73,7 @@ package object envelope extends AskSupport with StrictLogging {
   }
 
   
-  // Defines the sequence number of this message within the workId
+  /** Defines the sequence number of this message within the workId */
   case class MessageNumber( value: Long ) {
     def increment: MessageNumber = MessageNumber( value + 1 )
   }
@@ -66,10 +82,25 @@ package object envelope extends AskSupport with StrictLogging {
     val unknown = MessageNumber( -1 )
   }
 
-  // Here we create an implicit class that extends the functionality of the
-  // ActorRef, which will provide the hook we need in order to convert from the
-  // Any to the Envelope that holds all of our interesting information
+  /**
+   * This implementation is ported from <a href="http://derekwyatt.org/2014/01/01/using-scala-implicits-to-implement-a-messaging-protocol.html">Derek Wyatt's blog post</a>
+   * Parts of this blog post are adapted here for documentation.
+   * 
+   * EnvelopeSending is an implicit value type class that extends the functionality of the ActorRef to provide the hook that 
+   * wrap messages inside a rich envelope containg meta data about the message.
+   * 
+   * With this implicit class in scope, `send(..)` a message to an ActorRef will result in wrapping the message in an Envelope.
+   * `send` or `sendForward` must be used rather than the regular ActorRef's `tell`, `forward`, and `!` methods, which will
+   * remain unwrapped with an envelope. It is easy to "drop" the envelope as a result, so as long as the envelope is important
+   * care should be taken to use the enveloping methods.
+   * 
+   * 
+   */
   implicit class EnvelopeSending( val underlying: ActorRef ) extends AnyVal {
+
+    /**
+     * 
+     */
     def send( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = trace.block( s"send( $envelope )( $sender )" ){
       trace( s"update(envelope) = ${update(envelope)}" )
       underlying.tell( update( envelope ), sender )

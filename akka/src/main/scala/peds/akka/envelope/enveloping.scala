@@ -14,8 +14,8 @@ trait Enveloping {
   @transient implicit val myComponentPath: ComponentPath = ComponentPath( pathname )
 
   implicit def workId: WorkId = currentWorkIdVar
-  protected def workId_=( wid: WorkId ): Unit = { currentWorkIdVar = wid }
-  @transient private[this] var currentWorkIdVar: WorkId = WorkId()
+  protected def workId_=( wid: WorkId ): Unit = { currentWorkIdVar = if ( wid != WorkId.unknown ) wid else WorkId() }
+  @transient private[this] var currentWorkIdVar: WorkId = WorkId.unknown
 
   implicit def messageNumber: MessageNumber = currentMessageNumberVar
   protected def messageNumber_=( messageNum: MessageNumber ): Unit = { currentMessageNumberVar = messageNum }
@@ -29,7 +29,8 @@ trait Enveloping {
 
 trait EnvelopingActor extends Actor with ActorStack with Enveloping { outer: ActorLogging =>
   def trace: Trace[_]
-  override def pathname: String = self.path.name
+  // override def pathname: String = self.path.name
+  override def pathname: String = self.path.toString
 
   override def around( r: Receive ): Receive = {
     case Envelope( msg, header @ EnvelopeHeader( _, _, _, _, workId, messageNumber, _, _, _ ) ) => {
