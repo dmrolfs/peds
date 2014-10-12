@@ -10,22 +10,24 @@ import akka.actor.Status.Failure
 import peds.commons.log.Trace
 
 
-object TestActor {
-  case class Unhandled( message: Any )
-}
-
-class TestActor( target: ActorRef ) extends EnvelopingActor with ActorLogging {
-  override def trace: Trace[_] = Trace[TestActor]
-
-  override def receive: Receive = bare orElse around( wrapped )
-
-  def bare: Receive = { case Envelope( "INITIAL", h ) => target ! Envelope( "REPLY", h ) }
-  def wrapped: Receive = { 
-    case "ACTOR" => target send "REPLY" 
-    case "FORWARD" => target sendForward "REPLY"
+object EnvelopeSendingSpec {
+  object TestActor {
+    case class Unhandled( message: Any )
   }
 
-  override def unhandled( message: Any ): Unit = target ! TestActor.Unhandled( message )
+  class TestActor( target: ActorRef ) extends EnvelopingActor with ActorLogging {
+    override def trace: Trace[_] = Trace[TestActor]
+
+    override def receive: Receive = bare orElse around( wrapped )
+
+    def bare: Receive = { case Envelope( "INITIAL", h ) => target ! Envelope( "REPLY", h ) }
+    def wrapped: Receive = { 
+      case "ACTOR" => target send "REPLY" 
+      case "FORWARD" => target sendForward "REPLY"
+    }
+
+    override def unhandled( message: Any ): Unit = target ! TestActor.Unhandled( message )
+  }
 }
 
 
@@ -37,6 +39,8 @@ with BeforeAndAfterAll
 with ImplicitSender
 {
   def this() = this( ActorSystem( "EnvelopeSendingSpec" ) )
+
+  import EnvelopeSendingSpec._
 
   val d = 500.millis
   implicit val t = Timeout( d )
