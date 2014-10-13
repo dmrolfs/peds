@@ -13,14 +13,14 @@ trait AskSupport {
 
 final class AskableEnvelopingActorRef( val underlying: ActorRef ) extends AnyVal {
   
-  def ask( message: Any )( implicit timeout: Timeout ): Future[Any] = akka.pattern.ask( underlying, update( message ) )
+  def ask( message: Envelope )( implicit timeout: Timeout ): Future[Any] = akka.pattern.ask( underlying, askUpdate( message ) )
 
-  def ?( message: Any )( implicit timeout: Timeout ): Future[Any] = ask( message )( timeout )
+  def ?( message: Envelope )( implicit timeout: Timeout ): Future[Any] = ask( message )( timeout )
 
-  private def update( incoming: Envelope ): Envelope = {
+  private def askUpdate( incoming: Envelope ): Envelope = {
     val messageNumber = incoming.header.messageNumber
     val header = incoming.header.copy(
-      toComponentPath = ComponentPath( underlying.path ), 
+      toComponentPath = ComponentPath.unknown, // we don't have a way to determine the sender from underlying
       messageNumber = messageNumber.increment 
     )
 
