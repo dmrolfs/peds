@@ -6,6 +6,7 @@ package peds.commons.collection
  * distance algorithm.
  * http://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance
  */
+//todo: make into implicit value class
 class StringWithSimilarity( lhs: String ) {
 	import StringWithSimilarity._
 
