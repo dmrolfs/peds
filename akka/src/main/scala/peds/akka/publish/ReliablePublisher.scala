@@ -1,13 +1,35 @@
 package peds.akka.publish
 
-import akka.actor.{ ActorLogging, ActorPath }
+import akka.actor.{ ActorContext, ActorLogging, ActorPath }
 import akka.persistence.{ AtLeastOnceDelivery, PersistentActor }
 import akka.persistence.AtLeastOnceDelivery.{ UnconfirmedDelivery, UnconfirmedWarning }
 import peds.akka.envelope._
 
 
+object ReliablePublisher {
+  sealed trait Protocol
+  case class ReliableMessage( deliveryId: Long, message: Envelope ) extends Protocol
+  case class Confirm( deliveryId: Long ) extends Protocol
+
+  case class RedeliveryFailedException( message: Any ) extends RuntimeException
+}
+
 trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtLeastOnceDelivery with Enveloping =>
-  def destination: ActorPath
+  import ReliablePublisher._
+  import peds.commons.util.Chain._
+
+  def reliablePublisher( destination: ActorPath )( implicit context: ActorContext ): Publisher = {
+    ( event: Envelope ) => {
+      deliver(
+        destination,
+        deliveryId => {
+          log info s"ReliablePublisher.publish.DELIVER: deliveryId=${deliveryId}; dest=${destination}; event=${event}"
+          ReliableMessage( deliveryId, event ) 
+        }
+      )
+      Left( event )
+    }
+  }
 
   //DMR don't want to override default b/h here. instead, concrete class can
   // override val redeliverInterval: FiniteDuration = 30.seconds
@@ -18,20 +40,6 @@ trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtL
   //   val listener = context.actorOf( RedeliverFailureListener.props )
   // }
 
-  override def publish( 
-    event: Any 
-  )(
-    implicit workId: WorkId = WorkId(),
-    messageNumber: MessageNumber = MessageNumber( -1 )
-  ): Unit = {
-    deliver( 
-      destination, 
-      deliveryId => {
-        log info s"ReliablePublisher.publish.DELIVER: deliveryId=${deliveryId}; dest=${destination}; event=${event}"
-        ReliableMessage( deliveryId, event ) 
-      }
-    )
-  }
 
   override def around( r: Receive ): Receive = {
     case Confirm( deliveryId ) => trace.block( "ReliablePublisher.around(Confirm)" ) {
