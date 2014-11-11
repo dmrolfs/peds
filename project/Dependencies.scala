@@ -21,6 +21,7 @@ object Dependencies {
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
+  val akkaContrib = akkaModule( "akka-contrib" )
   val akkaPersistence = akkaModule( "akka-persistence-experimental" )
   val akkaSlf4j = akkaModule( "akka-slf4j" )
   val akkaTestKit = akkaModule( "akka-testkit" )

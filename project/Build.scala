@@ -34,6 +34,7 @@ object Build extends Build {
     .settings( libraryDependencies ++=
       compile( config ) ++
       compile( akkaActor ) ++
+      compile( akkaContrib ) ++
       compile( akkaPersistence ) ++
       compile( akkaSlf4j ) ++
       test( akkaTestKit ) ++
