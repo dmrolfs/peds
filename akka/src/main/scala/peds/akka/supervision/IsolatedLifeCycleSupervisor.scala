@@ -1,6 +1,6 @@
 package peds.akka.supervision
 
-import akka.actor.{ Actor, ActorRef, Props, ActorLogging }
+import akka.actor.{ Actor, ActorRef, Props, ActorLogging, Terminated, DeathPactException }
 import akka.event.LoggingReceive
 
 
@@ -33,7 +33,7 @@ trait IsolatedLifeCycleSupervisor extends Actor with ActorLogging {
       log info s"started child: ${child}"
       sender() ! ChildStarted( child )
     }
-
-    case m => throw new Exception( s"Don't call ${self.path.name} directly ($m)" )
   }
+
+  override def unhandled( m: Any ): Unit = throw new IllegalStateException( s"Don't call ${self.path.name} directly ($m)" )
 }
