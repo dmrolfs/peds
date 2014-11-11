@@ -14,7 +14,7 @@ object IsolatedLifeCycleSupervisor {
   case class ChildStarted( child: ActorRef ) extends Event
 }
 
-trait IsolatedLifeCycleSupervisor extends Actor { outer: ActorLogging =>
+trait IsolatedLifeCycleSupervisor extends Actor with ActorLogging {
   import IsolatedLifeCycleSupervisor._
 
   /** how to start children during preStart() to be implemented by subclasses */
