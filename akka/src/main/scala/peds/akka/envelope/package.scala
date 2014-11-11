@@ -106,6 +106,8 @@ package object envelope extends AskSupport with StrictLogging {
       underlying.tell( update( envelope ), sender )
     }
 
+    def !!( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = send( envelope )( sender )
+
     def sendForward( envelope: Envelope )( implicit context: ActorContext ): Unit = underlying.forward( update( envelope ) )
 
 
