@@ -1,7 +1,6 @@
 package peds.akka.supervision
 
 import akka.actor.{ Actor, ActorRef, Props, ActorLogging, Terminated, DeathPactException }
-import akka.event.LoggingReceive
 
 
 object IsolatedLifeCycleSupervisor {
@@ -11,7 +10,9 @@ object IsolatedLifeCycleSupervisor {
 
   sealed trait Event
   case object Started extends Event
-  case class ChildStarted( child: ActorRef ) extends Event
+  case class ChildStarted( child: ActorRef ) extends Event {
+    def name: String = child.path.name
+  }
 }
 
 trait IsolatedLifeCycleSupervisor extends Actor with ActorLogging {
@@ -25,7 +26,7 @@ trait IsolatedLifeCycleSupervisor extends Actor with ActorLogging {
   final override def postRestart( reason: Throwable ): Unit = { }
 
 
-  override def receive: Receive = LoggingReceive {
+  override def receive: Receive = {
     case WaitForStart => sender() ! Started // signify that we've started
 
     case StartChild( props, name ) => {
