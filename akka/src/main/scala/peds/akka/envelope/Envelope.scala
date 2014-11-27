@@ -39,7 +39,7 @@ object Envelope extends StrictLogging {
     messageNumber: MessageNumber = MessageNumber( -1 ),
     version: EnvelopeVersion = EnvelopeVersion(),
     properties: Map[Symbol, Any] = Map()
-  ): Envelope = trace.block( s"message2Envelope($message)" ) {
+  ): Envelope = {
     message match {
       case e: Envelope => e //DMR: update w implicit values?
 

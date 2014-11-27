@@ -101,8 +101,7 @@ package object envelope extends AskSupport with StrictLogging {
     /**
      * 
      */
-    def send( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = trace.block( s"send( $envelope )( $sender )" ){
-      trace( s"update(envelope) = ${update(envelope)}" )
+    def send( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = {
       underlying.tell( update( envelope ), sender )
     }
 
@@ -137,7 +136,7 @@ package object envelope extends AskSupport with StrictLogging {
 
     // private def emitLens = toComponentPathLens ~ messageNumberLens
 
-    private def update( incoming: Envelope ): Envelope = trace.block( s"update($incoming)" ) {
+    private def update( incoming: Envelope ): Envelope = {
       // val messageNumber = messageNumberLens.get( incoming )
       // emitLens.set( incoming )( (ComponentPath( underlying.path ), messageNumber.increment) )
       // val workId = if ( incoming.header.workId == WorkId.unknown ) WorkId() else incoming.header.workId
