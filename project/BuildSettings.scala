@@ -20,7 +20,7 @@ object BuildSettings {
     description := "A Scala library providing common and generally applicable support for system development, including utilities, data structures, algorithms and archetypes.",
     startYear := Some(2013),
     licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-    scalaVersion := "2.11.2",
+    scalaVersion := "2.11.4",
     resolvers ++= Dependencies.resolutionRepos,
     coverallsTokenFile := "~/.sbt/peds-coveralls-token.txt",
     scalacOptions := Seq(
@@ -30,7 +30,7 @@ object BuildSettings {
       "-feature",
       "-unchecked",
       "-deprecation",
-      "-target:jvm-1.6",
+      "-target:jvm-1.7",
       "-language:postfixOps",
       "-language:implicitConversions",
       "-Xlog-reflective-calls",
