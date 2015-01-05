@@ -13,6 +13,6 @@ trait Entity extends Identifiable {
   override def toString: String = s"${getClass.safeSimpleName}(${name})"
 }
 
-object Entity {
-  implicit def referenceEntity[T <: Entity : ClassTag]( e: T ): EntityRef = EntityRef[T]( e )
-}
+// object Entity {
+//   implicit def referenceEntity( e: Entity ): EntityRef = EntityRef( e )
+// }

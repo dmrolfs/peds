@@ -26,37 +26,22 @@ object EntityRef {
   //   EntityRefImpl[T]( id = entity.id, name = entity.name, clazz = implicitly[ClassTag[T]].runtimeClass )
   // }
 
-  def apply[T <: Entity : ClassTag]( entity: T, meta: (Symbol, Any)* ): EntityRef = {
-    EntityRefImpl[T](
-      id = entity.id,
-      name = entity.name,
-      clazz = entity.getClass,
-      meta = Map( meta:_* )
-    )
-  }
+  // def apply( e: Entity, meta: (Symbol, Any)* ): EntityRef = {
+  //   EntityRefImpl( id = e.id, name = e.name, clazz = e.getClass, meta = Map( meta:_* ) )
+  // }
 
   // def apply[T <: Entity : ClassTag]( id: T#ID, name: String ): EntityRef = {
   //   EntityRefImpl[T]( id = id, name = name, clazz = implicitly[ClassTag[T]].runtimeClass )
   // }
 
-  def apply[T <: Entity : ClassTag]( id: T#ID, name: String, clazz: Class[_], meta: (Symbol, Any)* ): EntityRef = {
-    EntityRefImpl[T](
-      id = id,
-      name = name,
-      clazz = clazz,
-      meta = Map( meta:_* )
-    )
-  }
+  // def apply( id: Entity#ID, name: String, clazz: Class[_], meta: (Symbol, Any)* ): EntityRef = {
+  //   EntityRefImpl( id = id, name = name, clazz = clazz, meta = Map( meta:_* ) )
+  // }
 
   def unapply( ref: EntityRef ): Option[(ref.ID, String, Class[_])] = Some( (ref.id, ref.name, ref.clazz) )
 
-  private case class EntityRefImpl[T <: Entity : ClassTag]( 
-    override val id: T#ID, 
-    override val name: String, 
-    override val clazz: Class[_],
-    meta: Map[Symbol, Any] = Map()
-  ) extends EntityRef with Equals {
-    override type Source = T
+  trait EntityRefLike extends EntityRef with Equals {
+    def meta: Map[Symbol, Any]
 
     override def apply( property: Symbol ): Any = {
       get( property ) getOrElse {
@@ -81,10 +66,8 @@ object EntityRef {
       )
     }
 
-    override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[EntityRefImpl[T]]
-
     override def equals( rhs: Any ): Boolean = rhs match {
-      case that: EntityRefImpl[T] => {
+      case that: EntityRefLike => {
         if ( this eq that ) true
         else {
           ( that.## == this.## ) &&
