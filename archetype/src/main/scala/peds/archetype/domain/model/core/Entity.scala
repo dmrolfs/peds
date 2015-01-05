@@ -1,6 +1,6 @@
 package peds.archetype.domain.model.core
 
-// import shapeless.Lens
+import scala.reflect.ClassTag
 import peds.commons.util._
 
 
@@ -14,5 +14,5 @@ trait Entity extends Identifiable {
 }
 
 object Entity {
-  implicit def referenceEntity( e: Entity ): EntityRef = EntityRef( e )
+  implicit def referenceEntity[T <: Entity : ClassTag]( e: T ): EntityRef = EntityRef[T]( e )
 }
