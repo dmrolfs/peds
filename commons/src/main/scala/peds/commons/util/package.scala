@@ -2,6 +2,7 @@ package peds.commons
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.ClassTag
+import scala.util.{ Failure, Success, Try }
 import com.typesafe.scalalogging.LazyLogging
 import shapeless.syntax.typeable._
 
@@ -22,6 +23,13 @@ package object util extends LazyLogging {
       val msg = s"${implicitly[ClassTag[I]].runtimeClass.safeSimpleName} is not ${implicitly[ClassTag[O]].runtimeClass.safeSimpleName}: ${in}"
       logger warn msg
       throw new ClassCastException( msg )
+    }
+  }
+
+  def tryToFuture[A]( t: => Try[A] )( implicit ec: ExecutionContext ): Future[A] = {
+    Future { t } flatMap {
+      case Success( s ) => Future successful s
+      case Failure( fail ) => Future failed fail
     }
   }
 
