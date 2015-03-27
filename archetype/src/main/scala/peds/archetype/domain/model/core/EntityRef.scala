@@ -14,6 +14,9 @@ sealed trait EntityRef extends ((Symbol) => Any) with Ordered[EntityRef] {
   def id: ID
   def name: String
   def clazz: Class[_]
+
+  def identify: String = name + ":" + id
+  override def toString: String = identify
 }
 
 object EntityRef {
