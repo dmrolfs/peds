@@ -33,6 +33,8 @@ class Trace[L: Traceable]( val name: String, logger: L ) {
   @inline final def msg( msg: => Any, t: => Throwable ): Unit = apply( msg, t )
 
   @inline final def block[R]( label: => Any )( block: => R ): R = Trace.block[R]( name + "." + label )( block )
+
+  @inline final def briefBlock[R]( label: => Any )( block: => R ): R = Trace.briefBlock[R]( name + "." + label )( block )
 }
 
 
@@ -81,16 +83,32 @@ object Trace {
   lazy val stackTrace = Trace( stackLabel )
   
   def block[R]( label: => Any )( block: => R ): R = {
-    if ( stackTrace.isEnabled ) {
+    if ( !stackTrace.isEnabled ) block
+    else {
       enter( label )
-      val result: R = block
+      val result = block
       exit( result )
       result
-    } else {
-      block
     }
   }
   
+  def briefBlock[R]( label: => Any )( block: => R ): R = {
+    val result = block
+    if ( !stackTrace.isEnabled ) result
+    else {
+      scopeStack withValue { s =>
+        val result = block
+        val suffix = result match {
+          case _: Unit => ""
+          case result => " = " + result.toString
+        }
+
+        stackTrace( " " * (s.length * 2) + f"> ${label}%s${suffix}" )
+      }
+      result
+    }
+  }
+
   def enter( label: String ) {
     if ( stackTrace.isEnabled ) {
       scopeStack withValue { s =>
