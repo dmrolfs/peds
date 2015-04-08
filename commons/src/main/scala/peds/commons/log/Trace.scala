@@ -97,7 +97,6 @@ object Trace {
     if ( !stackTrace.isEnabled ) result
     else {
       scopeStack withValue { s =>
-        val result = block
         val suffix = result match {
           case _: Unit => ""
           case result => " = " + result.toString
