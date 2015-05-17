@@ -41,6 +41,6 @@ object BuildSettings {
   lazy val moduleSettings = basicSettings ++ instrumentSettings ++ coverallsSettings ++ Seq(
     version := VERSION,
     isSnapshot := true,
-    publishTo := Some( Resolver.file("file", new File( Path.userHome.absolutePath + "/dev/dmrolfs.github.com/snapshots" ) ) )
+    publishTo := Some( Resolver.file("file", new File( Path.userHome.absolutePath + "/jd/dev/dmrolfs.github.com/snapshots" ) ) )
   )
 }
