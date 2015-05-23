@@ -4,6 +4,8 @@ import scala.util._
 
 
 package object commons {
+  type V[A] = scalaz.ValidationNel[Throwable, A]
+
   def flatten[T]( xs: Seq[Try[T]] ): Try[Seq[T]] = {
     val ( ss: Seq[Success[T]]@unchecked, fs: Seq[Failure[T]]@unchecked ) = xs.partition(_.isSuccess)
 

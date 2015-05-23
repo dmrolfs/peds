@@ -4,6 +4,7 @@ object Dependencies {
   val resolutionRepos = Seq(
     "spray repo" at "http://repo.spray.io",
     "eaio.com" at "http://eaio.com/maven2",
+    "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
     "dmrolfs" at "http://dmrolfs.github.com/snapshots",
     "Typesafe releases" at "http://repo.typesafe.com/typesafe/releases"
   )
@@ -33,7 +34,8 @@ object Dependencies {
   val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.0.0"
   val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.2"
   val scalatest = "org.scalatest" %% "scalatest" % "2.1.7"
-  val specs2 = "org.specs2" %% "specs2" % "2.3.13"
+  val specs2 = "org.specs2" %% "specs2-core" % "3.6"
+  val specs2Extra = "org.specs2" %% "specs2-matcher-extra" % "3.6"
   val sprayHttp = sprayModule( "spray-http" )
   val sprayCan = sprayModule( "spray-can" )
   val sprayRouting = sprayModule( "spray-routing" )
@@ -47,5 +49,7 @@ object Dependencies {
   // val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.8"
   val scalaTime = "org.scalaj" % "scalaj-time_2.10.2" % "0.7"
   val shapeless = "com.chuusai" %% "shapeless" % "2.0.0"
+  val scalazCore = "org.scalaz" %% "scalaz-core" % "7.1.1"
+
   val slickPersistence = "com.typesafe.slick" %% "slick" % "2.0.0"
 }

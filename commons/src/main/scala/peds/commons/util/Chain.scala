@@ -17,6 +17,9 @@ object Chain {
  * - Left[A] to direct processing by the next handler
  * - Right[B] to direct that processing must stop with the preceeding result.
  */
+
+//todo: change to Kleisli
+ 
 class Chain[A, B]( f: Chain.Link[A, B] ) {
   
   def chainWith( next: => Chain.Link[A, B] ): Chain.Link[A, B] = f( _ ).left.flatMap( next ) // call next handler if not yet processed

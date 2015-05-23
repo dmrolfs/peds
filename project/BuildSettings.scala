@@ -35,7 +35,8 @@ object BuildSettings {
       "-language:implicitConversions",
       "-Xlog-reflective-calls",
       "-Ywarn-adapted-args"
-    )
+    ),
+    scalacOptions in Test ++= Seq("-Yrangepos")
   )
 
   lazy val moduleSettings = basicSettings ++ instrumentSettings ++ coverallsSettings ++ Seq(
