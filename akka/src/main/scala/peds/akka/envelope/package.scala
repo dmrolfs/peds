@@ -99,18 +99,24 @@ package object envelope extends AskSupport with StrictLogging {
   implicit class EnvelopeSending( val underlying: ActorRef ) extends AnyVal {
 
     /**
-     * 
+     * Send a message enclosed in a message envelope containing meta date about the message.
      */
     def send( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = {
       underlying.tell( update( envelope ), sender )
     }
 
-    def !!( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = send( envelope )( sender )
+    /**
+     * Send a message enclosed in a message envelope containing meta date about the message.
+     */
+    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = send( envelope )( sender )
 
+    /**
+     * Forward a message enclosed in a message envelope containg meta data about the message.
+     */
     def sendForward( envelope: Envelope )( implicit context: ActorContext ): Unit = underlying.forward( update( envelope ) )
 
 
-    import shapeless.{ Lens => SLens, _ }
+    // import shapeless.{ Lens => SLens, _ }
     import peds.commons._
 
     // private def toComponentPathLens: SLens[Envelope, ComponentPath] = Lenser[Envelope].header.toComponentPath
