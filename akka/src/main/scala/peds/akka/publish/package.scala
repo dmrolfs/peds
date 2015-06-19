@@ -23,7 +23,12 @@ package object publish extends LazyLogging {
    * EventPublisher specifies 
    */
   trait EventPublisher extends ActorStack with ActorLogging {
-    def publish: Publisher = stream
+    def publish: Publisher = silent
+  }
+
+
+  trait SilentPublisher extends EventPublisher {
+    override def publish: Publisher = silent
   }
 
 
