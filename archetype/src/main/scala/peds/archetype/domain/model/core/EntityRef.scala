@@ -8,10 +8,11 @@ import peds.commons.util._
 sealed trait EntityRef extends ((Symbol) => Any) with Ordered[EntityRef] {
   type Source <: Entity
   type ID = Source#ID
+  type TID = Identifiable.TID[ID]
 
   def get( property: Symbol ): Option[Any]
 
-  def id: ID
+  def id: TID
   def name: String
   def clazz: Class[_]
 
