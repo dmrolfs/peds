@@ -1,6 +1,6 @@
 package peds.archetype.domain.model.core
 
-// import shapeless.Lens
+import shapeless.Lens
 import peds.commons.identifier._
 
 
@@ -26,5 +26,6 @@ object Identifiable {
 trait IdentifiableCompanion[I <: Identifiable] {
   def nextId: Identifiable.TID[I#ID]
   def idTag: Symbol
+  def idLens: Lens[I, I#TID]
   implicit def tag( id: I#ID ): Identifiable.TID[I#ID] = TaggedID( idTag, id )
 }
