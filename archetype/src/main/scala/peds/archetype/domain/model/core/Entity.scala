@@ -7,7 +7,7 @@ import peds.commons.util._
 
 trait Entity extends Identifiable {
   def name: String
-  def slug: String = id.get
+  def slug: String = id.get.toString
 
   override def toString: String = s"${getClass.safeSimpleName}(${name})"
 }
