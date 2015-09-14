@@ -7,7 +7,7 @@ import peds.commons.util._
 
 trait Entity extends Identifiable {
   def name: String
-  def slug: String
+  def slug: String = id.get
 
   override def toString: String = s"${getClass.safeSimpleName}(${name})"
 }
@@ -15,5 +15,4 @@ trait Entity extends Identifiable {
 
 trait EntityCompanion[E <: Entity] extends IdentifiableCompanion[E] {
   def nameLens: Lens[E, String]
-  def slugLens: Lens[E, String]
 }
