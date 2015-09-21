@@ -13,6 +13,6 @@ trait Entity extends Identifiable {
 }
 
 
-trait EntityCompanion[E <: Entity] extends IdentifiableCompanion[E] {
+trait EntityCompanion[E <: Entity] extends IdentifiableLensedCompanion[E] {
   def nameLens: Lens[E, String]
 }
