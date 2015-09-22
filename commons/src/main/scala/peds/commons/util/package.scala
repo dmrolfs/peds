@@ -18,13 +18,13 @@ package object util extends LazyLogging {
 
   def optionT[A, B]( f: A => B ): Option[A] => Option[B] = ( a: Option[A] ) => a map { f }
 
-  def castT[I : ClassTag, O : ClassTag]: I => O = in => {
-    in.cast[O] getOrElse {
-      val msg = s"${implicitly[ClassTag[I]].runtimeClass.safeSimpleName} is not ${implicitly[ClassTag[O]].runtimeClass.safeSimpleName}: ${in}"
-      logger warn msg
-      throw new ClassCastException( msg )
-    }
-  }
+  // def castT[I : ClassTag, O : ClassTag]: I => O = in => {
+  //   in.cast[O] getOrElse {
+  //     val msg = s"${implicitly[ClassTag[I]].runtimeClass.safeSimpleName} is not ${implicitly[ClassTag[O]].runtimeClass.safeSimpleName}: ${in}"
+  //     logger warn msg
+  //     throw new ClassCastException( msg )
+  //   }
+  // }
 
   def tryToFuture[A]( t: => Try[A] )( implicit ec: ExecutionContext ): Future[A] = {
     Future { t } flatMap {
