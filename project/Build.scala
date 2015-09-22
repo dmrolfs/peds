@@ -25,8 +25,10 @@ object Build extends Build {
       compile( jodaConvert ) ++
       compile( scalazCore ) ++
       compile( shapeless ) ++
+      compile( shapelessBuilder ) ++
       compile( akkaActor ) ++
       test( specs2 ) ++
+      test( scalatest ) ++
       test( specs2Extra )
     )
 

@@ -18,7 +18,7 @@ object Dependencies {
   val sprayVersion = "1.3.1"
   def sprayModule( id: String ) = "io.spray" % id % sprayVersion
 
-  val akkaVersion = "2.3.7"
+  val akkaVersion = "2.3.14"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
@@ -27,13 +27,13 @@ object Dependencies {
   val akkaSlf4j = akkaModule( "akka-slf4j" )
   val akkaTestKit = akkaModule( "akka-testkit" )
 
-  val config = "com.typesafe" % "config" % "1.2.1"
+  val config = "com.typesafe" % "config" % "1.3.0"
   val eaio = "com.eaio.uuid" % "uuid" % "3.4"
-  val codec = "commons-codec" % "commons-codec" % "1.9"
-  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.2.10"
-  val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.0.0"
-  val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.2"
-  val scalatest = "org.scalatest" %% "scalatest" % "2.1.7"
+  val codec = "commons-codec" % "commons-codec" % "1.10"
+  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.2.11"
+  val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0"
+  val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.3"
+  val scalatest = "org.scalatest" %% "scalatest" % "2.2.4"
   val specs2 = "org.specs2" %% "specs2-core" % "3.6"
   val specs2Extra = "org.specs2" %% "specs2-matcher-extra" % "3.6"
   val sprayHttp = sprayModule( "spray-http" )
@@ -41,15 +41,17 @@ object Dependencies {
   val sprayRouting = sprayModule( "spray-routing" )
   val sprayTestKit = sprayModule( "spray-testkit" )
   val twirlApi = "io.spray" %% "twirl-api" % "0.6.1"
+  val shapelessBuilder = "com.github.dmrolfs" %% "shapeless-builder" % "0.1-SNAPSHOT"
 
-  val joda = "joda-time" % "joda-time" % "2.4"
-  val jodaConvert = "org.joda" % "joda-convert" % "1.6"
+  val joda = "joda-time" % "joda-time" % "2.8.2"
+  val jodaConvert = "org.joda" % "joda-convert" % "1.7"
   val jscience = "org.jscience" % "jscience" % "4.3.1"
   val mysqlConnector = "mysql" % "mysql-connector-java" % "5.1.25"
   // val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.8"
-  val scalaTime = "org.scalaj" % "scalaj-time_2.10.2" % "0.7"
-  val shapeless = "com.chuusai" %% "shapeless" % "2.0.0"
-  val scalazCore = "org.scalaz" %% "scalaz-core" % "7.1.1"
+  // val scalaTime = "org.scalaj" % "scalaj-time_2.10.2" % "0.7"
+  val scalaTime = "org.scalaj" % "scalaj-time_2.11" % "0.8"
+  val shapeless = "com.chuusai" %% "shapeless" % "2.2.5"
+  val scalazCore = "org.scalaz" %% "scalaz-core" % "7.1.4"
 
   val slickPersistence = "com.typesafe.slick" %% "slick" % "2.0.0"
 }
