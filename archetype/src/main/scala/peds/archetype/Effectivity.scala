@@ -1,7 +1,7 @@
 package peds.archetype
 
-import org.joda.time.{DateTime, Interval, LocalDate}
-import org.scala_tools.time.Imports._
+import org.joda.time.{ DateTime, Interval, LocalDate }
+import com.github.nscala_time.time.Imports._
 
 
 trait Effectivity {

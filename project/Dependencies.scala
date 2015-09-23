@@ -48,8 +48,8 @@ object Dependencies {
   val jscience = "org.jscience" % "jscience" % "4.3.1"
   val mysqlConnector = "mysql" % "mysql-connector-java" % "5.1.25"
   // val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.8"
-  // val scalaTime = "org.scalaj" % "scalaj-time_2.10.2" % "0.7"
-  val scalaTime = "org.scalaj" % "scalaj-time_2.11" % "0.8"
+
+  val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.2.0"
   val shapeless = "com.chuusai" %% "shapeless" % "2.2.5"
   val scalazCore = "org.scalaz" %% "scalaz-core" % "7.1.4"
 
