@@ -17,6 +17,7 @@ object Build extends Build {
     .settings( libraryDependencies ++=
       compile( config ) ++
       compile( eaio ) ++
+      compile( math3 ) ++
       compile( codec ) ++
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
