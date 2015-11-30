@@ -16,7 +16,11 @@ case class MahalanobisDistance( group: RealMatrix ) extends DistanceMeasure {
     if ( centroid.deep == point.deep ) 0D
     else {
       val diffVector = MatrixUtils.createRowRealMatrix( centroid.zip( point ) map { case (c, p) => c - p } )
-      val inverseCovariance = new LUDecomposition( covariance ).getSolver.getInverse
+      val solver = new LUDecomposition( covariance ).getSolver
+      val inverseCovariance = {
+        if ( solver.isNonSingular ) solver.getInverse
+        else new LUDecomposition( MatrixUtils.createRealIdentityMatrix(point.size) ).getSolver.getInverse
+      }
       math.sqrt( diffVector.multiply(inverseCovariance).multiply(diffVector.transpose).getEntry(0,0) )
     }
   }
