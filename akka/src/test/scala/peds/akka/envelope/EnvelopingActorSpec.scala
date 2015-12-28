@@ -54,7 +54,7 @@ with ImplicitSender
   val source = system.actorOf( Props( classOf[TestActor], target.ref ) )
   implicit val probe = TestProbe()
 
-  override def afterAll: Unit = system.shutdown()
+  override def afterAll: Unit = system.terminate()
 
   // import peds.akka.envelope._
   import peds.commons.util._

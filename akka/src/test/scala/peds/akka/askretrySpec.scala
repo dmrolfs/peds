@@ -34,7 +34,7 @@ with ImplicitSender
   val source = system.actorOf(Props(classOf[AskRetryTestActor], target.ref))
   val probe = TestProbe()
 
-  override def afterAll: Unit = system.shutdown()
+  override def afterAll: Unit = system.terminate()
 
   test("An ask-retry request should be served correctly if the messages are delivered at the first attempt") {
     probe.send(source, "ASK")

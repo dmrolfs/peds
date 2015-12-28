@@ -15,6 +15,7 @@ object Build extends Build {
   lazy val commons = Project( "peds-commons", file( "commons" ) )
     .settings( moduleSettings: _* )
     .settings( libraryDependencies ++=
+      compile( "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" ) ++
       compile( config ) ++
       compile( eaio ) ++
       compile( math3 ) ++
@@ -28,9 +29,7 @@ object Build extends Build {
       compile( shapeless ) ++
       compile( shapelessBuilder ) ++
       compile( akkaActor ) ++
-      test( specs2 ) ++
-      test( scalatest ) ++
-      test( specs2Extra )
+      test( scalatest )
     )
 
   lazy val akka = Project( "peds-akka", file( "akka" ) )
@@ -42,6 +41,11 @@ object Build extends Build {
       compile( akkaContrib ) ++
       compile( akkaPersistence ) ++
       compile( akkaSlf4j ) ++
+      compile( akkaStreams ) ++
+      compile( betterFiles ) ++
+      compile( metricsCore ) ++
+      compile( metricsGraphite ) ++
+      compile( metricsScala ) ++
       test( akkaTestKit ) ++
       test( scalatest ) 
     )
@@ -59,7 +63,7 @@ object Build extends Build {
       compile( jodaConvert ) ++
       compile( scalaTime ) ++
       compile( shapeless ) ++
-      test( specs2 )
+      test( scalatest )
     )
 
   // lazy val slick = Project( "peds-slick", file( "slick" ) )
@@ -72,17 +76,17 @@ object Build extends Build {
   //     test( specs2 ) 
   //   )
 
-  lazy val spray = Project( "peds-spray", file( "spray" ) )
-    .dependsOn( commons )
-    .settings( moduleSettings: _* )
-    .settings( libraryDependencies ++=
-      compile( config ) ++
-      compile( akkaActor ) ++
-      compile ( akkaSlf4j ) ++
-      compile( sprayCan ) ++
-      compile( sprayRouting ) ++
-      compile( json4sJackson ) ++
-      test( specs2 ) 
-    )
+  // lazy val spray = Project( "peds-spray", file( "spray" ) )
+  //   .dependsOn( commons )
+  //   .settings( moduleSettings: _* )
+  //   .settings( libraryDependencies ++=
+  //     compile( config ) ++
+  //     compile( akkaActor ) ++
+  //     compile ( akkaSlf4j ) ++
+  //     compile( sprayCan ) ++
+  //     compile( sprayRouting ) ++
+  //     compile( json4sJackson ) ++
+  //     test( specs2 ) 
+  //   )
 
 }

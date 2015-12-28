@@ -10,15 +10,12 @@ package object math {
 
   object Interpolator {
     def apply( xs: Array[Double], ys: Array[Double] ): V[Interpolator]= {
-      checkDimensions( xs, ys ) map { xy =>
-        val (x, y) = xy
-        if ( x.size < 3 ) linearInterpolator( x, y ) else splineInterpolator( x, y )
-      }
+      checkDimensions( xs, ys ) map { case (x, y) => if ( x.size < 3 ) linearInterpolator(x, y) else splineInterpolator(x, y) }
     }
     
     def checkDimensions( xs: Array[Double], ys: Array[Double] ): V[(Array[Double], Array[Double])] = {
-      if ( xs.size < 2 ) NumberIsTooSmallError( xs ).failureNel
-      else if ( xs.size != ys.size ) MismatchedDimensionsError( xs, ys ).failureNel
+      if ( xs.size < 2 ) NumberIsTooSmallError( xs ).asInstanceOf[Throwable].failureNel[(Array[Double], Array[Double])]
+      else if ( xs.size != ys.size ) MismatchedDimensionsError( xs, ys ).asInstanceOf[Throwable].failureNel[(Array[Double], Array[Double])]
       else ( xs, ys ).successNel
     }
 

@@ -40,7 +40,7 @@ with ImplicitSender
   val source = system.actorOf( Props( classOf[TestActorStack], target.ref ) )
   val probe = TestProbe()
 
-  override def afterAll: Unit = system.shutdown()
+  override def afterAll: Unit = system.terminate()
 
   test( "An ActorStack request should pass through messages understood by the actor" ) {
     probe.send( source, "ASK" )

@@ -57,7 +57,7 @@ with ImplicitSender
   implicit val probe = TestProbe()
   // val real = TestActorRef[TestActor].underlyingActor
 
-  override def afterAll: Unit = system.shutdown()
+  override def afterAll: Unit = system.terminate()
 
   // import peds.akka.envelope._
   import peds.commons.util._

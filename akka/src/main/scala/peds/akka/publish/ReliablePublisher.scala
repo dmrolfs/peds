@@ -20,13 +20,12 @@ trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtL
 
   def reliablePublisher( destination: ActorPath )( implicit context: ActorContext ): Publisher = {
     ( event: Envelope ) => {
-      deliver(
-        destination,
-        deliveryId => {
-          log info s"ReliablePublisher.publish.DELIVER: deliveryId=${deliveryId}; dest=${destination}; event=${event}"
-          ReliableMessage( deliveryId, event ) 
-        }
-      )
+      val deliveryIdToMessage = (deliveryId: Long) => {
+        log info s"ReliablePublisher.publish.DELIVER: deliveryId=${deliveryId}; dest=${destination}; event=${event}"
+        ReliableMessage( deliveryId, event ) 
+      }
+
+      deliver( destination )( deliveryIdToMessage )
       Left( event )
     }
   }

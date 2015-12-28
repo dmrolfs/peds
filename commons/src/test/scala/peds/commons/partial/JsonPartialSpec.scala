@@ -1,285 +1,284 @@
 package peds.commons.partial
 
-import org.specs2._
+import org.scalatest._
+import org.scalatest.matchers.ShouldMatchers
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
 import com.typesafe.scalalogging.LazyLogging
 
 
-class JsonPartialSpec() extends mutable.Specification with LazyLogging {
+class JsonPartialSpec extends FlatSpec with Matchers with LazyLogging {
   import JsonElisionSpec._
   import JsonReducable._
 
 
-  "An elided API" should {
-    "filter simple list" in {
-      elide( myers, "inquiryId, orderId" ) must_== parse(
-        """{ 
-          "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c", 
-          "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c" 
-        }"""
-      )
-    }
+  "An elided JSON API" should "filter simple list" in {
+    elide( myers, "inquiryId, orderId" ) shouldBe parse(
+      """{ 
+        "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c", 
+        "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c" 
+      }"""
+    )
+  }
 
-    "filter simple composite list" in {
-      elide( myers, "person:name:(given,family)" ) must_== parse(
-        """{
-          "person": {
-            "name": {
-              "family": "Myers",
-              "given": "Michael"
+  it should "filter simple composite list" in {
+    elide( myers, "person:name:(given,family)" ) shouldBe parse(
+      """{
+        "person": {
+          "name": {
+            "family": "Myers",
+            "given": "Michael"
+          }
+        }
+      }"""
+    )
+  }
+
+  it should "filter simple mix of prime and composite list" in {
+    elide( myers, "inquiryId,orderId,person:name:(given,family)" ) shouldBe parse(
+      """{
+        "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
+        "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
+        "person": {
+          "name": {
+            "family": "Myers",
+            "given": "Michael"
+          }
+        }
+      }"""
+    )
+  }
+
+  it should "filter simple mix of prime and two simple composite list" in {
+    // trace( "myers data = "+myers )
+    elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines" ) shouldBe parse(
+      """{
+        "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
+        "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
+        "person": { "name": { "family": "Myers", "given": "Michael" } },
+        "report": {
+          "offenders": [
+            { "address": { "addressLines": ["204 MORNINGSIDE DR"] } },
+            { "address": { "addressLines": ["327 N WALLACE AVE"] } },
+            { "address": { "addressLines": ["227 N WALLACE AVE"] } },
+            { "address": { "addressLines": ["204 MORNINGSIDE DR"] } }
+          ]}
+      }"""
+    )
+  }
+
+  it should "filter and sort" in {
+    val actual = elide( myers, "report:offenders+sort=fullname:address:addressLines" ) 
+    val expected = parse(
+      """{
+        "report" : {
+          "offenders": [{
+            "address": {
+              "addressLines": ["204 MORNINGSIDE DR"]
             }
-          }
-        }"""
-      )
-    }
-
-    "filter simple mix of prime and composite list" in {
-      elide( myers, "inquiryId,orderId,person:name:(given,family)" ) must_== parse(
-        """{
-          "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
-          "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
-          "person": {
-            "name": {
-              "family": "Myers",
-              "given": "Michael"
+          }, {
+            "address": {
+              "addressLines": ["204 MORNINGSIDE DR"]
             }
-          }
-        }"""
-      )
-    }
-
-    "filter simple mix of prime and two simple composite list" in {
-      trace( "myers data = "+myers )
-      elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines" ) must_== parse(
-        """{
-          "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
-          "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
-          "person": { "name": { "family": "Myers", "given": "Michael" } },
-          "report": {
-            "offenders": [
-              { "address": { "addressLines": ["204 MORNINGSIDE DR"] } },
-              { "address": { "addressLines": ["327 N WALLACE AVE"] } },
-              { "address": { "addressLines": ["227 N WALLACE AVE"] } },
-              { "address": { "addressLines": ["204 MORNINGSIDE DR"] } }
-            ]}
-        }"""
-      )
-    }
-
-    "filter and sort" in {
-      val actual = elide( myers, "report:offenders+sort=fullname:address:addressLines" ) 
-      val expected = parse(
-        """{
-          "report" : {
-            "offenders": [{
-              "address": {
-                "addressLines": ["204 MORNINGSIDE DR"]
-              }
-            }, {
-              "address": {
-                "addressLines": ["204 MORNINGSIDE DR"]
-              }
-            }, {
-              "address": {
-                "addressLines": ["227 N WALLACE AVE"]
-              }
-            }, {
-              "address": {
-                "addressLines": ["327 N WALLACE AVE"]
-              }
-            }]
-          }
-        }"""
-      )
-
-      actual must_== expected
-    }
-
-    "filter and sort-desc" in {
-      elide( myers, "report:offenders+sort-desc=fullname:address:addressLines" ) must_== parse(
-        """{
-          "report" : {
-            "offenders": [{
-              "address": {
-                "addressLines": ["327 N WALLACE AVE"]
-              }
-            }, {
-              "address": {
-                "addressLines": ["227 N WALLACE AVE"]
-              }
-            }, {
-              "address": {
-                "addressLines": ["204 MORNINGSIDE DR"]
-              }
-            }, {
-              "address": {
-                "addressLines": ["204 MORNINGSIDE DR"]
-              }
-            }]
-          }
-        }"""
-      )
-    }
-
-    "simple filter and sort" in {
-      val data = parse(
-        """{
-          "bars": [{
-            "alpha": "c",
-            "foo": "3"
           }, {
-            "foo": "2",
-            "alpha": "b"
+            "address": {
+              "addressLines": ["227 N WALLACE AVE"]
+            }
           }, {
-            "alpha": "a",
-            "foo": "1"
-          }],
-          "zed": "do not include"
-        }"""
-      )
-
-      elide( data, "bars" ) must_== parse(
-        """{
-          "bars": [{
-            "alpha": "c",
-            "foo": "3"
-          }, {
-            "foo": "2",
-            "alpha": "b"
-          }, {
-            "alpha": "a",
-            "foo": "1"
+            "address": {
+              "addressLines": ["327 N WALLACE AVE"]
+            }
           }]
-        }"""
-      )
+        }
+      }"""
+    )
 
-      ( elide( data, "bars+sort=foo" ) \ "bars" ) must_== parse( 
-        """{
-          "bars": [{
-            "alpha": "a",
-            "foo": "1"
+    actual shouldBe expected
+  }
+
+  it should "filter and sort-desc" in {
+    elide( myers, "report:offenders+sort-desc=fullname:address:addressLines" ) shouldBe parse(
+      """{
+        "report" : {
+          "offenders": [{
+            "address": {
+              "addressLines": ["327 N WALLACE AVE"]
+            }
           }, {
-            "foo": "2",
-            "alpha": "b"
+            "address": {
+              "addressLines": ["227 N WALLACE AVE"]
+            }
           }, {
-            "alpha": "c",
-            "foo": "3"
+            "address": {
+              "addressLines": ["204 MORNINGSIDE DR"]
+            }
+          }, {
+            "address": {
+              "addressLines": ["204 MORNINGSIDE DR"]
+            }
           }]
-        }"""
-      ) \ "bars"
+        }
+      }"""
+    )
+  }
 
-      ( elide( data, "bars+sort=foo:alpha" ) \ "bars" ) must_== parse( 
-        """{ "bars": [{ "alpha": "a" }, { "alpha": "b" }, { "alpha": "c" }] }"""
-      ) \ "bars"
-    }
+  it should "simple filter and sort" in {
+    val data = parse(
+      """{
+        "bars": [{
+          "alpha": "c",
+          "foo": "3"
+        }, {
+          "foo": "2",
+          "alpha": "b"
+        }, {
+          "alpha": "a",
+          "foo": "1"
+        }],
+        "zed": "do not include"
+      }"""
+    )
 
-    "simple filter and sort-desc" in {
-      val data = parse(
-        """{
-          "bars": [{
-            "alpha": "c",
-            "foo": "3"
-          }, {
-            "foo": "2",
-            "alpha": "b"
-          }, {
-            "alpha": "a",
-            "foo": "1"
-          }],
-          "zed": "do not include"
-        }"""
-      )
+    elide( data, "bars" ) shouldBe parse(
+      """{
+        "bars": [{
+          "alpha": "c",
+          "foo": "3"
+        }, {
+          "foo": "2",
+          "alpha": "b"
+        }, {
+          "alpha": "a",
+          "foo": "1"
+        }]
+      }"""
+    )
 
-      elide( data, "bars" ) must_== parse(
-        """{
-          "bars": [{
-            "alpha": "c",
-            "foo": "3"
-          }, {
-            "foo": "2",
-            "alpha": "b"
-          }, {
-            "alpha": "a",
-            "foo": "1"
-          }]
-        }"""
-      )
+    ( elide( data, "bars+sort=foo" ) \ "bars" ) shouldBe parse( 
+      """{
+        "bars": [{
+          "alpha": "a",
+          "foo": "1"
+        }, {
+          "foo": "2",
+          "alpha": "b"
+        }, {
+          "alpha": "c",
+          "foo": "3"
+        }]
+      }"""
+    ) \ "bars"
 
-      ( elide( data, "bars+sort-desc=foo" ) \ "bars" ) must_== parse(
-        """{
-          "bars": [{
-            "alpha": "c",
-            "foo": "3"
-          }, {
-            "foo": "2",
-            "alpha": "b"
-          }, {
-            "alpha": "a",
-            "foo": "1"
-          }]
-        }"""
-      ) \ "bars"
+    ( elide( data, "bars+sort=foo:alpha" ) \ "bars" ) shouldBe parse( 
+      """{ "bars": [{ "alpha": "a" }, { "alpha": "b" }, { "alpha": "c" }] }"""
+    ) \ "bars"
+  }
 
-      ( elide( data, "bars+sort-desc=foo:alpha" ) \ "bars" ) must_== parse(
-        """{
-          "bars": [{
-            "alpha": "c"
-          }, {
-            "alpha": "b"
-          }, {
-            "alpha": "a"
-          }]
-        }"""
-      ) \ "bars"
-    }
+  it should "simple filter and sort-desc" in {
+    val data = parse(
+      """{
+        "bars": [{
+          "alpha": "c",
+          "foo": "3"
+        }, {
+          "foo": "2",
+          "alpha": "b"
+        }, {
+          "alpha": "a",
+          "foo": "1"
+        }],
+        "zed": "do not include"
+      }"""
+    )
 
-    "filter nested" in {
-      elide( myers, "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)" ) must_== parse(
-        """{
-          "person": { "name": { "family": "Myers", "given": "Michael" } },
-          "report": {
-            "offenders": [
-              {
-                "offensesByDegree": [{
-                  "Other": [{
-                    "description": "POS ALCOHOL IN STATE PARK",
-                    "date": "2004-07-08"
-                  }]
+    elide( data, "bars" ) shouldBe parse(
+      """{
+        "bars": [{
+          "alpha": "c",
+          "foo": "3"
+        }, {
+          "foo": "2",
+          "alpha": "b"
+        }, {
+          "alpha": "a",
+          "foo": "1"
+        }]
+      }"""
+    )
+
+    ( elide( data, "bars+sort-desc=foo" ) \ "bars" ) shouldBe parse(
+      """{
+        "bars": [{
+          "alpha": "c",
+          "foo": "3"
+        }, {
+          "foo": "2",
+          "alpha": "b"
+        }, {
+          "alpha": "a",
+          "foo": "1"
+        }]
+      }"""
+    ) \ "bars"
+
+    ( elide( data, "bars+sort-desc=foo:alpha" ) \ "bars" ) shouldBe parse(
+      """{
+        "bars": [{
+          "alpha": "c"
+        }, {
+          "alpha": "b"
+        }, {
+          "alpha": "a"
+        }]
+      }"""
+    ) \ "bars"
+  }
+
+  it should "filter nested" in {
+    elide( myers, "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)" ) shouldBe parse(
+      """{
+        "person": { "name": { "family": "Myers", "given": "Michael" } },
+        "report": {
+          "offenders": [
+            {
+              "offensesByDegree": [{
+                "Other": [{
+                  "description": "POS ALCOHOL IN STATE PARK",
+                  "date": "2004-07-08"
                 }]
-              },
-              {
-                "offensesByDegree": [{
-                  "Other": [{
-                    "description": "POSS MARIJUANA >1/2 TO 1 1/2 OZ",
-                    "date": "2005-10-09"
-                  }]
+              }]
+            },
+            {
+              "offensesByDegree": [{
+                "Other": [{
+                  "description": "POSS MARIJUANA >1/2 TO 1 1/2 OZ",
+                  "date": "2005-10-09"
                 }]
-              },
-              {
-                "offensesByDegree": [{
-                  "Other": [{
-                    "description": "OBT/ATT OBT ALC FALSE DL",
-                    "date": "2006-01-13"
-                  }]
+              }]
+            },
+            {
+              "offensesByDegree": [{
+                "Other": [{
+                  "description": "OBT/ATT OBT ALC FALSE DL",
+                  "date": "2006-01-13"
                 }]
-              },
-              {
-                "offensesByDegree": [{
-                  "Other": [{
-                    "description": "FAILURE TO BURN HEADLAMPS",
-                    "date": "2004-06-06"
-                  }, {
-                    "description": "DRIVE AFTER CONSUMING < 21",
-                    "date": "2004-06-06"
-                  }]
+              }]
+            },
+            {
+              "offensesByDegree": [{
+                "Other": [{
+                  "description": "FAILURE TO BURN HEADLAMPS",
+                  "date": "2004-06-06"
+                }, {
+                  "description": "DRIVE AFTER CONSUMING < 21",
+                  "date": "2004-06-06"
                 }]
-              }
-            ]
-          }
-        }"""
-      )
-    }
+              }]
+            }
+          ]
+        }
+      }"""
+    )
   }
 }
 
