@@ -4,7 +4,7 @@ import scala.util._
 
 
 package object commons {
-  type V[A] = scalaz.ValidationNel[Throwable, A]
+  type V[A] = scalaz.ValidationNel[Throwable, A] //todo: why did scalaz get rid of error's covariance from 7.1.x to 7.2?
 
   def flatten[T]( xs: Seq[Try[T]] ): Try[Seq[T]] = {
     val ( ss: Seq[Success[T]]@unchecked, fs: Seq[Failure[T]]@unchecked ) = xs.partition(_.isSuccess)

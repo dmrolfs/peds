@@ -14,8 +14,8 @@ package object math {
     }
     
     def checkDimensions( xs: Array[Double], ys: Array[Double] ): V[(Array[Double], Array[Double])] = {
-      if ( xs.size < 2 ) NumberIsTooSmallError( xs ).asInstanceOf[Throwable].failureNel[(Array[Double], Array[Double])]
-      else if ( xs.size != ys.size ) MismatchedDimensionsError( xs, ys ).asInstanceOf[Throwable].failureNel[(Array[Double], Array[Double])]
+      if ( xs.size < 2 ) Validation.failureNel( NumberIsTooSmallError(xs) )
+      else if ( xs.size != ys.size ) Validation.failureNel( MismatchedDimensionsError(xs, ys) )
       else ( xs, ys ).successNel
     }
 
