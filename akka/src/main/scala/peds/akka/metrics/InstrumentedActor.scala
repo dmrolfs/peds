@@ -18,21 +18,21 @@ trait InstrumentedActor
 
 
 trait ReceiveCounterActor extends Actor with ActorStack { outer: InstrumentedBuilder =>
-  def receiveCounterName: String = MetricName( getClass ).append( "receiveCounter" ).name
+  def receiveCounterName: String = "receiveCounter"
   lazy val counter: Counter = metrics counter receiveCounterName
   override def around( r: Receive ): Receive = counter.count( super.around(r) )
 }
 
 
 trait ReceiveTimerActor extends Actor with ActorStack { outer: InstrumentedBuilder =>
-  def receiveTimerName: String = MetricName( getClass ).append( "receiveTimer" ).name
+  def receiveTimerName: String = "receiveTimer"
   lazy val timer: Timer = metrics timer receiveTimerName
   override def around( r: Receive ): Receive = timer.timePF( super.around(r) )
 }
 
 
 trait ReceiveExceptionMeterActor extends Actor with ActorStack { outer: InstrumentedBuilder =>
-  def receiveExceptionMeterName: String = MetricName( getClass ).append( "receiveExceptionMeter" ).name
+  def receiveExceptionMeterName: String = "receiveExceptionMeter"
   lazy val meter: Meter = metrics.meter( receiveExceptionMeterName )
 
   import scala.language.reflectiveCalls
