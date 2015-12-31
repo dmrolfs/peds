@@ -39,8 +39,8 @@ object Dependencies {
   val jodaConvert = "org.joda" % "joda-convert" % "1.8"
 
   val betterFiles = "com.github.pathikrit" %% "better-files" % "2.14.0"
-  val metricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.1.0"
-  val metricsGraphite = "io.dropwizard.metrics" % "metrics-graphite" % "3.1.0"
+  val metricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
+  val metricsGraphite = "io.dropwizard.metrics" % "metrics-graphite" % "3.1.2"
   val metricsScala = "nl.grons" %% "metrics-scala" % "3.5.2_a2.3"
 
   val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.6.0"

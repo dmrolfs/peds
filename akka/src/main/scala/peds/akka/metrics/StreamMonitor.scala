@@ -2,7 +2,6 @@ package peds.akka.metrics
 
 import akka.stream.scaladsl.Flow
 import com.typesafe.scalalogging.{ Logger, StrictLogging }
-import com.codahale.metrics.Metric
 import nl.grons.metrics.scala.{ Counter, MetricName }
 import org.slf4j.LoggerFactory
 import peds.commons.util._
