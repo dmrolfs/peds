@@ -1,10 +1,12 @@
 package peds
 
 import scala.util._
+import scalaz.{ NonEmptyList, \/, ValidationNel }
 
 
 package object commons {
-  type V[A] = scalaz.ValidationNel[Throwable, A] //todo: why did scalaz get rid of error's covariance from 7.1.x to 7.2?
+  type V[A] = ValidationNel[Throwable, A] //todo: why did scalaz get rid of error's covariance from 7.1.x to 7.2?
+  type Valid[T] = \/[NonEmptyList[Throwable], T]
 
   def flatten[T]( xs: Seq[Try[T]] ): Try[Seq[T]] = {
     val ( ss: Seq[Success[T]]@unchecked, fs: Seq[Failure[T]]@unchecked ) = xs.partition(_.isSuccess)
