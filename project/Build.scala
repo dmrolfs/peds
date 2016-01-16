@@ -9,11 +9,10 @@ object Build extends Build {
 
   lazy val root = Project( "root", file( "." ) )
     .aggregate( commons, akka, archetype )
-    .settings( basicSettings: _* )
-    .settings( noPublishing: _* )
+    .settings( basicSettings ++ doNotPublishSettings: _* )
 
   lazy val commons = Project( "peds-commons", file( "commons" ) )
-    .settings( moduleSettings: _* )
+    .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
       compile( "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" ) ++
       compile( config ) ++
@@ -34,7 +33,7 @@ object Build extends Build {
 
   lazy val akka = Project( "peds-akka", file( "akka" ) )
     .dependsOn( commons )
-    .settings( moduleSettings: _* )
+    .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
       compile( akkaActor ) ++
@@ -52,7 +51,7 @@ object Build extends Build {
 
   lazy val archetype = Project( "peds-archetype", file( "archetype" ) )
     .dependsOn( commons )
-    .settings( moduleSettings: _* )
+    .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
       compile( eaio ) ++
