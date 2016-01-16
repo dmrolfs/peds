@@ -1,9 +1,10 @@
-package peds.akka.metrics
+package peds.akka.stream
 
 import akka.stream.scaladsl.Flow
-import com.typesafe.scalalogging.{ Logger, StrictLogging }
-import nl.grons.metrics.scala.{ Counter, MetricName }
 import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.{ Logger, StrictLogging }
+import nl.grons.metrics.scala.{ Meter, MetricName }
+import peds.akka.metrics.Instrumented
 import peds.commons.util._
 
 
@@ -12,7 +13,7 @@ import peds.commons.util._
   */
 trait StreamMonitor extends Instrumented {
   def label: Symbol
-  def metric: Counter
+  def meter: Meter
   def count: Long
   def enter: Long
   def exit: Long
@@ -54,6 +55,13 @@ trait StreamMonitor extends Instrumented {
 }
 
 object StreamMonitor extends StrictLogging { outer =>
+  implicit class MakeFlowMonitor[I, O]( val underlying: Flow[I, O, Unit] ) extends AnyVal {
+    def watchFlow( label: Symbol ): Flow[I, O, Unit] = outer.flow( label ).watch( underlying )
+    def watchSourced( label: Symbol ): Flow[I, O, Unit] = outer.source( label ).watch( underlying )
+    def watchConsumed( label: Symbol ): Flow[I, O, Unit] = outer.sink( label ).watch( underlying )
+  }
+
+
   def set( labels: Symbol* ): Unit = {
     tracked = labels filter { all contains _ }
     logger info csvHeader( tracked )
@@ -103,39 +111,36 @@ object StreamMonitor extends StrictLogging { outer =>
   }
 
 
-  final case class SourceMonitor private[metrics]( override val label: Symbol ) extends StreamMonitor {
-    val Suffix: String = ".sourced.counts"
-    override val metric: Counter = metrics.counter( label.name + Suffix )
-    override def count: Long = metric.count
+  final case class SourceMonitor private[stream]( override val label: Symbol ) extends StreamMonitor {
+    override lazy val meter: Meter = metrics.meter( label.name + ".source" )
+    override def count: Long = meter.count
     override def enter: Long = count
     override def exit: Long = {
-      metric.inc()
+      meter.mark()
       count
     }
     override def toString: String = f"""${label.name}[${count}>]"""
   }
 
-  final case class FlowMonitor private[metrics]( override val label: Symbol ) extends StreamMonitor {
-    val Suffix: String = ".in-flow.counts"
-    override val metric: Counter = metrics.counter( label.name + Suffix )
-    override def count: Long = metric.count
+  final case class FlowMonitor private[stream]( override val label: Symbol ) extends StreamMonitor {
+    override lazy val meter: Meter = metrics.meter( label.name + ".flow" )
+    override def count: Long = meter.count
     override def enter: Long = {
-      metric.inc()
+      meter.mark()
       count
     }
     override def exit: Long = {
-      metric.dec()
+      meter.mark( -1 )
       count
     }
     override def toString: String = f"""${label.name}[>${count}>]"""
   }
 
-  final case class SinkMonitor private[metrics]( override val label: Symbol ) extends StreamMonitor {
-    val Suffix: String = ".consumed.counts"
-    override val metric: Counter = metrics.counter( label.name + Suffix )
-    override def count: Long = metric.count
+  final case class SinkMonitor private[stream]( override val label: Symbol ) extends StreamMonitor {
+    override lazy val meter: Meter = metrics.meter( label.name + ".consumed" )
+    override def count: Long = meter.count
     override def enter: Long = {
-      metric.inc()
+      meter.mark()
       count
     }
     override def exit: Long = count
@@ -144,7 +149,7 @@ object StreamMonitor extends StrictLogging { outer =>
 
   final case object SilentMonitor extends StreamMonitor {
     override val label: Symbol = 'silent
-    override val metric: Counter = metrics.counter( label.name )
+    override lazy val meter: Meter = metrics.meter( label.name )
     override val count: Long = 0L
     override val enter: Long = 0L
     override val exit: Long = 0L
