@@ -2,7 +2,7 @@ package peds.akka.metrics
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
-import better.files.File
+import better.files._
 import com.codahale.metrics.{ Reporter => CReporter, CsvReporter, MetricFilter, MetricRegistry }
 import com.codahale.metrics.graphite.{ PickledGraphite, GraphiteReporter }
 import com.typesafe.config.{ Config, ConfigFactory }
@@ -26,7 +26,7 @@ object Reporter extends LazyLogging {
       val graphitePort = if ( config hasPath "graphite.port" ) config getInt "graphite.port" else 2004
       Some( makeGraphiteReporter(graphiteHost, graphitePort) )
     } else if ( config hasPath "csv.dir" ) {
-      logger warn s"""METRICS FILE: ${config.getString("csv.dir")}"""
+      val path = File( config getString "csv.dir" ).createIfNotExists( asDirectory = true )
 
       Some(
         CsvReporter
@@ -34,7 +34,7 @@ object Reporter extends LazyLogging {
         .convertRatesTo( TimeUnit.SECONDS )
         .convertDurationsTo( TimeUnit.MILLISECONDS )
         .filter( MetricFilter.ALL )
-        .build( File(config getString "csv.dir").toJava )
+        .build( path.toJava )
       )
     } else {
       None
