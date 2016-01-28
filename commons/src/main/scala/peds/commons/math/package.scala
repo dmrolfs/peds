@@ -9,11 +9,11 @@ package object math {
   type Interpolator = (Double) => Double
 
   object Interpolator {
-    def apply( xs: Array[Double], ys: Array[Double] ): V[Interpolator]= {
+    def apply( xs: Array[Double], ys: Array[Double] ): Valid[Interpolator]= {
       checkDimensions( xs, ys ) map { case (x, y) => if ( x.size < 3 ) linearInterpolator(x, y) else splineInterpolator(x, y) }
     }
     
-    def checkDimensions( xs: Array[Double], ys: Array[Double] ): V[(Array[Double], Array[Double])] = {
+    def checkDimensions( xs: Array[Double], ys: Array[Double] ): Valid[(Array[Double], Array[Double])] = {
       if ( xs.size < 2 ) Validation.failureNel( NumberIsTooSmallError(xs) )
       else if ( xs.size != ys.size ) Validation.failureNel( MismatchedDimensionsError(xs, ys) )
       else ( xs, ys ).successNel
