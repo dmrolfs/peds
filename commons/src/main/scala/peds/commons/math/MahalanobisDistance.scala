@@ -4,7 +4,7 @@ import scalaz._, Scalaz._
 import org.apache.commons.math3.linear.{ LUDecomposition, RealMatrix, MatrixUtils }
 import org.apache.commons.math3.ml.distance.DistanceMeasure
 import org.apache.commons.math3.stat.correlation.Covariance
-import peds.commons.V
+import peds.commons.Valid
 
 
 /**
@@ -30,30 +30,31 @@ trait MahalanobisDistance extends DistanceMeasure {
 }
 
 object MahalanobisDistance {
-  def fromCovariance( covariance: RealMatrix ): V[MahalanobisDistance] = {
-    checkDimension( covariance ) map { c =>
-      SimpleMahalanobisDistance( dimension = covariance.getRowDimension, covariance = covariance )
+  def fromCovariance( covariance: RealMatrix ): Valid[MahalanobisDistance] = {
+    checkCovarianceMatrixDimension( covariance ) map { cov =>
+      SimpleMahalanobisDistance( dimension = cov.getRowDimension, covariance = cov )
     }
   }
 
-  def fromPoints( group: RealMatrix ): V[MahalanobisDistance] = {
-    checkDimension( group ) map { g =>
-      SimpleMahalanobisDistance( dimension = g.getRowDimension, covariance = new Covariance( g ).getCovarianceMatrix )
-    }
+  def fromPoints( group: RealMatrix ): Valid[MahalanobisDistance] = {
+    checkCovariance( group ) map { cov => SimpleMahalanobisDistance( dimension = group.getColumnDimension, covariance = cov ) }
   }
 
-  def checkDimension( square: RealMatrix ): V[RealMatrix] = {
-    if ( square.getRowDimension == square.getColumnDimension ) square.right
+  def checkCovarianceMatrixDimension( square: RealMatrix ): Valid[RealMatrix] = {
+    if ( square.getRowDimension == square.getColumnDimension ) square.successNel
     else {
-      NonEmptyList[Throwable](
+      Validation.failureNel(
         new IllegalArgumentException(
           s"matrix must be square: Row Dimension [${square.getRowDimension}] " +
           s"not equal to Column Dimension [${square.getColumnDimension}]"
         )
-      ).left
+      )
     }
   }
 
+  def checkCovariance( group: RealMatrix ): Valid[RealMatrix] = {
+    Validation.fromTryCatchNonFatal{ new Covariance( group ).getCovarianceMatrix }.toValidationNel
+  }
 
   final case class SimpleMahalanobisDistance private[math](
     override val dimension: Int,
