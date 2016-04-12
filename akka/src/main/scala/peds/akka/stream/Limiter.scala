@@ -1,14 +1,13 @@
 package peds.akka.stream
 
-import akka.event.LoggingReceive
-import akka.stream.scaladsl.Flow
-import peds.akka.metrics.InstrumentedActor
-
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
-import akka.actor.{ActorLogging, ActorRef, Actor, Props}
-
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.event.LoggingReceive
+import akka.stream.scaladsl.Flow
+import nl.grons.metrics.scala.MetricName
+import peds.akka.metrics.InstrumentedActor
 
 
 /**
@@ -17,7 +16,7 @@ import akka.actor.{ActorLogging, ActorRef, Actor, Props}
   */
 object Limiter {
   def props( maxAvailableTokens: Int, tokenRefreshPeriod: FiniteDuration, tokenRefreshAmount: Int ): Props = {
-    Props( new Limiter(maxAvailableTokens, tokenRefreshPeriod, tokenRefreshAmount) )
+    Props( new Limiter(maxAvailableTokens, tokenRefreshPeriod, tokenRefreshAmount) with ConfigurationProvider )
   }
 
   def limitGlobal[T]( limiter: ActorRef, maxAllowedWait: FiniteDuration )( implicit ec: ExecutionContext ): Flow[T, T, Unit] = {
@@ -37,16 +36,22 @@ object Limiter {
   case object MayPass extends LimiterProtocol
   case object ReplenishTokens extends LimiterProtocol
 
+
+  trait ConfigurationProvider {
+    def metricNameRoot: String = ""
+  }
 }
 
 class Limiter(
   val maxAvailableTokens: Int,
   val tokenRefreshPeriod: FiniteDuration,
   val tokenRefreshAmount: Int
-) extends Actor with InstrumentedActor with ActorLogging {
+) extends Actor with InstrumentedActor with ActorLogging { outer: Limiter.ConfigurationProvider =>
   import Limiter._
   import context.dispatcher
   import akka.actor.Status
+
+  override lazy val metricBaseName: MetricName = MetricName( outer.metricBaseName + classOf[Limiter].getName )
 
   private var waitQueue = immutable.Queue.empty[ActorRef]
   private var permitTokens = maxAvailableTokens
