@@ -51,7 +51,7 @@ class Limiter(
   import context.dispatcher
   import akka.actor.Status
 
-  override lazy val metricBaseName: MetricName = MetricName( outer.metricBaseName + classOf[Limiter].getName )
+  override lazy val metricBaseName: MetricName = MetricName( outer.metricNameRoot + classOf[Limiter].getName )
 
   private var waitQueue = immutable.Queue.empty[ActorRef]
   private var permitTokens = maxAvailableTokens
