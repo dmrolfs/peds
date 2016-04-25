@@ -62,6 +62,13 @@ object StreamMonitor extends StrictLogging { outer =>
   }
 
 
+  def add( label: Symbol ): Unit = {
+    if ( all contains label ) {
+      tracked +:= label
+      logger info csvHeader( tracked )
+    }
+  }
+
   def set( labels: Symbol* ): Unit = {
     tracked = labels filter { all contains _ }
     logger info csvHeader( tracked )
@@ -107,7 +114,7 @@ object StreamMonitor extends StrictLogging { outer =>
   //todo could incorporate header and line into type class for different formats
   private def csvHeader( labels: Seq[Symbol] ): String = labels map { _.name } mkString ","
   private def csvLine( labels: Seq[Symbol], ms: Map[Symbol, StreamMonitor] ): String = {
-    labels.map{ ms get _ }.flatten.map{_.count }.mkString( "," )
+    labels.map{ l => ms.get(l).map{ m => s"${l.name}:${m.count}"} }.flatten.mkString( ", " )
   }
 
 
