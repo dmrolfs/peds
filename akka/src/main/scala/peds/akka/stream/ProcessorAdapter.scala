@@ -14,32 +14,9 @@ import peds.akka.metrics.InstrumentedActor
   * Created by rolfsd on 4/2/16.
   */
 object ProcessorAdapter {
-  def processorGraph[I, O](
-    adapterPropsFromPublisher: ActorRef => Props,
-    publisherProps: Props
-  )(
-    implicit system: ActorSystem,
-    materializer: Materializer
-  ): Graph[FlowShape[I, O], Unit] = {
-    GraphDSL.create() { implicit b =>
-      import GraphDSL.Implicits._
-
-      val ( publisherRef, publisher ) = {
-        Source.actorPublisher[O]( publisherProps ).toMat( Sink.asPublisher(false) )( Keep.both ).run()
-      }
-
-      val processorPublisher = b.add( Source fromPublisher[O] publisher )
-      val egress = b.add( Flow[O] map { identity } )
-
-      processorPublisher ~> egress
-
-      val adapter = b.add( Sink actorSubscriber[I] adapterPropsFromPublisher( publisherRef ) )
-      FlowShape( adapter.in, egress.out )
-    }
-  }
-
   def fixedProcessorFlow[I, O: ClassTag](
-    maxInFlight: Int
+    maxInFlight: Int,
+    label: Symbol
   )(
     workerPF: PartialFunction[Any, ActorRef]
   )(
@@ -49,15 +26,17 @@ object ProcessorAdapter {
     val publisherProps = ProcessorPublisher.props[O]
     val g = processorGraph[I, O](
       adapterPropsFromPublisher = ( publisher: ActorRef ) => { ProcessorAdapter.fixedProps( maxInFlight, publisher )( workerPF ) },
-      publisherProps = publisherProps
+      publisherProps = publisherProps,
+      label = label
     )
 
     import StreamMonitor._
-    Flow.fromGraph( g ).watchFlow( ProcessorAdapter.WatchPoints.Processor )
+    Flow.fromGraph( g ).watchFlow( label )
   }
 
   def elasticProcessorFlow[I, O: ClassTag](
-    maxInFlightCpuFactor: Double
+    maxInFlightCpuFactor: Double,
+    label: Symbol
   )(
     workerPF: PartialFunction[Any, ActorRef]
   )(
@@ -69,12 +48,44 @@ object ProcessorAdapter {
       adapterPropsFromPublisher = (publisher: ActorRef) => {
         ProcessorAdapter.elasticProps( maxInFlightCpuFactor, publisher )( workerPF )
       },
-      publisherProps = publisherProps
+      publisherProps = publisherProps,
+      label = label
     )
 
     import StreamMonitor._
-    Flow.fromGraph( g ).watchFlow( ProcessorAdapter.WatchPoints.Processor )
+    Flow.fromGraph( g ).watchFlow( label )
   }
+
+  def processorGraph[I, O](
+    adapterPropsFromPublisher: ActorRef => Props,
+    publisherProps: Props,
+    label: Symbol
+  )(
+    implicit system: ActorSystem,
+    materializer: Materializer
+  ): Graph[FlowShape[I, O], Unit] = {
+    GraphDSL.create() { implicit b =>
+      import GraphDSL.Implicits._
+
+      val ( publisherRef, publisher ) = {
+        Source.actorPublisher[O]( publisherProps ).named( s"${label.name}-processor-egress" )
+        .toMat( Sink.asPublisher(false) )( Keep.both )
+        .run()
+      }
+
+      val processorPublisher = b.add( Source fromPublisher[O] publisher )
+      val egress = b.add( Flow[O] map { identity } )
+
+      processorPublisher ~> egress
+
+      val adapter = b.add(
+        Sink.actorSubscriber[I]( adapterPropsFromPublisher( publisherRef ) ).named( s"${label.name}-processor-ingress")
+      )
+
+      FlowShape( adapter.in, egress.out )
+    }
+  }
+
 
   def fixedProps( maxInFlightMessages: Int, publisher: ActorRef )( workerPF: PartialFunction[Any, ActorRef] ): Props = {
     Props(
@@ -99,10 +110,6 @@ object ProcessorAdapter {
         override def destinationPublisher( implicit ctx: ActorContext ): ActorRef = publisher
       }
     )
-  }
-
-  object WatchPoints {
-    val Processor = Symbol( "processor" )
   }
 
 

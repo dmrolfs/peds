@@ -3,11 +3,10 @@ package peds.akka.stream
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
-import akka.actor.SupervisorStrategy.{Escalate, Restart, Stop}
 import akka.actor._
 import akka.event.LoggingReceive
 import akka.stream.actor.{ActorPublisher, ActorPublisherMessage, ActorSubscriberMessage}
-import nl.grons.metrics.scala.{Meter, MetricName}
+import nl.grons.metrics.scala.MetricName
 import peds.akka.metrics.InstrumentedActor
 
 
@@ -15,36 +14,24 @@ import peds.akka.metrics.InstrumentedActor
   * Created by rolfsd on 3/30/16.
   */
 object ProcessorPublisher {
-  def props[O: ClassTag]: Props = Props( new ProcessorPublisher[O] with StreamConfigurationProvider )
-
-
-  trait StreamConfigurationProvider {
-    def conductorMaxNrOfRetries: Int = 5
-    def conductorRetriesWithinTimeRange: Duration = 2.minutes
-  }
+  def props[O: ClassTag]: Props = Props( new ProcessorPublisher[O] )
 }
 
 class ProcessorPublisher[O: ClassTag]
 extends Actor
 with ActorPublisher[O]
 with InstrumentedActor
-with ActorLogging { outer: ProcessorPublisher.StreamConfigurationProvider =>
+with ActorLogging {
   val oTag = implicitly[ClassTag[O]]
   log.debug( "Publisher oTag = {}", oTag )
   var buffer: Vector[O] = Vector.empty[O]
 
 
   override lazy val metricBaseName: MetricName = MetricName( classOf[ProcessorPublisher[O]] )
-  val conductorFailuresMeter: Meter = metrics.meter( "conductor.failures" )
 
-//  override def receive: Receive = LoggingReceive { around( publish ) }
-  override def receive: Receive = LoggingReceive { publish }
+  override val subscriptionTimeout: Duration = 5.seconds
 
-
-  override val subscriptionTimeout: Duration = {
-    log.debug( "SUBSCRIPTION_TIMEOUT called" )
-    5.seconds
-  }
+  override def receive: Receive = LoggingReceive { around( publish ) }
 
   val publish: Receive = {
     case oTag( message ) if isActive => {
@@ -65,6 +52,8 @@ with ActorLogging { outer: ProcessorPublisher.StreamConfigurationProvider =>
       }
     }
 
+    case oTag( message ) => log.info( "ignoring received message [{}]: [{}] while not active", oTag, message )
+
     case ActorSubscriberMessage.OnComplete => {
       deliverBuffer()
       onComplete()
@@ -82,7 +71,7 @@ with ActorLogging { outer: ProcessorPublisher.StreamConfigurationProvider =>
       context stop self
     }
 
-//    case m => unhandled( m )
+    case m => log.error( "received not tag[{}] but UNKNOWN message: [{}]", oTag, m )
   }
 
 
@@ -100,24 +89,6 @@ with ActorLogging { outer: ProcessorPublisher.StreamConfigurationProvider =>
         buffer = keep
         deliverBuffer()
       }
-    }
-  }
-
-  override final val supervisorStrategy: SupervisorStrategy = {
-    OneForOneStrategy(
-      maxNrOfRetries = outer.conductorMaxNrOfRetries,
-      withinTimeRange = outer.conductorRetriesWithinTimeRange
-    ) {
-      case _: ActorInitializationException => Stop
-
-      case _: ActorKilledException => Stop
-
-      case _: Exception => {
-        conductorFailuresMeter.mark( )
-        Restart
-      }
-
-      case _ => Escalate
     }
   }
 }
