@@ -1,9 +1,11 @@
 package peds.akka.stream
 
+import akka.NotUsed
+
 import scala.reflect.ClassTag
 import akka.actor.{ActorContext, ActorLogging, ActorRef, ActorSystem, Props, Terminated}
 import akka.event.LoggingReceive
-import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, MaxInFlightRequestStrategy, RequestStrategy}
+import akka.stream.actor._
 import akka.stream.scaladsl._
 import akka.stream.{FlowShape, Graph, Materializer}
 import nl.grons.metrics.scala.{Meter, MetricName}
@@ -22,7 +24,7 @@ object ProcessorAdapter {
   )(
     implicit system: ActorSystem,
     materializer: Materializer
-  ): Flow[I, O, Unit] = {
+  ): Flow[I, O, NotUsed] = {
     val publisherProps = ProcessorPublisher.props[O]
     val g = processorGraph[I, O](
       adapterPropsFromPublisher = ( publisher: ActorRef ) => { ProcessorAdapter.fixedProps( maxInFlight, publisher )( workerPF ) },
@@ -42,7 +44,7 @@ object ProcessorAdapter {
   )(
     implicit system: ActorSystem,
     materializer: Materializer
-  ): Flow[I, O, Unit] = {
+  ): Flow[I, O, NotUsed] = {
     val publisherProps = ProcessorPublisher.props[O]
     val g = processorGraph[I, O](
       adapterPropsFromPublisher = (publisher: ActorRef) => {
@@ -63,7 +65,7 @@ object ProcessorAdapter {
   )(
     implicit system: ActorSystem,
     materializer: Materializer
-  ): Graph[FlowShape[I, O], Unit] = {
+  ): Graph[FlowShape[I, O], NotUsed] = {
     GraphDSL.create() { implicit b =>
       import GraphDSL.Implicits._
 
@@ -133,25 +135,19 @@ class ProcessorAdapter extends ActorSubscriber with InstrumentedActor with Actor
 
   override lazy val metricBaseName: MetricName = MetricName( classOf[ProcessorAdapter] )
   val submissionMeter: Meter = metrics meter "submission"
-  val reportMeter: Meter = metrics meter "report"
-
-  var outstanding: Int = 0
 
   override protected def requestStrategy: RequestStrategy = {
-    new MaxInFlightRequestStrategy( max = outer.maxInFlight ) {
-      override def inFlightInternally: Int = outstanding
-    }
+    new WatermarkRequestStrategy( highWatermark = (Runtime.getRuntime.availableProcessors() * outer.maxInFlightCpuFactor).toInt )
   }
 
-  override def receive: Receive = LoggingReceive { around( subscriber orElse publish ) }
+  override def receive: Receive = LoggingReceive { around( withSubscriber(outer.destinationPublisher) ) }
 
-  val subscriber: Receive = {
+  def withSubscriber( subscriber: ActorRef ): Receive = {
     case next @ ActorSubscriberMessage.OnNext( message ) if outer.workerFor.isDefinedAt( message ) => {
       submissionMeter.mark()
-      outstanding += 1
       val worker = outer workerFor message
       context watch worker
-      worker ! message
+      worker.tell( message, subscriber )
     }
 
     case ActorSubscriberMessage.OnComplete => outer.destinationPublisher ! ActorSubscriberMessage.OnComplete
@@ -160,17 +156,8 @@ class ProcessorAdapter extends ActorSubscriber with InstrumentedActor with Actor
 
     case Terminated( deadWorker ) => {
       log.error( "Flow Processor notified of worker death: [{}]", deadWorker )
-
       //todo is this response appropriate for spotlight and generally?
-      outer.destinationPublisher ! ActorSubscriberMessage.OnError( ProcessorAdapter.DeadWorkerError(deadWorker) )
-    }
-  }
-
-  val publish: Receive = {
-    case message => {
-      reportMeter.mark()
-      outstanding -= 1
-      outer.destinationPublisher ! message
+//      outer.destinationPublisher ! ActorSubscriberMessage.OnError( ProcessorAdapter.DeadWorkerError(deadWorker) )
     }
   }
 }

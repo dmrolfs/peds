@@ -1,5 +1,7 @@
 package peds.akka.stream
 
+import akka.NotUsed
+
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -19,7 +21,12 @@ object Limiter {
     Props( new Limiter(maxAvailableTokens, tokenRefreshPeriod, tokenRefreshAmount) with ConfigurationProvider )
   }
 
-  def limitGlobal[T]( limiter: ActorRef, maxAllowedWait: FiniteDuration )( implicit ec: ExecutionContext ): Flow[T, T, Unit] = {
+  def limitGlobal[T](
+    limiter: ActorRef,
+    maxAllowedWait: FiniteDuration
+  )(
+    implicit ec: ExecutionContext
+  ): Flow[T, T, NotUsed] = {
     import akka.pattern.ask
     import akka.util.Timeout
 

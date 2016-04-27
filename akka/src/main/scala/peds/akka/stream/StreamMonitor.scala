@@ -1,9 +1,10 @@
 package peds.akka.stream
 
+import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import org.slf4j.LoggerFactory
-import com.typesafe.scalalogging.{ Logger, StrictLogging }
-import nl.grons.metrics.scala.{ Meter, MetricName }
+import com.typesafe.scalalogging.{Logger, StrictLogging}
+import nl.grons.metrics.scala.{Meter, MetricName}
 import peds.akka.metrics.Instrumented
 import peds.commons.util._
 
@@ -18,7 +19,7 @@ trait StreamMonitor extends Instrumented {
   def enter: Long
   def exit: Long
 
-  def watch[I, O]( flow: Flow[I, O, Unit] ): Flow[I, O, Unit] = {
+  def watch[I, O]( flow: Flow[I, O, NotUsed] ): Flow[I, O, NotUsed] = {
     Flow[I]
     .map { e =>
       if ( StreamMonitor.isEnabled ) {
@@ -55,10 +56,10 @@ trait StreamMonitor extends Instrumented {
 }
 
 object StreamMonitor extends StrictLogging { outer =>
-  implicit class MakeFlowMonitor[I, O]( val underlying: Flow[I, O, Unit] ) extends AnyVal {
-    def watchFlow( label: Symbol ): Flow[I, O, Unit] = outer.flow( label ).watch( underlying )
-    def watchSourced( label: Symbol ): Flow[I, O, Unit] = outer.source( label ).watch( underlying )
-    def watchConsumed( label: Symbol ): Flow[I, O, Unit] = outer.sink( label ).watch( underlying )
+  implicit class MakeFlowMonitor[I, O]( val underlying: Flow[I, O, NotUsed] ) extends AnyVal {
+    def watchFlow( label: Symbol ): Flow[I, O, NotUsed] = outer.flow( label ).watch( underlying )
+    def watchSourced( label: Symbol ): Flow[I, O, NotUsed] = outer.source( label ).watch( underlying )
+    def watchConsumed( label: Symbol ): Flow[I, O, NotUsed] = outer.sink( label ).watch( underlying )
   }
 
 

@@ -15,7 +15,7 @@ object Dependencies {
   def runtime( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "runtime" )
   def container( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "container" )
 
-  val akkaVersion = "2.4.1"
+  val akkaVersion = "2.4.4"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
@@ -23,7 +23,7 @@ object Dependencies {
   val akkaPersistence = akkaModule( "akka-persistence" )
   val akkaSlf4j = akkaModule( "akka-slf4j" )
   val akkaTestKit = akkaModule( "akka-testkit" )
-  val akkaStreams = "com.typesafe.akka" % "akka-stream-experimental_2.11" % "2.0.1"
+  val akkaStreams = akkaModule( "akka-stream" )
 
   val config = "com.typesafe" % "config" % "1.3.0"
   val eaio = "com.eaio.uuid" % "uuid" % "3.4"

@@ -1,8 +1,6 @@
 import sbt._
 import Keys._
-import CoverallsPlugin.CoverallsKeys._
-import scoverage.ScoverageSbtPlugin.instrumentSettings
-import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
+import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 
 object BuildSettings {
@@ -23,7 +21,7 @@ object BuildSettings {
     scalaVersion := "2.11.7",
     resolvers ++= Dependencies.resolutionRepos,
     resolvers += Resolver.jcenterRepo,
-    coverallsTokenFile := "~/.sbt/peds-coveralls-token.txt",
+    coverallsTokenFile := Some("~/.sbt/peds-coveralls-token.txt"),
     scalacOptions := Seq(
       "-encoding", 
       "utf8",
@@ -40,7 +38,7 @@ object BuildSettings {
     scalacOptions in Test ++= Seq("-Yrangepos")
   )
 
-  lazy val moduleSettings = basicSettings ++ instrumentSettings ++ coverallsSettings ++ Seq(
+  lazy val moduleSettings = basicSettings ++ Seq(
     version := VERSION,
     isSnapshot := true
 //    publishTo := Some( Resolver.file("file", new File( Path.userHome.absolutePath + "/jd/dev/dmrolfs.github.com/snapshots" ) ) )
