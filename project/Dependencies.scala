@@ -15,7 +15,7 @@ object Dependencies {
   def runtime( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "runtime" )
   def container( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "container" )
 
-  val akkaVersion = "2.4.4"
+  val akkaVersion = "2.4.5"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )

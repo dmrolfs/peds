@@ -17,19 +17,16 @@ object ProcessorPublisher {
   def props[O: ClassTag]: Props = Props( new ProcessorPublisher[O] )
 }
 
-class ProcessorPublisher[O: ClassTag]
-extends Actor
-with ActorPublisher[O]
-with InstrumentedActor
-with ActorLogging {
+class ProcessorPublisher[O: ClassTag] extends ActorPublisher[O] with InstrumentedActor with ActorLogging {
+  override lazy val metricBaseName: MetricName = MetricName( classOf[ProcessorPublisher[O]] )
+
+  override val subscriptionTimeout: Duration = 5.seconds
+
+
   val oTag = implicitly[ClassTag[O]]
   log.debug( "Publisher oTag = {}", oTag )
   var buffer: Vector[O] = Vector.empty[O]
 
-
-  override lazy val metricBaseName: MetricName = MetricName( classOf[ProcessorPublisher[O]] )
-
-  override val subscriptionTimeout: Duration = 5.seconds
 
   override def receive: Receive = LoggingReceive { around( publish ) }
 

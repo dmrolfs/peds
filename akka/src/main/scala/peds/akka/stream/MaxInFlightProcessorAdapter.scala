@@ -17,10 +17,10 @@ import peds.commons.collection.BloomFilter
 /**
   * Created by rolfsd on 4/2/16.
   */
-object ProcessorAdapter {
+object MaxInFlightProcessorAdapter {
   def fixedProcessorFlow[I, O: ClassTag](
-    maxInFlight: Int,
-    label: Symbol
+    name: String,
+    maxInFlight: Int
   )(
     workerPF: PartialFunction[Any, ActorRef]
   )(
@@ -29,18 +29,20 @@ object ProcessorAdapter {
   ): Flow[I, O, NotUsed] = {
     val publisherProps = ProcessorPublisher.props[O]
     val g = processorGraph[I, O](
-      adapterPropsFromPublisher = ( publisher: ActorRef ) => { ProcessorAdapter.fixedProps( maxInFlight, publisher )( workerPF ) },
-      publisherProps = publisherProps,
-      label = label
+      name = name,
+      adapterPropsFromOutlet = ( publisher: ActorRef ) => {
+        MaxInFlightProcessorAdapter.fixedProps( maxInFlight, publisher )( workerPF )
+      },
+      outletProps = publisherProps
     )
 
     import StreamMonitor._
-    Flow.fromGraph( g ).watchFlow( label )
+    Flow.fromGraph( g ).watchFlow( Symbol(name) )
   }
 
   def elasticProcessorFlow[I, O: ClassTag](
-    maxInFlightCpuFactor: Double,
-    label: Symbol
+    name: String,
+    maxInFlightCpuFactor: Double
   )(
     workerPF: PartialFunction[Any, ActorRef]
   )(
@@ -49,70 +51,63 @@ object ProcessorAdapter {
   ): Flow[I, O, NotUsed] = {
     val publisherProps = ProcessorPublisher.props[O]
     val g = processorGraph[I, O](
-      adapterPropsFromPublisher = (publisher: ActorRef) => {
-        ProcessorAdapter.elasticProps( maxInFlightCpuFactor, publisher )( workerPF )
+      name = name,
+      adapterPropsFromOutlet = (publisher: ActorRef) => {
+        MaxInFlightProcessorAdapter.elasticProps( maxInFlightCpuFactor, publisher )( workerPF )
       },
-      publisherProps = publisherProps,
-      label = label
+      outletProps = publisherProps
     )
 
     import StreamMonitor._
-    Flow.fromGraph( g ).watchFlow( label )
+    Flow.fromGraph( g ).watchFlow( Symbol(name) )
   }
 
   def processorGraph[I, O](
-    adapterPropsFromPublisher: ActorRef => Props,
-    publisherProps: Props,
-    label: Symbol
+    name: String,
+    adapterPropsFromOutlet: ActorRef => Props,
+    outletProps: Props
   )(
     implicit system: ActorSystem,
     materializer: Materializer
   ): Graph[FlowShape[I, O], NotUsed] = {
     GraphDSL.create() { implicit b =>
-      import GraphDSL.Implicits._
-
-      val ( publisherRef, publisher ) = {
-        Source.actorPublisher[O]( publisherProps ).named( s"${label.name}-processor-egress" )
+      val ( outletRef, outlet ) = {
+        Source.actorPublisher[O]( outletProps ).named( s"${name}-processor-outlet" )
         .toMat( Sink.asPublisher(false) )( Keep.both )
         .run()
       }
 
-      val processorPublisher = b.add( Source fromPublisher[O] publisher )
-//      val egress = b.add( Flow[O] map { identity } )
-
-//      processorPublisher ~> egress
-
-      val adapter = b.add(
-        Sink.actorSubscriber[I]( adapterPropsFromPublisher( publisherRef ) ).named( s"${label.name}-processor-ingress")
+      val outletShape = b.add( Source fromPublisher[O] outlet )
+      val inletShape = b.add(
+        Sink.actorSubscriber[I]( adapterPropsFromOutlet( outletRef ) ).named( s"${name}-processor-inlet")
       )
 
-//      FlowShape( adapter.in, egress.out )
-      FlowShape( adapter.in, processorPublisher.out )
+      FlowShape( inletShape.in, outletShape.out )
     }
   }
 
 
-  def fixedProps( maxInFlightMessages: Int, publisher: ActorRef )( workerPF: PartialFunction[Any, ActorRef] ): Props = {
+  def fixedProps( maxInFlightMessages: Int, outletRef: ActorRef )( workerPF: PartialFunction[Any, ActorRef] ): Props = {
     Props(
-      new ProcessorAdapter with TopologyProvider {
+      new MaxInFlightProcessorAdapter with TopologyProvider {
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val maxInFlight: Int = maxInFlightMessages
-        override def destinationPublisher( implicit ctx: ActorContext ): ActorRef = publisher
+        override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
       }
     )
   }
 
   def elasticProps(
     maxInFlightMessagesCpuFactor: Double,
-    publisher: ActorRef
+    outletRef: ActorRef
   )(
     workerPF: PartialFunction[Any, ActorRef]
   ): Props = {
     Props(
-      new ProcessorAdapter with TopologyProvider {
+      new MaxInFlightProcessorAdapter with TopologyProvider {
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val maxInFlightCpuFactor: Double = maxInFlightMessagesCpuFactor
-        override def destinationPublisher( implicit ctx: ActorContext ): ActorRef = publisher
+        override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
       }
     )
   }
@@ -120,7 +115,7 @@ object ProcessorAdapter {
 
   trait TopologyProvider {
     def workerFor: PartialFunction[Any, ActorRef]
-    def destinationPublisher( implicit context: ActorContext ): ActorRef
+    def outlet( implicit context: ActorContext ): ActorRef
     def maxInFlight: Int = math.floor( Runtime.getRuntime.availableProcessors() * maxInFlightCpuFactor ).toInt
     def maxInFlightCpuFactor: Double = 1.0
   }
@@ -129,16 +124,15 @@ object ProcessorAdapter {
   case class DetectionJob( destination: ActorRef, startNanos: Long = System.nanoTime() )
 
 
-  final case class DeadWorkerError private[ProcessorAdapter]( deadWorker: ActorRef )
+  final case class DeadWorkerError private[MaxInFlightProcessorAdapter]( deadWorker: ActorRef )
   extends IllegalStateException( s"Flow Processor notified of worker death: [${deadWorker}]" )
 }
 
-class ProcessorAdapter extends ActorSubscriber with InstrumentedActor with ActorLogging {
-  outer: ProcessorAdapter.TopologyProvider =>
+class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor with ActorLogging {
+  outer: MaxInFlightProcessorAdapter.TopologyProvider =>
 
   override def preStart(): Unit = initializeMetrics()
 
-  override lazy val metricBaseName: MetricName = MetricName( classOf[ProcessorAdapter] )
   val submissionMeter: Meter = metrics meter "submission"
   val publishMeter: Meter = metrics meter "publish"
 
@@ -151,7 +145,7 @@ class ProcessorAdapter extends ActorSubscriber with InstrumentedActor with Actor
     metrics.registry.removeMatching(
       new MetricFilter {
         override def matches( name: String, metric: Metric ): Boolean = {
-          name.contains( classOf[ProcessorAdapter].getName ) && name.contains( "outstanding" )
+          name.contains( classOf[MaxInFlightProcessorAdapter].getName ) && name.contains( "outstanding" )
         }
       }
     )
@@ -159,18 +153,6 @@ class ProcessorAdapter extends ActorSubscriber with InstrumentedActor with Actor
 
 
   var outstanding: Int = 0
-
-//  val seenMax: Int = 1000000
-//  var seen: BloomFilter[Any] = BloomFilter[Any]( maxFalsePosProbability = 0.01, seenMax )
-  def reportDuplicates( toBePublished: Iterable[Any] ): Unit = {
-//    toBePublished foreach { tbp =>
-//      if ( seen.size == seenMax ) log.warning( "[ProcessAdapter] SEEN filled" )
-//      if ( seen.size < seenMax ) {
-//        if ( seen has_? tbp ) log.warning( "[ProcessorAdapter] Possible duplicate: [{}]", tbp)
-//        else seen += tbp
-//      }
-//    }
-  }
 
   override protected def requestStrategy: RequestStrategy = {
     new MaxInFlightRequestStrategy( max = outer.maxInFlight ) {
@@ -180,12 +162,11 @@ class ProcessorAdapter extends ActorSubscriber with InstrumentedActor with Actor
 
 
   override def receive: Receive = LoggingReceive {
-    around( withSubscriber(outer.destinationPublisher) orElse publish(outer.destinationPublisher) )
+    around( withSubscriber(outer.outlet) orElse publish(outer.outlet) )
   }
 
-  def withSubscriber( subscriber: ActorRef ): Receive = {
+  def withSubscriber( outlet: ActorRef ): Receive = {
     case next @ ActorSubscriberMessage.OnNext( message ) if outer.workerFor.isDefinedAt( message ) => {
-      reportDuplicates( Seq(message) )
       submissionMeter.mark()
       outstanding += 1
       val worker = outer workerFor message
@@ -193,23 +174,22 @@ class ProcessorAdapter extends ActorSubscriber with InstrumentedActor with Actor
       worker ! message
     }
 
-    case ActorSubscriberMessage.OnComplete => outer.destinationPublisher ! ActorSubscriberMessage.OnComplete
+    case ActorSubscriberMessage.OnComplete => outlet ! ActorSubscriberMessage.OnComplete
 
-    case onError: ActorSubscriberMessage.OnError => outer.destinationPublisher ! onError
+    case onError: ActorSubscriberMessage.OnError => outlet ! onError
 
     case Terminated( deadWorker ) => {
-
       log.error( "Flow Processor notified of worker death: [{}]", deadWorker )
       //todo is this response appropriate for spotlight and generally?
 //      outer.destinationPublisher ! ActorSubscriberMessage.OnError( ProcessorAdapter.DeadWorkerError(deadWorker) )
     }
   }
 
-  def publish( subscriber: ActorRef ): Receive = {
+  def publish( outlet: ActorRef ): Receive = {
     case message => {
       publishMeter.mark()
       outstanding -= 1
-      subscriber ! message
+      outlet ! message
     }
   }
 }
