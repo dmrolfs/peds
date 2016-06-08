@@ -1,9 +1,10 @@
 package peds.archetype.domain.model.core
 
+import scala.reflect.ClassTag
 import shapeless.Lens
+import peds.commons.TryV
 import peds.commons.identifier._
 
-import scala.reflect.ClassTag
 
 
 trait Identifiable {
@@ -24,4 +25,20 @@ trait IdentifiableCompanion[I <: Identifiable] {
 
 trait IdentifiableLensedCompanion[I <: Identifiable] extends IdentifiableCompanion[I] {
   def idLens: Lens[I, I#TID]
+}
+
+
+/**
+  * Type class used to define fundamental ID operations for a specific type of identifier.
+  * @tparam I
+  */
+trait Identifying[I] {
+  def nextId: TryV[I]
+}
+
+object Identifying {
+  implicit val idShortUUID: Identifying[ShortUUID] = new Identifying[ShortUUID] {
+    import scalaz.syntax.either._
+    override def nextId: TryV[ShortUUID] = ShortUUID().right
+  }
 }
