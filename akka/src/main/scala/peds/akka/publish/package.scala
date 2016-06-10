@@ -4,7 +4,6 @@ import akka.actor.{ ActorContext, ActorLogging }
 import com.typesafe.scalalogging.LazyLogging
 import shapeless.TypeCase
 import peds.commons.log.Trace
-import peds.akka.envelope.Envelope
 import peds.commons.util.Chain
 
 
@@ -15,7 +14,7 @@ package object publish extends LazyLogging {
   /** Publisher is a chained operation that supports publishing via multiple links. If a publishing link returns Left(event), 
    * the next publishing link will be processed; otherwise if Right(event) is returned then publishing will cease.
    */
-  type Publisher = Chain.Link[Envelope, Unit]
+  type Publisher = Chain.Link[Any, Unit]
 
 
   /**
@@ -32,25 +31,24 @@ package object publish extends LazyLogging {
 
 
   /** Publish event to actor's sender */
-  def sender( implicit context: ActorContext ): Publisher = ( event: Envelope ) => trace.block( s"publish.sender($event)" ) {
+  def sender( implicit context: ActorContext ): Publisher = ( event: Any ) => trace.block( s"publish.sender($event)" ) {
     context.sender() ! event
     Left( event )
   }
 
   /** Publish event to ActorSystem's eventStream */
-  def stream( implicit context: ActorContext ): Publisher = ( event: Envelope ) => trace.block( s"publish.stream($event)" ) {
-    val Event = TypeCase[target.Event]
+  def stream( implicit context: ActorContext ): Publisher = ( event: Any ) => trace.block( s"publish.stream($event)" ) {
     val target = context.system.eventStream
-    Event.unapply( event )  foreach { e =>
+    val Event = TypeCase[target.Event]
+    Event.unapply( event ) foreach { e =>
       logger info s"local stream publishing event:${e} on target:${target}"
-      //DMR: somehow need to update envelope per EnvelopeSending.update
       target publish e
     }
     Left( event )
   }
 
   /** Inert publisher takes no publishing action and continues to next.  */
-  val identity: Publisher =  ( event: Envelope ) => trace.block( s"publish.identity($event)" ) { Left( event ) }
+  val identity: Publisher =  ( event: Any ) => trace.block( s"publish.identity($event)" ) { Left( event ) }
 
   /** Equivalent to identity publisher; takes no publishing action and continues to next. */
   val silent: Publisher = identity

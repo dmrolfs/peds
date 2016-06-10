@@ -17,12 +17,11 @@ object ReliablePublisher {
 
 trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtLeastOnceDelivery with Enveloping =>
   import ReliablePublisher._
-  import peds.commons.util.Chain._
 
   private val trace = Trace[ReliablePublisher]
 
   def reliablePublisher( destination: ActorPath )( implicit context: ActorContext ): Publisher = {
-    ( event: Envelope ) => {
+    ( event: Any ) => {
       val deliveryIdToMessage = (deliveryId: Long) => {
         log info s"ReliablePublisher.publish.DELIVER: deliveryId=${deliveryId}; dest=${destination}; event=${event}"
         ReliableMessage( deliveryId, event ) 
@@ -32,16 +31,6 @@ trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtL
       Left( event )
     }
   }
-
-  //DMR don't want to override default b/h here. instead, concrete class can
-  // override val redeliverInterval: FiniteDuration = 30.seconds
-  // override val warnAfterNumberOfUnconfirmedAttempts: Int = 15
-
-  // override def preStart(): Unit = {
-  //   super.preStart()
-  //   val listener = context.actorOf( RedeliverFailureListener.props )
-  // }
-
 
   override def around( r: Receive ): Receive = {
     case Confirm( deliveryId ) => trace.block( "ReliablePublisher.around(Confirm)" ) {
@@ -65,7 +54,6 @@ trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtL
         s"unconfirmed delivery for message[${ud.message.getClass.getSimpleName}] " +
         s"to destination[${ud.destination}] with deliveryId=${ud.deliveryId}" 
       )
-      // confirmDelivery( ud.deliveryId )
     }
   }
 }
