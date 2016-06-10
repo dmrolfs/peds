@@ -2,12 +2,11 @@ package peds.akka.envelope
 
 import scala.concurrent.Await
 import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Props, ActorRef, Actor, ActorSystem, ActorLogging}
+import akka.actor.{Props, ActorRef, ActorSystem, ActorLogging}
 import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
 import scala.concurrent.duration._
 import akka.util.Timeout
-import akka.actor.Status.Failure
-import peds.commons.log.Trace
+import peds.akka.envelope.pattern.ask
 
 
 object EnvelopeAskingSpec {
@@ -16,19 +15,17 @@ object EnvelopeAskingSpec {
   }
 
   class TestActor( target: ActorRef ) extends EnvelopingActor with ActorLogging {
-    override def trace: Trace[_] = Trace[TestActor]
-
     override def receive: Receive = bare orElse around( wrapped )
 
     def bare: Receive = { 
       case "A" => sender() ! "REPLY FROM A" 
-      case "B" => sender() send "REPLY FROM B" 
+      case "B" => sender() sendEnvelope "REPLY FROM B"
       case Envelope( "C", h ) => sender() ! "REPLY FROM C" 
-      case Envelope( "D", h ) => sender() send "REPLY FROM D" 
+      case Envelope( "D", h ) => sender() sendEnvelope "REPLY FROM D"
     }
 
     def wrapped: Receive = { 
-      case "E" => sender() send "REPLY FROM E" 
+      case "E" => sender() sendEnvelope "REPLY FROM E"
       case "F" => sender() ! "REPLY FROM F" 
     }
 
@@ -83,13 +80,13 @@ with ImplicitSender
   }
 
   test( "EnvelopeAsking should wrap a message with an envelope on ask" ) {
-    val fc = source ? "C"
+    val fc = source ?+ "C"
     val rc = Await.result( fc, t.duration ).asInstanceOf[String]
     assert( rc == "REPLY FROM C" )
   }
 
   test( "EnvelopeAsking should reply with a wrapped message on ask if using send" ) {
-    val fd = source ? "D"
+    val fd = source ?+ "D"
     val Envelope( rd, hd ) = Await.result( fd, t.duration ).asInstanceOf[Envelope]
     assert( rd == "REPLY FROM D" )
     assert( hd.fromComponentType == ComponentType( classOf[TestActor].safeSimpleName ) )
@@ -103,7 +100,7 @@ with ImplicitSender
   }
 
   test( "EnvelopeAsking should handle around processing wrapped message " ) {
-    val future = source ? "E"
+    val future = source ?+ "E"
     val Envelope( result, h ) = Await.result( future, t.duration ).asInstanceOf[Envelope]
     assert( result == "REPLY FROM E" )
     assert( h.fromComponentType == ComponentType( classOf[TestActor].safeSimpleName ) )
@@ -117,7 +114,7 @@ with ImplicitSender
   }
 
   test( "EnvelopeAsking should handle around processing wrapped message without envelope is not send" ) {
-    val future = source ? "F"
+    val future = source ?+ "F"
     val result = Await.result( future, t.duration ).asInstanceOf[String]
     assert( result == "REPLY FROM F" )
   }

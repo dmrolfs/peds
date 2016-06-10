@@ -1,13 +1,10 @@
 package peds.akka.envelope
 
 import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Props, ActorRef, Actor, ActorSystem, ActorLogging}
+import akka.actor.{Props, ActorRef, ActorSystem, ActorLogging}
 import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
 import scala.concurrent.duration._
-import akka.pattern.pipe
 import akka.util.Timeout
-import akka.actor.Status.Failure
-import peds.commons.log.Trace
 
 
 object EnvelopeSendingSpec {
@@ -16,14 +13,12 @@ object EnvelopeSendingSpec {
   }
 
   class TestActor( target: ActorRef ) extends EnvelopingActor with ActorLogging {
-    override def trace: Trace[_] = Trace[TestActor]
-
     override def receive: Receive = bare orElse around( wrapped )
 
     def bare: Receive = { case Envelope( "INITIAL", h ) => target ! Envelope( "REPLY", h ) }
     def wrapped: Receive = { 
-      case "ACTOR" => target send "REPLY" 
-      case "FORWARD" => target sendForward "REPLY"
+      case "ACTOR" => target sendEnvelope  "REPLY"
+      case "FORWARD" => target forwardEnvelope  "REPLY"
     }
 
     override def unhandled( message: Any ): Unit = target ! TestActor.Unhandled( message )
@@ -57,7 +52,7 @@ with ImplicitSender
   import peds.commons.util._
 
   test( "EnvelopeSending should wrap a message with an envelope with unknown from non-actor" ) {
-    source.send( "INITIAL" )( probe.ref )
+    source.sendEnvelope( "INITIAL" )( probe.ref )
     target.expectMsgPF( max = d, hint = "initial send" ) {
       case Envelope( "REPLY", h ) => {
         assert( target.sender() == source )
@@ -74,7 +69,7 @@ with ImplicitSender
   }
 
   test( "EnvelopeSending should wrap a message with an envelope with source from actor" ) {
-    source.send( "ACTOR" )( probe.ref )
+    source.sendEnvelope( "ACTOR" )( probe.ref )
     target.expectMsgPF( max = d, hint = "actor send" ) {
       case Envelope( "REPLY", h ) => {
         assert( target.sender() == source )
@@ -91,7 +86,7 @@ with ImplicitSender
   }
 
   test( "EnvelopeSending should wrap a forwarded message with an envelope with source from actor" ) {
-    source.send( "FORWARD" )( probe.ref )
+    source.sendEnvelope( "FORWARD" )( probe.ref )
     target.expectMsgPF( max = d, hint = "actor send" ) {
       case Envelope( "REPLY", h ) => {
         assert( target.sender() == probe.ref )

@@ -41,4 +41,11 @@ object Identifying {
     import scalaz.syntax.either._
     override def nextId: TryV[ShortUUID] = ShortUUID().right
   }
+
+  import peds.commons.util._
+
+  final case class NotDefinedForId[I: ClassTag]( operation: String )
+  extends IllegalStateException(
+    s"${operation} is not defined for identifer type: ${implicitly[ClassTag[I]].runtimeClass.safeSimpleName}"
+  )
 }

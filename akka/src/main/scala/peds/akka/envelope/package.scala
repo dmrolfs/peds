@@ -1,9 +1,8 @@
 package peds.akka
 
-import akka.actor.{ ActorContext, ActorPath, ActorRef }
+import akka.actor.{ActorContext, ActorPath, ActorRef, ActorSelection}
 import com.typesafe.scalalogging.StrictLogging
 import peds.commons.identifier.ShortUUID
-import peds.commons.log.Trace
 
 
 /**
@@ -23,9 +22,7 @@ import peds.commons.log.Trace
  * the regular Akka `tell` and `!` operations, programmers must use the `send` operation to wrap the message in a envelope.
  * {{{someActor send SomeMessage( "Hello there, Mr. Actor" )}}}
  */
-package object envelope extends AskSupport with StrictLogging {
-  val trace = Trace( "Envelope", logger )
-
+package object envelope extends StrictLogging {
   /** The version of the envelope protocol */
   case class EnvelopeVersion( version: Int = 1 )
   
@@ -46,7 +43,6 @@ package object envelope extends AskSupport with StrictLogging {
 
   /** Defines the identity of the given component (e.g. /path/to/MessageForwarder) */
   case class ComponentPath( path: String ) {
-    // def this( ap: ActorPath ) = this( ap.elements.mkString( "/", "/", "" ) ) // DMR DRY THIS UP
     def this( ap: ActorPath ) = this( ap.toString )
   }
 
@@ -101,46 +97,19 @@ package object envelope extends AskSupport with StrictLogging {
     /**
      * Send a message enclosed in a message envelope containing meta date about the message.
      */
-    def send( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = {
-      underlying.tell( update( envelope ), sender )
+    def sendEnvelope( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = {
+      underlying.tell( update(envelope), sender )
     }
 
     /**
      * Send a message enclosed in a message envelope containing meta date about the message.
      */
-    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = send( envelope )( sender )
+    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = sendEnvelope( envelope )( sender )
 
     /**
      * Forward a message enclosed in a message envelope containg meta data about the message.
      */
-    def sendForward( envelope: Envelope )( implicit context: ActorContext ): Unit = underlying.forward( update( envelope ) )
-
-
-    // import shapeless.{ Lens => SLens, _ }
-    import peds.commons._
-
-    // private def toComponentPathLens: SLens[Envelope, ComponentPath] = Lenser[Envelope].header.toComponentPath
-    // private def toComponentPathLens: SLens[Envelope, ComponentPath] = new SLens[Envelope, ComponentPath] {
-    //   override def get( that: Envelope ): ComponentPath = that.header.toComponentPath
-    //   override def set( that: Envelope )( path: ComponentPath ): Envelope = {
-    //     val header = that.header.toComponentPathLens.set( that.header )( path )
-    //     // val header: EnvelopeHeader = that.header.copy( toComponentPath = path )
-    //     val result: Envelope = that.copy( header = header )
-    //     result
-    //   }
-    // }
-
-    // private def messageNumberLens: SLens[Envelope, MessageNumber] = Lenser[Envelope].header.messageNumber
-    // private def messageNumberLens: SLens[Envelope, MessageNumber] = new SLens[Envelope, MessageNumber] {
-    //   override def get( that: Envelope ): MessageNumber = that.header.messageNumber
-    //   override def set( that: Envelope )( number: MessageNumber ): Envelope = {
-    //     val header = that.header.messageNumberLens.set( that.header )( number )
-    //     headerLens.set( that )( header )
-    //     // that.copy( header = header )
-    //   }
-    // }
-
-    // private def emitLens = toComponentPathLens ~ messageNumberLens
+    def forwardEnvelope( envelope: Envelope )( implicit context: ActorContext ): Unit = underlying.forward( update(envelope) )
 
     private def update( incoming: Envelope ): Envelope = {
       // val messageNumber = messageNumberLens.get( incoming )
@@ -148,15 +117,48 @@ package object envelope extends AskSupport with StrictLogging {
       // val workId = if ( incoming.header.workId == WorkId.unknown ) WorkId() else incoming.header.workId
 
       val messageNumber = incoming.header.messageNumber
-      // val messageNumber = (
-      //   if ( incoming.header.messageNumber.value == -1 ) incoming.header.messageNumber.increment 
-      //   else incoming.header.messageNumber
-      // )
 
       val header = incoming.header.copy( 
         toComponentPath = ComponentPath( underlying.path ), 
         // workId = workId,
         messageNumber = messageNumber.increment 
+      )
+
+      incoming.copy( header = header )
+    }
+  }
+
+
+  implicit class EnvelopeSendingSelection( val underlying: ActorSelection ) extends AnyVal {
+
+    /**
+      * Send a message enclosed in a message envelope containing meta date about the message.
+      */
+    def sendEnvelope( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = {
+      underlying.tell( update(envelope), sender )
+    }
+
+    /**
+      * Send a message enclosed in a message envelope containing meta date about the message.
+      */
+    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = sendEnvelope( envelope )( sender )
+
+    /**
+      * Forward a message enclosed in a message envelope containg meta data about the message.
+      */
+    def forwardEnvelope( envelope: Envelope )( implicit context: ActorContext ): Unit = underlying.forward( update( envelope ) )
+
+    private def update( incoming: Envelope ): Envelope = {
+      // val messageNumber = messageNumberLens.get( incoming )
+      // emitLens.set( incoming )( (ComponentPath( underlying.path ), messageNumber.increment) )
+      // val workId = if ( incoming.header.workId == WorkId.unknown ) WorkId() else incoming.header.workId
+
+      val messageNumber = incoming.header.messageNumber
+
+      val header = incoming.header.copy(
+        toComponentPath = ComponentPath( underlying.anchorPath ),
+        // workId = workId,
+        messageNumber = messageNumber.increment
       )
 
       incoming.copy( header = header )

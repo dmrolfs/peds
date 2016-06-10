@@ -1,10 +1,7 @@
 package peds.akka.envelope
 
-import akka.actor.ActorRef
-import peds.commons._
 import peds.commons.util._
 import com.typesafe.scalalogging.StrictLogging
-import peds.commons.log.Trace
 
 
 case class EnvelopeHeader(
@@ -25,7 +22,6 @@ case class EnvelopeHeader(
 case class Envelope( payload: Any, header: EnvelopeHeader )
 
 object Envelope extends StrictLogging {
-  val trace = Trace( "Envelope", logger )
   // An implicit conversion makes things easy for us; we can convert from an Any
   // to an Envelope with our implicit
   import scala.language.implicitConversions

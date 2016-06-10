@@ -1,9 +1,10 @@
-package peds.akka.envelope
+package peds.akka.envelope.pattern
 
-import scala.concurrent.Future
 import akka.actor.ActorRef
 import akka.util.Timeout
-import akka.pattern
+import peds.akka.envelope.{ComponentPath, Envelope}
+
+import scala.concurrent.Future
 
 
 trait AskSupport {
@@ -13,9 +14,11 @@ trait AskSupport {
 
 final class AskableEnvelopingActorRef( val underlying: ActorRef ) extends AnyVal {
   
-  def ask( message: Envelope )( implicit timeout: Timeout ): Future[Any] = akka.pattern.ask( underlying, askUpdate( message ) )
+  def askEnvelope( message: Envelope )( implicit timeout: Timeout ): Future[Any] = {
+    akka.pattern.ask( underlying, askUpdate(message) )
+  }
 
-  def ?( message: Envelope )( implicit timeout: Timeout ): Future[Any] = ask( message )( timeout )
+  def ?+( message: Envelope )( implicit timeout: Timeout ): Future[Any] = askEnvelope( message )( timeout )
 
   private def askUpdate( incoming: Envelope ): Envelope = {
     val messageNumber = incoming.header.messageNumber

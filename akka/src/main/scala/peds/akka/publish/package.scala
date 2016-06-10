@@ -1,9 +1,8 @@
 package peds.akka
 
-import scala.util.Try
 import akka.actor.{ ActorContext, ActorLogging }
 import com.typesafe.scalalogging.LazyLogging
-import shapeless.syntax.typeable._
+import shapeless.TypeCase
 import peds.commons.log.Trace
 import peds.akka.envelope.Envelope
 import peds.commons.util.Chain
@@ -40,8 +39,9 @@ package object publish extends LazyLogging {
 
   /** Publish event to ActorSystem's eventStream */
   def stream( implicit context: ActorContext ): Publisher = ( event: Envelope ) => trace.block( s"publish.stream($event)" ) {
+    val Event = TypeCase[target.Event]
     val target = context.system.eventStream
-    event.cast[target.Event] foreach { e =>
+    Event.unapply( event )  foreach { e =>
       logger info s"local stream publishing event:${e} on target:${target}"
       //DMR: somehow need to update envelope per EnvelopeSending.update
       target publish e

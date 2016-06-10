@@ -1,9 +1,7 @@
 package peds.akka.envelope
 
 import akka.actor.{ Actor, ActorLogging }
-import akka.event.LoggingReceive
 import peds.akka.ActorStack
-import peds.commons.log.Trace
 import peds.commons.util._
 
 
@@ -28,7 +26,6 @@ trait Enveloping {
 
 
 trait EnvelopingActor extends Actor with ActorStack with Enveloping { outer: ActorLogging =>
-  def trace: Trace[_]
   // override def pathname: String = self.path.name
   override def pathname: String = self.path.toString
 

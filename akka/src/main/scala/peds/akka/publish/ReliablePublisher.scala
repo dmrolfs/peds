@@ -1,9 +1,10 @@
 package peds.akka.publish
 
-import akka.actor.{ ActorContext, ActorLogging, ActorPath }
-import akka.persistence.{ AtLeastOnceDelivery, PersistentActor }
-import akka.persistence.AtLeastOnceDelivery.{ UnconfirmedDelivery, UnconfirmedWarning }
+import akka.actor.{ActorContext, ActorPath}
+import akka.persistence.{AtLeastOnceDelivery, PersistentActor}
+import akka.persistence.AtLeastOnceDelivery.{UnconfirmedDelivery, UnconfirmedWarning}
 import peds.akka.envelope._
+import peds.commons.log.Trace
 
 
 object ReliablePublisher {
@@ -17,6 +18,8 @@ object ReliablePublisher {
 trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtLeastOnceDelivery with Enveloping =>
   import ReliablePublisher._
   import peds.commons.util.Chain._
+
+  private val trace = Trace[ReliablePublisher]
 
   def reliablePublisher( destination: ActorPath )( implicit context: ActorContext ): Publisher = {
     ( event: Envelope ) => {

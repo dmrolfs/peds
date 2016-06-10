@@ -44,6 +44,6 @@ object Dependencies {
   val metricsScala = "nl.grons" %% "metrics-scala" % "3.5.2_a2.3"
 
   val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.6.0"
-  val shapeless = "com.chuusai" %% "shapeless" % "2.2.5"
+  val shapeless = "com.chuusai" %% "shapeless" % "2.3.1"
   val scalazCore = "org.scalaz" %% "scalaz-core" % "7.2.0"
 }
