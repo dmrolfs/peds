@@ -31,7 +31,7 @@ object Envelope extends StrictLogging {
   )(
     implicit fromComponentType: ComponentType = ComponentType.unknown,
     fromComponentPath: ComponentPath = ComponentPath.unknown,
-    workId: WorkId = WorkId.unknown,
+    workId: WorkId = WorkId(), //todo auto create new WorkId if not provided // WorkId.unknown,
     messageNumber: MessageNumber = MessageNumber( -1 ),
     version: EnvelopeVersion = EnvelopeVersion(),
     properties: Map[Symbol, Any] = Map()

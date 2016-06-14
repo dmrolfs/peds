@@ -60,7 +60,7 @@ with ImplicitSender
         assert( h.fromComponentPath == ComponentPath.unknown )
         assert( h.toComponentPath == ComponentPath( source.path ) )
         assert( h.messageType == MessageType( classOf[String].safeSimpleName ) )
-        assert( h.workId == WorkId.unknown )
+        assert( h.workId != WorkId.unknown )
         assert( h.messageNumber == MessageNumber( 0 ) )
         assert( h.version == EnvelopeVersion( 1 ) )
         assert( h.properties == Map.empty )
