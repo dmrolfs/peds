@@ -1,6 +1,5 @@
 package peds.archetype.domain.model.core
 
-import scala.reflect.ClassTag
 import shapeless.Lens
 import peds.commons.util._
 
@@ -13,6 +12,13 @@ trait Entity extends Identifiable {
 }
 
 
-trait EntityCompanion[E <: Entity] extends IdentifiableLensedCompanion[E] {
+trait EntityIdentifying[E <: Entity] extends Identifying[E] {
+  override type ID = E#ID
+  override def idOf( o: E ): TID = o.id
+}
+
+
+trait EntityLensProvider[E <: Entity] extends IdentifiableLensProvider[E] {
   def nameLens: Lens[E, String]
+  def slugLens: Lens[E, String]
 }
