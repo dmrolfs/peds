@@ -8,6 +8,7 @@ import akka.actor.{ActorLogging, Props}
 import akka.event.LoggingReceive
 import akka.stream.actor._
 import nl.grons.metrics.scala.{Meter, MetricName}
+import peds.akka.envelope.EnvelopingActor
 import peds.akka.metrics.InstrumentedActor
 
 
@@ -21,7 +22,7 @@ object StreamIngress {
   case object CompleteAndStop extends IngressProtocol
 }
 
-class StreamIngress[T: ClassTag] extends ActorPublisher[T] with InstrumentedActor with ActorLogging {
+class StreamIngress[T: ClassTag] extends ActorPublisher[T] with EnvelopingActor with InstrumentedActor with ActorLogging {
   override lazy val metricBaseName: MetricName = MetricName( classOf[StreamIngress[T]] )
   val ingressdMeter: Meter = metrics meter "ingress"
 
@@ -57,6 +58,7 @@ class StreamIngress[T: ClassTag] extends ActorPublisher[T] with InstrumentedActo
   }
 
   @tailrec final def deliverBuffer(): Unit = {
+    log.debug( "deliverBuffer: buffer-size[{}] total-demand:[{}] is-active:[{}]", buffer.size, totalDemand, isActive )
     if ( isActive && totalDemand > 0 ) {
       if ( totalDemand <= Int.MaxValue ) {
         val (use, keep) = buffer splitAt totalDemand.toInt
