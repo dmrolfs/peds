@@ -1,9 +1,11 @@
 package peds.commons.identifier
 
-import com.eaio.uuid.UUID
-import scala.collection.JavaConversions._
-import org.apache.commons.codec.binary.Base64
 import java.nio.ByteBuffer
+import scala.reflect._
+import scalaz._, Scalaz._
+import org.apache.commons.codec.binary.Base64
+import com.eaio.uuid.UUID
+import peds.commons.TryV
 
 
 object ShortUUID {
@@ -22,6 +24,15 @@ object ShortUUID {
   implicit def short2UUID( short: ShortUUID ): UUID = short.toUUID
 
   val nilUUID: ShortUUID = uuidToShort( UUID.nilUUID )
+
+
+  trait ShortUuidIdentifying[T] { self: Identifying[T] =>
+    override type ID = ShortUUID
+    override val evID: ClassTag[ID] = classTag[ShortUUID]
+    override val evTID: ClassTag[TID] = classTag[TaggedID[ShortUUID]]
+    override def fromString( idstr: String ): ID = ShortUUID( idstr )
+    override def nextId: TryV[TID] = tag( ShortUUID() ).right
+  }
 }
 
 case class ShortUUID( value: String ) extends Equals {

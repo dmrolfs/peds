@@ -1,6 +1,7 @@
 package peds.archetype.domain.model.core
 
 import shapeless.Lens
+import peds.commons.identifier.Identifying
 import peds.commons.util._
 
 
