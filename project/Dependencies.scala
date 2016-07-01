@@ -24,6 +24,7 @@ object Dependencies {
   val akkaSlf4j = akkaModule( "akka-slf4j" )
   val akkaTestKit = akkaModule( "akka-testkit" )
   val akkaStreams = akkaModule( "akka-stream" )
+  val akkaAgent = akkaModule( "akka-agent" )
 
   val config = "com.typesafe" % "config" % "1.3.0"
   val eaio = "com.eaio.uuid" % "uuid" % "3.4"

@@ -41,6 +41,7 @@ object Build extends Build {
       compile( akkaPersistence ) ++
       compile( akkaSlf4j ) ++
       compile( akkaStreams ) ++
+      compile( akkaAgent ) ++
       compile( betterFiles ) ++
       compile( metricsCore ) ++
       compile( metricsGraphite ) ++
