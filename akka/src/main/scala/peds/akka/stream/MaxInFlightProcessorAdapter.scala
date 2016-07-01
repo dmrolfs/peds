@@ -1,17 +1,21 @@
 package peds.akka.stream
 
-import akka.NotUsed
-
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
 import scala.reflect.ClassTag
-import akka.actor.{ActorContext, ActorLogging, ActorRef, ActorSystem, Props, Terminated}
+import scala.util.{Failure, Success}
+import akka.NotUsed
+import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Props, Terminated}
+import akka.agent.Agent
 import akka.event.LoggingReceive
 import akka.stream.actor._
 import akka.stream.scaladsl._
 import akka.stream.{FlowShape, Graph, Materializer}
+import akka.util.Timeout
 import com.codahale.metrics.{Metric, MetricFilter}
-import nl.grons.metrics.scala.{Meter, MetricName}
+import nl.grons.metrics.scala.Meter
 import peds.akka.metrics.InstrumentedActor
-import peds.commons.collection.BloomFilter
+
 
 
 /**
@@ -113,11 +117,13 @@ object MaxInFlightProcessorAdapter {
   }
 
 
-  trait TopologyProvider {
+  trait TopologyProvider { outer: Actor =>
     def workerFor: PartialFunction[Any, ActorRef]
     def outlet( implicit context: ActorContext ): ActorRef
     def maxInFlight: Int = math.floor( Runtime.getRuntime.availableProcessors() * maxInFlightCpuFactor ).toInt
     def maxInFlightCpuFactor: Double = 1.0
+    implicit def timeout: Timeout = Timeout( 10.seconds )
+    def inFlightExecutor: ExecutionContext = context.system.dispatchers.lookup( "in-flight-dispatcher" )
   }
 
 
@@ -152,26 +158,38 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
   }
 
 
-  var outstanding: Int = 0
+  var outstanding: Agent[Set[Future[Any]]] = Agent( Set.empty[Future[Any]] )( outer.inFlightExecutor )
 
   override protected def requestStrategy: RequestStrategy = {
     new MaxInFlightRequestStrategy( max = outer.maxInFlight ) {
-      override def inFlightInternally: Int = outstanding
+      override def inFlightInternally: Int = outstanding.get.size // todo may need to Await if cant handle appropriately in receive
     }
   }
 
 
-  override def receive: Receive = LoggingReceive {
-    around( withSubscriber(outer.outlet) orElse publish(outer.outlet) )
-  }
+  override def receive: Receive = LoggingReceive { around( withSubscriber(outer.outlet) ) }
 
   def withSubscriber( outlet: ActorRef ): Receive = {
-    case next @ ActorSubscriberMessage.OnNext( message ) if outer.workerFor.isDefinedAt( message ) => {
+    case next @ ActorSubscriberMessage.OnNext( message ) if outer.workerFor isDefinedAt message => {
+      import akka.pattern.{ask, pipe}
+
       submissionMeter.mark()
-      outstanding += 1
       val worker = outer workerFor message
       context watch worker
-      worker ! message
+
+      implicit val ec = outer.inFlightExecutor
+
+      val inflight = ( worker ? message )
+      outstanding alter { _ + inflight }
+
+      inflight pipeTo outer.outlet
+      inflight onComplete {
+        case Success( msg ) => outstanding alter { _ - inflight }
+        case Failure( ex ) => {
+          log.error( ex, "In Flight process failed - removing from outstanding InFlight" )
+          outstanding alter { _ - inflight }
+        }
+      }
     }
 
     case ActorSubscriberMessage.OnComplete => outlet ! ActorSubscriberMessage.OnComplete
@@ -182,14 +200,6 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
       log.error( "Flow Processor notified of worker death: [{}]", deadWorker )
       //todo is this response appropriate for spotlight and generally?
 //      outer.destinationPublisher ! ActorSubscriberMessage.OnError( ProcessorAdapter.DeadWorkerError(deadWorker) )
-    }
-  }
-
-  def publish( outlet: ActorRef ): Receive = {
-    case message => {
-      publishMeter.mark()
-      outstanding -= 1
-      outlet ! message
     }
   }
 }
