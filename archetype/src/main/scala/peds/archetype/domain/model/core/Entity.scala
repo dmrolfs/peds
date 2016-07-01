@@ -1,5 +1,6 @@
 package peds.archetype.domain.model.core
 
+import scala.reflect.ClassTag
 import shapeless.Lens
 import peds.commons.identifier.Identifying
 import peds.commons.util._
@@ -14,8 +15,10 @@ trait Entity extends Identifiable {
 
 
 trait EntityIdentifying[E <: Entity] extends Identifying[E] {
+  val evEntity: ClassTag[E]
   override type ID = E#ID
   override def idOf( o: E ): TID = o.id
+  override lazy val idTag: Symbol = Symbol( evEntity.runtimeClass.safeSimpleName.toLowerCase )
 }
 
 

@@ -15,6 +15,13 @@ import peds.commons.util._
 trait Identifying[T] extends LazyLogging {
   type ID
   val evID: ClassTag[ID]
+
+  type TID = TaggedID[ID]
+  val evTID: ClassTag[TID]
+
+  val idTag: Symbol
+  implicit def tag( id: ID ): TID = TaggedID[ID]( idTag, id )
+
   def idOf( o: T ): TID
   def fromString( idstr: String ): ID
   def nextId: TryV[TID]
@@ -45,11 +52,6 @@ trait Identifying[T] extends LazyLogging {
       }
     }
   }
-
-  type TID = TaggedID[ID]
-  val evTID: ClassTag[TID]
-  def idTag: Symbol = Symbol( evID.runtimeClass.safeSimpleName.toLowerCase )
-  implicit def tag( id: ID ): TID = TaggedID[ID]( idTag, id )
 
   def bridgeIdClassTag[I: ClassTag]: TryV[ClassTag[I]] = bridgeClassTag[I, ID]( evID )
   def bridgeTidClassTag[TI: ClassTag]: TryV[ClassTag[TI]] = bridgeClassTag[TI, TID]( evTID )
