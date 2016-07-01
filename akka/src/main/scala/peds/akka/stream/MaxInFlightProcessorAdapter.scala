@@ -159,11 +159,12 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
   }
 
 
-  var outstanding: Agent[Set[Future[Any]]] = Agent( Set.empty[Future[Any]] )( outer.inFlightExecutor )
+  type InFlightMessage = Future[Any]
+  var outstanding: Agent[Set[InFlightMessage]] = Agent( Set.empty[InFlightMessage] )( outer.inFlightExecutor )
 
   override protected def requestStrategy: RequestStrategy = {
     new MaxInFlightRequestStrategy( max = outer.maxInFlight ) {
-      override def inFlightInternally: Int = outstanding.get.size
+      override def inFlightInternally: Int = scala.concurrent.Await.result( outstanding.future.map{ _.size }, 2.seconds )
     }
   }
 
@@ -181,16 +182,37 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
 
       inflight pipeTo outer.outlet
       inflight onComplete {
-        case Success( msg ) => outstanding alter { _ - inflight }
+        case Success( msg ) => {
+          log.debug(
+            "altering to remove future:[{}] from outstanding in flight since received worker result:[{}]",
+            inflight.##,
+            msg
+          )
+          outstanding alter { o =>
+            log.debug( "in-agent (via success) removal of future:[{}]", inflight.## )
+            o - inflight
+          }
+        }
+
         case Failure( ex ) => {
-          log.error( ex, "In Flight process failed - removing from outstanding InFlight" )
-          outstanding alter { _ - inflight }
+          log.error( ex, "In Flight process failed - removing from outstanding InFlight future:[{}]", inflight.## )
+          outstanding alter { o =>
+            log.debug( "in-agent (via failure) removal of future:[{}]", inflight.## )
+            o - inflight
+          }
         }
       }
     }
 
     case ActorSubscriberMessage.OnComplete => {
-      val remaining = outstanding.future map { outs => Future sequence outs } map { _ => ActorSubscriberMessage.OnComplete }
+      val remaining = {
+        outstanding.future
+        .flatMap { outs => Future sequence outs }
+        .map { outs =>
+          log.debug( "remaining outstanding[{}] completed so propagating OnComplete", outs.size )
+          ActorSubscriberMessage.OnComplete
+        }
+      }
       remaining pipeTo outlet
     }
 
