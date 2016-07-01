@@ -8,6 +8,7 @@ import akka.NotUsed
 import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Props, Terminated}
 import akka.agent.Agent
 import akka.event.LoggingReceive
+import akka.pattern.{ask, pipe}
 import akka.stream.actor._
 import akka.stream.scaladsl._
 import akka.stream.{FlowShape, Graph, Materializer}
@@ -123,7 +124,7 @@ object MaxInFlightProcessorAdapter {
     def maxInFlight: Int = math.floor( Runtime.getRuntime.availableProcessors() * maxInFlightCpuFactor ).toInt
     def maxInFlightCpuFactor: Double = 1.0
     implicit def timeout: Timeout = Timeout( 10.seconds )
-    def inFlightExecutor: ExecutionContext = context.system.dispatchers.lookup( "in-flight-dispatcher" )
+    implicit def inFlightExecutor: ExecutionContext = context.system.dispatchers.lookup( "in-flight-dispatcher" )
   }
 
 
@@ -162,7 +163,7 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
 
   override protected def requestStrategy: RequestStrategy = {
     new MaxInFlightRequestStrategy( max = outer.maxInFlight ) {
-      override def inFlightInternally: Int = outstanding.get.size // todo may need to Await if cant handle appropriately in receive
+      override def inFlightInternally: Int = outstanding.get.size
     }
   }
 
@@ -171,13 +172,9 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
 
   def withSubscriber( outlet: ActorRef ): Receive = {
     case next @ ActorSubscriberMessage.OnNext( message ) if outer.workerFor isDefinedAt message => {
-      import akka.pattern.{ask, pipe}
-
       submissionMeter.mark()
       val worker = outer workerFor message
       context watch worker
-
-      implicit val ec = outer.inFlightExecutor
 
       val inflight = ( worker ? message )
       outstanding alter { _ + inflight }
@@ -192,7 +189,10 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
       }
     }
 
-    case ActorSubscriberMessage.OnComplete => outlet ! ActorSubscriberMessage.OnComplete
+    case ActorSubscriberMessage.OnComplete => {
+      val remaining = outstanding.future map { outs => Future sequence outs } map { _ => ActorSubscriberMessage.OnComplete }
+      remaining pipeTo outlet
+    }
 
     case onError: ActorSubscriberMessage.OnError => outlet ! onError
 
