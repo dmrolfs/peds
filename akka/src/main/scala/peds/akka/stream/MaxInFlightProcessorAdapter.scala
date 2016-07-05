@@ -164,7 +164,13 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
 
   override protected def requestStrategy: RequestStrategy = {
     new MaxInFlightRequestStrategy( max = outer.maxInFlight ) {
-      override def inFlightInternally: Int = scala.concurrent.Await.result( outstanding.future.map{ _.size }, 2.seconds )
+      override def inFlightInternally: Int = {
+        val inflight = outstanding.future map { o =>
+          log.info( "INFLIGHT: inFlightInternally=[{}]", o.size )
+          o.size
+        }
+        scala.concurrent.Await.result( inflight, 2.seconds )
+      }
     }
   }
 
@@ -177,19 +183,23 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
       val worker = outer workerFor message
       context watch worker
 
-      val inflight = ( worker ? message )
+      val inflight = ( worker ? message ) map { result =>
+        log.info( "INFLIGHT: worker processed [{}] = [{}]", message, result )
+        result
+      }
+
       outstanding alter { _ + inflight }
 
       inflight pipeTo outer.outlet
       inflight onComplete {
         case Success( msg ) => {
-          log.debug(
-            "altering to remove future:[{}] from outstanding in flight since received worker result:[{}]",
+          log.info(
+            "INFLIGHT: altering to remove future:[{}] from outstanding in flight since received worker result:[{}]",
             inflight.##,
             msg
           )
           outstanding alter { o =>
-            log.debug( "in-agent (via success) removal of future:[{}]", inflight.## )
+            log.info( "INFLIGHT: in-agent (via success) removal of future:[{}]", inflight.## )
             o - inflight
           }
         }
@@ -197,7 +207,7 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
         case Failure( ex ) => {
           log.error( ex, "In Flight process failed - removing from outstanding InFlight future:[{}]", inflight.## )
           outstanding alter { o =>
-            log.debug( "in-agent (via failure) removal of future:[{}]", inflight.## )
+            log.info( "INFLIGHT: in-agent (via failure) removal of future:[{}]", inflight.## )
             o - inflight
           }
         }
@@ -209,7 +219,7 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
         outstanding.future
         .flatMap { outs => Future sequence outs }
         .map { outs =>
-          log.debug( "remaining outstanding[{}] completed so propagating OnComplete", outs.size )
+          log.info( "INFLIGHT: remaining outstanding[{}] completed so propagating OnComplete", outs.size )
           ActorSubscriberMessage.OnComplete
         }
       }
