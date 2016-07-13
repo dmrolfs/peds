@@ -1,6 +1,6 @@
 package peds.akka.stream
 
-import akka.actor.{ActorLogging, ActorRef, Props}
+import akka.actor.{ActorLogging, ActorRef, Props, Terminated}
 import akka.event.LoggingReceive
 import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, RequestStrategy, WatermarkRequestStrategy}
 import nl.grons.metrics.scala.{Meter, MetricName}
@@ -29,6 +29,8 @@ object StreamEgress {
 class StreamEgress( subscriber: ActorRef ) extends ActorSubscriber with InstrumentedActor with ActorLogging {
   outer: StreamEgress.WatermarkProvider =>
 
+  context watch subscriber
+
   override lazy val metricBaseName: MetricName = MetricName( classOf[StreamEgress] )
   val egressMeter: Meter = metrics meter "egress"
 
@@ -36,7 +38,7 @@ class StreamEgress( subscriber: ActorRef ) extends ActorSubscriber with Instrume
     new WatermarkRequestStrategy( highWatermark = outer.highWatermark, lowWatermark = outer.lowWatermark )
   }
 
-  override def receive: Receive = LoggingReceive { around( egress ) }
+  override def receive: Receive = LoggingReceive { around( egress orElse maintenance ) }
 
   val egress: Receive = {
     case next @ ActorSubscriberMessage.OnNext( message ) => {
@@ -47,7 +49,12 @@ class StreamEgress( subscriber: ActorRef ) extends ActorSubscriber with Instrume
 
     case ActorSubscriberMessage.OnComplete => subscriber ! ActorSubscriberMessage.OnComplete
     case onError: ActorSubscriberMessage.OnError => subscriber ! onError
+  }
 
-    case m => log.error( "StreamEgress: received UNKNOWN message:[{}]", m )
+  val maintenance: Receive = {
+    case Terminated( deadActor ) => {
+      log.warning( "stream-egress [{}] notified of death of subscriber:[{}] -- stopping", self.path, subscriber.path )
+      context stop self
+    }
   }
 }

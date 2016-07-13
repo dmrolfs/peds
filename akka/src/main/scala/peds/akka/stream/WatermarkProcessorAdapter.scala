@@ -136,6 +136,8 @@ object WatermarkProcessorAdapter {
     val low = lowWatermark
     Props(
       new WatermarkProcessorAdapter with TopologyProvider {
+        log.info( "[{}] setting watch on outlet:[{}]", self.path, outletRef.path )
+        context watch outletRef
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val highWatermark: Int = high
         override val lowWatermark: Int = low
@@ -148,6 +150,8 @@ object WatermarkProcessorAdapter {
     val high = highWatermark
     Props(
       new WatermarkProcessorAdapter with TopologyProvider {
+        log.info( "[{}] setting watch on outlet:[{}]", self.path, outletRef.path )
+        context watch outletRef
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val highWatermark: Int = high
         override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
@@ -166,6 +170,8 @@ object WatermarkProcessorAdapter {
     val low = lowWatermark
     Props(
       new WatermarkProcessorAdapter with TopologyProvider {
+        log.info( "[{}] setting watch on outlet:[{}]", self.path, outletRef.path )
+        context watch outletRef
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val highWatermark: Int = high
         override val lowWatermark: Int = low
@@ -178,6 +184,8 @@ object WatermarkProcessorAdapter {
     val high = highWatermark
     Props(
       new WatermarkProcessorAdapter with TopologyProvider {
+        log.info( "[{}] setting watch on outlet:[{}]", self.path, outletRef.path )
+        context watch outletRef
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val highWatermark: Int = high
         override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
@@ -214,7 +222,7 @@ class WatermarkProcessorAdapter extends ActorSubscriber with InstrumentedActor w
 
 
   override def receive: Receive = LoggingReceive {
-    around( withSubscriber(outer.outlet) /* see publish below: orElse publish(outer.outlet) */ )
+    around( withSubscriber(outer.outlet) orElse maintenance /* see publish below: orElse publish(outer.outlet) */ )
   }
 
   def withSubscriber( outlet: ActorRef ): Receive = {
@@ -229,12 +237,18 @@ class WatermarkProcessorAdapter extends ActorSubscriber with InstrumentedActor w
     case ActorSubscriberMessage.OnComplete => outlet ! ActorSubscriberMessage.OnComplete
 
     case onError: ActorSubscriberMessage.OnError => outlet ! onError
+  }
+
+  val maintenance: Receive = {
+    case Terminated( deadOutlet ) if deadOutlet == outer.outlet => {
+      log.error( "[{}] notified of dead outlet:[{}] - stopping processor", self.path, outer.outlet.path )
+      context stop self
+    }
 
     case Terminated( deadWorker ) => {
-
-      log.error( "Flow Watermark Processor notified of worker death: [{}]", deadWorker )
+      log.error( "[{}] notified of dead worker:[{}]", self.path, deadWorker.path )
       //todo is this response appropriate for spotlight and generally?
-//      outer.destinationPublisher ! ActorSubscriberMessage.OnError( ProcessorAdapter.DeadWorkerError(deadWorker) )
+      outer.outlet ! ActorSubscriberMessage.OnError( WatermarkProcessorAdapter.DeadWorkerError(deadWorker) )
     }
   }
 

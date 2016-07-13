@@ -18,7 +18,6 @@ import nl.grons.metrics.scala.Meter
 import peds.akka.metrics.InstrumentedActor
 
 
-
 /**
   * Created by rolfsd on 4/2/16.
   */
@@ -95,6 +94,8 @@ object MaxInFlightProcessorAdapter {
   def fixedProps( maxInFlightMessages: Int, outletRef: ActorRef )( workerPF: PartialFunction[Any, ActorRef] ): Props = {
     Props(
       new MaxInFlightProcessorAdapter with TopologyProvider {
+        log.info( "[{}] setting watch on outlet:[{}]", self.path, outletRef.path )
+        context watch outletRef
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val maxInFlight: Int = maxInFlightMessages
         override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
@@ -110,6 +111,8 @@ object MaxInFlightProcessorAdapter {
   ): Props = {
     Props(
       new MaxInFlightProcessorAdapter with TopologyProvider {
+        log.info( "[{}] setting watch on outlet:[{}]", self.path, outletRef.path )
+        context watch outletRef
         override val workerFor: PartialFunction[Any, ActorRef] = workerPF
         override val maxInFlightCpuFactor: Double = maxInFlightMessagesCpuFactor
         override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
@@ -118,7 +121,7 @@ object MaxInFlightProcessorAdapter {
   }
 
 
-  trait TopologyProvider { outer: Actor =>
+  trait TopologyProvider { outer: Actor with ActorLogging =>
     def workerFor: PartialFunction[Any, ActorRef]
     def outlet( implicit context: ActorContext ): ActorRef
     def maxInFlight: Int = math.floor( Runtime.getRuntime.availableProcessors() * maxInFlightCpuFactor ).toInt
@@ -175,7 +178,7 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
   }
 
 
-  override def receive: Receive = LoggingReceive { around( withSubscriber(outer.outlet) ) }
+  override def receive: Receive = LoggingReceive { around( withSubscriber(outer.outlet) orElse maintenance ) }
 
   def withSubscriber( outlet: ActorRef ): Receive = {
     case next @ ActorSubscriberMessage.OnNext( message ) if outer.workerFor isDefinedAt message => {
@@ -237,11 +240,18 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
     }
 
     case onError: ActorSubscriberMessage.OnError => outlet ! onError
+  }
+
+  val maintenance: Receive = {
+    case Terminated( deadOutlet ) if deadOutlet == outer.outlet => {
+      log.error( "[{}] notified of dead outlet:[{}] - stopping processor", self.path, outer.outlet.path )
+      context stop self
+    }
 
     case Terminated( deadWorker ) => {
-      log.error( "Flow Processor notified of worker death: [{}]", deadWorker )
+      log.error( "[{}] notified of dead worker:[{}]", self.path, deadWorker.path )
       //todo is this response appropriate for spotlight and generally?
-//      outer.destinationPublisher ! ActorSubscriberMessage.OnError( ProcessorAdapter.DeadWorkerError(deadWorker) )
+      outer.outlet ! ActorSubscriberMessage.OnError( MaxInFlightProcessorAdapter.DeadWorkerError(deadWorker) )
     }
   }
 }
