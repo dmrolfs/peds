@@ -18,7 +18,6 @@ import nl.grons.metrics.scala.Meter
 import peds.akka.metrics.InstrumentedActor
 
 
-
 /**
   * Created by rolfsd on 4/2/16.
   */
@@ -40,6 +39,7 @@ object MaxInFlightProcessorAdapter {
       },
       outletProps = publisherProps
     )
+    .named( s"fixed-processor-${name}" )
 
     import StreamMonitor._
     Flow.fromGraph( g ).watchFlow( Symbol(name) )
@@ -62,6 +62,7 @@ object MaxInFlightProcessorAdapter {
       },
       outletProps = publisherProps
     )
+    .named( s"elastic-processor-${name}")
 
     import StreamMonitor._
     Flow.fromGraph( g ).watchFlow( Symbol(name) )
@@ -93,32 +94,43 @@ object MaxInFlightProcessorAdapter {
 
 
   def fixedProps( maxInFlightMessages: Int, outletRef: ActorRef )( workerPF: PartialFunction[Any, ActorRef] ): Props = {
-    Props(
-      new MaxInFlightProcessorAdapter with TopologyProvider {
-        override val workerFor: PartialFunction[Any, ActorRef] = workerPF
-        override val maxInFlight: Int = maxInFlightMessages
-        override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
-      }
-    )
+    Props( new Fixed(maxInFlightMessages, outletRef)(workerPF) )
   }
+
+  private class Fixed(
+    override val maxInFlight: Int,
+    outletRef: ActorRef
+  )(
+    workerPF: PartialFunction[Any, ActorRef]
+  ) extends MaxInFlightProcessorAdapter with TopologyProvider {
+    log.info( "[{}][{}] setting watch on outlet:[{}]", self.path, this.##, outletRef.path )
+    context watch outletRef
+    override val workerFor: PartialFunction[Any, ActorRef] = workerPF
+    override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
+  }
+
 
   def elasticProps(
     maxInFlightMessagesCpuFactor: Double,
     outletRef: ActorRef
   )(
     workerPF: PartialFunction[Any, ActorRef]
-  ): Props = {
-    Props(
-      new MaxInFlightProcessorAdapter with TopologyProvider {
-        override val workerFor: PartialFunction[Any, ActorRef] = workerPF
-        override val maxInFlightCpuFactor: Double = maxInFlightMessagesCpuFactor
-        override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
-      }
-    )
+  ): Props = Props( new Elastic(maxInFlightMessagesCpuFactor, outletRef)(workerPF) )
+
+  private class Elastic(
+    override val maxInFlightCpuFactor: Double,
+    outletRef: ActorRef
+  )(
+    workerPF: PartialFunction[Any, ActorRef]
+  ) extends MaxInFlightProcessorAdapter with TopologyProvider {
+    log.info( "[{}][{}] setting watch on outlet:[{}]", self.path, this.##, outletRef.path )
+    context watch outletRef
+    override val workerFor: PartialFunction[Any, ActorRef] = workerPF
+    override def outlet( implicit ctx: ActorContext ): ActorRef = outletRef
   }
 
 
-  trait TopologyProvider { outer: Actor =>
+  trait TopologyProvider { outer: Actor with ActorLogging =>
     def workerFor: PartialFunction[Any, ActorRef]
     def outlet( implicit context: ActorContext ): ActorRef
     def maxInFlight: Int = math.floor( Runtime.getRuntime.availableProcessors() * maxInFlightCpuFactor ).toInt
@@ -166,7 +178,7 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
     new MaxInFlightRequestStrategy( max = outer.maxInFlight ) {
       override def inFlightInternally: Int = {
         val inflight = outstanding.future map { o =>
-          log.debug( "MaxInFlightProcessorAdapter.inFlightInternally=[{}]", o.size )
+          log.debug( "MaxInFlightProcessorAdapter[{}] inFlightInternally=[{}]", this.##, o.size )
           o.size
         }
         scala.concurrent.Await.result( inflight, 2.seconds )
@@ -175,7 +187,7 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
   }
 
 
-  override def receive: Receive = LoggingReceive { around( withSubscriber(outer.outlet) ) }
+  override def receive: Receive = LoggingReceive { around( withSubscriber(outer.outlet) orElse maintenance ) }
 
   def withSubscriber( outlet: ActorRef ): Receive = {
     case next @ ActorSubscriberMessage.OnNext( message ) if outer.workerFor isDefinedAt message => {
@@ -184,24 +196,29 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
       context watch worker
 
       val inflight = ( worker ? message ) map { result =>
-        log.debug( "MaxInFlightProcessorAdapter: worker processed [{}] = [{}]", message, result )
+        log.debug( "MaxInFlightProcessorAdapter[{}]: worker processed [{}] = [{}]", this.##, message, result )
         result
       }
 
-      outstanding alter { _ + inflight }
+      outstanding alter { o =>
+        val altered = o + inflight
+        log.debug(
+          "MaxInFlightProcessorAdapter[{}]: in-agent addition of future:[{}] resulting outstanding=[{}]",
+          this.##,
+          inflight.##,
+          altered.size
+        )
+        altered
+      }
 
       inflight pipeTo outer.outlet
       inflight onComplete {
         case Success( msg ) => {
-          log.debug(
-            "MaxInFlightProcessorAdapter: altering to remove future:[{}] from outstanding in flight since received worker result:[{}]",
-            inflight.##,
-            msg
-          )
           outstanding alter { o =>
             val altered = o - inflight
             log.debug(
-              "MaxInFlightProcessorAdapter: in-agent (via success) removal of future:[{}] resulting outstanding=[{}]",
+              "MaxInFlightProcessorAdapter[{}]: in-agent (via worker success) removal of future:[{}] resulting outstanding=[{}]",
+              this.##,
               inflight.##,
               altered.size
             )
@@ -210,11 +227,11 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
         }
 
         case Failure( ex ) => {
-          log.error( ex, "In Flight process failed - removing from outstanding InFlight future:[{}]", inflight.## )
           outstanding alter { o =>
             val altered = o - inflight
             log.debug(
-              "MaxInfFlightProcessorAdapter: in-agent (via failure) removal of future:[{}]",
+              "MaxInfFlightProcessorAdapter[{}]: in-agent (via worker failure) removal of future:[{}]",
+              this.##,
               inflight.##,
               altered.size
             )
@@ -225,23 +242,45 @@ class MaxInFlightProcessorAdapter extends ActorSubscriber with InstrumentedActor
     }
 
     case ActorSubscriberMessage.OnComplete => {
-      val remaining = {
+      val complete = {
         outstanding.future
-        .flatMap { outs => Future sequence outs }
-        .map { outs =>
-          log.debug( "MaxInfFlightProcessorAdapter: outstanding completed so propagating OnComplete" )
+        .flatMap { outs: Set[Future[Any]] => Future sequence outs }
+        .map { outs: Set[Any] =>
+          log.debug(
+            "MaxInfFlightProcessorAdapter[{}]: outstanding [{}] completed so propagating OnComplete",
+            this.##,
+            outstanding.get.size
+          )
           ActorSubscriberMessage.OnComplete
         }
       }
-      remaining pipeTo outlet
+
+      complete foreach { _ =>
+        val outs = scala.concurrent.Await.result( outstanding.future(), 2.seconds )
+        log.debug( "MaxInFlightProcessorAdapter[{}]: COMPLETED with [{}] outstanding tasks", this.##, outs.size )
+      }
+
+      complete pipeTo outlet
     }
 
     case onError: ActorSubscriberMessage.OnError => outlet ! onError
+  }
+
+  val maintenance: Receive = {
+    case Terminated( deadOutlet ) if deadOutlet == outer.outlet => {
+      log.error(
+        "MaxInFlightProcessorAdapter[{}][{}] notified of dead outlet:[{}] - stopping processor",
+        self.path,
+        this.##,
+        outer.outlet.path
+      )
+      context stop self
+    }
 
     case Terminated( deadWorker ) => {
-      log.error( "Flow Processor notified of worker death: [{}]", deadWorker )
+      log.error( "MaxInFlightProcessorAdapter[{}][{}] notified of dead worker:[{}]", self.path, this.##, deadWorker.path )
       //todo is this response appropriate for spotlight and generally?
-//      outer.destinationPublisher ! ActorSubscriberMessage.OnError( ProcessorAdapter.DeadWorkerError(deadWorker) )
+      outer.outlet ! ActorSubscriberMessage.OnError( MaxInFlightProcessorAdapter.DeadWorkerError(deadWorker) )
     }
   }
 }
