@@ -11,13 +11,12 @@ import peds.akka.metrics.InstrumentedActor
   * Created by rolfsd on 4/19/16.
   */
 object StreamEgress {
-  def props( subscriber: ActorRef, high: Int, low: Option[Int] = None ): Props = {
-    Props(
-      new StreamEgress( subscriber ) with WatermarkProvider {
-        override def highWatermark: Int = high
-      }
-    )
-  }
+  def props( subscriber: ActorRef, high: Int, low: Option[Int] = None ): Props = Props( new Default(subscriber, high) )
+
+  private class Default(
+    subscriber: ActorRef,
+    override val highWatermark: Int
+  ) extends StreamEgress( subscriber ) with WatermarkProvider
 
 
   trait WatermarkProvider {
@@ -43,17 +42,35 @@ class StreamEgress( subscriber: ActorRef ) extends ActorSubscriber with Instrume
   val egress: Receive = {
     case next @ ActorSubscriberMessage.OnNext( message ) => {
       egressMeter.mark()
-      log.debug( "StreamEgress: Sending [{}] message:[{}]", subscriber, message )
+      log.debug( "StreamEgress[{}]: Sending [{}] message:[{}]", this.##, subscriber, message )
       subscriber ! message
     }
 
-    case ActorSubscriberMessage.OnComplete => subscriber ! ActorSubscriberMessage.OnComplete
-    case onError: ActorSubscriberMessage.OnError => subscriber ! onError
+    case ActorSubscriberMessage.OnComplete => {
+      log.debug(
+        "StreamEgress[{}][{}] received OnComplete from [{}] forwarding to subscriber:[{}]",
+        self.path,
+        this.##,
+        sender().path,
+        subscriber.path
+      )
+      subscriber ! ActorSubscriberMessage.OnComplete
+    }
+    case onError: ActorSubscriberMessage.OnError => {
+      log.error(
+        "StreamEgress[{}][{}] received OnError from [{}] forwarding to subscriber:[{}]",
+        self.path,
+        this.##,
+        sender().path,
+        subscriber.path
+      )
+      subscriber ! onError
+    }
   }
 
   val maintenance: Receive = {
     case Terminated( deadActor ) => {
-      log.warning( "stream-egress [{}] notified of death of subscriber:[{}] -- stopping", self.path, subscriber.path )
+      log.warning( "StreamEgress[{}][{}] notified of death of subscriber:[{}] -- stopping", self.path, this.##, subscriber.path )
       context stop self
     }
   }

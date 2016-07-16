@@ -37,7 +37,13 @@ class StreamIngress[T: ClassTag] extends ActorPublisher[T] with EnvelopingActor 
 
   val ingress: Receive = {
     case tTag( message ) if isActive => {
-      log.debug( "StreamIngress: buffer-size:[{}] totalDemand:[{}] Recd-Message:[{}]", buffer.size, totalDemand, message )
+      log.debug(
+        "StreamIngress[{}]: buffer-size:[{}] totalDemand:[{}] Recd-Message:[{}]",
+        this.##,
+        buffer.size,
+        totalDemand,
+        message
+      )
       if ( buffer.isEmpty && totalDemand > 0 ) onNext( message )
       else {
         buffer :+= message
@@ -47,18 +53,27 @@ class StreamIngress[T: ClassTag] extends ActorPublisher[T] with EnvelopingActor 
 
     case ActorPublisherMessage.Request( n ) => deliverBuffer()
 
-    case ActorPublisherMessage.Cancel => context stop self
+    case ActorPublisherMessage.Cancel => {
+      log.info( "StreamIngress[{}][{}] received Cancel from [{}]", self.path, this.##, sender().path )
+      context stop self
+    }
 
     case StreamIngress.CompleteAndStop => {
       deliverBuffer()
       onCompleteThenStop()
     }
 
-    case m => log.error( "StreamIngress[active={}]: received UNKNOWN message:[{}]", isActive, m )
+    case m => log.error( "StreamIngress[{}][active={}]: received UNKNOWN message:[{}]", this.##, isActive, m )
   }
 
   @tailrec final def deliverBuffer(): Unit = {
-    log.debug( "deliverBuffer: buffer-size[{}] total-demand:[{}] is-active:[{}]", buffer.size, totalDemand, isActive )
+    log.debug(
+      "deliverBuffer[{}]: buffer-size[{}] total-demand:[{}] is-active:[{}]",
+      this.##,
+      buffer.size,
+      totalDemand,
+      isActive
+    )
     if ( isActive && totalDemand > 0 ) {
       if ( totalDemand <= Int.MaxValue ) {
         val (use, keep) = buffer splitAt totalDemand.toInt
