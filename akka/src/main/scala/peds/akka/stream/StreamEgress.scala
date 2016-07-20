@@ -56,8 +56,9 @@ class StreamEgress( subscriber: ActorRef ) extends ActorSubscriber with Instrume
       )
       subscriber ! ActorSubscriberMessage.OnComplete
     }
-    case onError: ActorSubscriberMessage.OnError => {
+    case onError @ ActorSubscriberMessage.OnError( cause ) => {
       log.error(
+        cause,
         "StreamEgress[{}][{}] received OnError from [{}] forwarding to subscriber:[{}]",
         self.path,
         this.##,

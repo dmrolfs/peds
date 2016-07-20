@@ -58,7 +58,7 @@ class StreamIngress[T: ClassTag] extends ActorPublisher[T] with EnvelopingActor 
       context stop self
     }
 
-    case StreamIngress.CompleteAndStop => {
+    case ActorSubscriberMessage.OnComplete | StreamIngress.CompleteAndStop => {
       deliverBuffer()
       onCompleteThenStop()
     }
