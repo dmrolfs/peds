@@ -6,7 +6,7 @@ import peds.commons.identifier.Identifying
 import peds.commons.util._
 
 
-trait Entity extends Identifiable {
+trait Entity extends Identifiable with Serializable {
   def name: String
   def slug: String = id.get.toString
 
@@ -17,7 +17,7 @@ trait Entity extends Identifiable {
 trait EntityIdentifying[E <: Entity] extends Identifying[E] {
   val evEntity: ClassTag[E]
   override type ID = E#ID
-  override def idOf( o: E ): TID = o.id
+  override def idOf( o: E ): TID = tag( o.id )
   override lazy val idTag: Symbol = Symbol( evEntity.runtimeClass.safeSimpleName.toLowerCase )
 }
 
