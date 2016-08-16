@@ -1,8 +1,19 @@
 package peds.commons.identifier
 
+import scala.reflect.ClassTag
+
 
 case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
   def get: T = id
+
+  def mapTo[B: ClassTag]: TaggedID[B] = {
+    val boxedClass = {
+      val b = implicitly[ClassTag[B]].runtimeClass
+      if ( b.isPrimitive ) TaggedID.toBoxed( b ) else b
+    }
+    require( boxedClass ne null )
+    TaggedID[B]( tag, boxedClass.cast( id ).asInstanceOf[B] )
+  }
 
   override def canEqual( rhs: Any ): Boolean = {
     rhs match {
@@ -40,4 +51,16 @@ object TaggedID {
   val Delimiter: String = "-"
   val Regex = s"""((.+)${Delimiter})?(.+)""".r  // this breaks down if Delimiter needs to be escaped
   implicit def taggedId2Id[T]( tid: TaggedID[T] ): T = tid.id
+
+  private[identifier] val toBoxed: Map[Class[_], Class[_]] = Map(
+    classOf[Boolean] -> classOf[java.lang.Boolean],
+    classOf[Byte]    -> classOf[java.lang.Byte],
+    classOf[Char]    -> classOf[java.lang.Character],
+    classOf[Short]   -> classOf[java.lang.Short],
+    classOf[Int]     -> classOf[java.lang.Integer],
+    classOf[Long]    -> classOf[java.lang.Long],
+    classOf[Float]   -> classOf[java.lang.Float],
+    classOf[Double]  -> classOf[java.lang.Double],
+    classOf[Unit]    -> classOf[scala.runtime.BoxedUnit]
+  )
 }
