@@ -3,7 +3,7 @@ package peds.commons.collection
 import com.eaio.uuid.UUID
 import util.Random
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import com.typesafe.scalalogging.LazyLogging
 
 

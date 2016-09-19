@@ -25,7 +25,7 @@
 package peds.commons.builder
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import shapeless._
 
 

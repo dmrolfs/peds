@@ -1,7 +1,7 @@
 package peds.commons.partial
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
 import com.typesafe.scalalogging.LazyLogging

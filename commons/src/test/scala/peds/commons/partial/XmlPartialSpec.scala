@@ -2,7 +2,7 @@ package peds.commons.partial
 
 import scala.xml._
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.StreamlinedXml
 import com.typesafe.scalalogging.LazyLogging
 
