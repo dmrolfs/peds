@@ -25,6 +25,7 @@ object Build extends Build {
       compile( joda ) ++
       compile( jodaConvert ) ++
       compile( scalazCore ) ++
+      compile( scalazConcurrent ) ++
       compile( shapeless ) ++
       compile( shapelessBuilder ) ++
       compile( akkaActor ) ++
