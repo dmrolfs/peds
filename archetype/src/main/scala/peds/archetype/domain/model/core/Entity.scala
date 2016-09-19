@@ -18,7 +18,16 @@ trait EntityIdentifying[E <: Entity] extends Identifying[E] {
   val evEntity: ClassTag[E]
   override type ID = E#ID
   override def idOf( o: E ): TID = tag( o.id )
-  override lazy val idTag: Symbol = Symbol( evEntity.runtimeClass.safeSimpleName.toLowerCase )
+
+  private val Entity = """(\w+)Entity""".r
+  override lazy val idTag: Symbol = {
+    val tag = evEntity.runtimeClass.safeSimpleName match {
+      case Entity(t) => t
+      case t => t
+    }
+
+    Symbol( tag )
+  }
 }
 
 
