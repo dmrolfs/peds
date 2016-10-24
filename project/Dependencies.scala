@@ -15,7 +15,7 @@ object Dependencies {
   def runtime( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "runtime" )
   def container( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "container" )
 
-  val akkaVersion = "2.4.10"
+  val akkaVersion = "2.4.11"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
@@ -33,7 +33,6 @@ object Dependencies {
   val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.3.0"
   val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
   val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.7"
-  val scalatest = "org.scalatest" %% "scalatest" % "3.0.0"
   val shapelessBuilder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.0"
 
   val joda = "joda-time" % "joda-time" % "2.9.4"
@@ -48,4 +47,7 @@ object Dependencies {
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.2"
   val scalazCore = "org.scalaz" %% "scalaz-core" % "7.2.6"
   val scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % "7.2.6"
+
+  val scalatest = "org.scalatest" %% "scalatest" % "3.0.0"
+  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.2"
 }

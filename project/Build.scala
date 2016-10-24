@@ -29,7 +29,8 @@ object Build extends Build {
       compile( shapeless ) ++
       compile( shapelessBuilder ) ++
       compile( akkaActor ) ++
-      test( scalatest )
+      test( scalatest ) ++
+      test( scalacheck )
     )
 
   lazy val akka = Project( "peds-akka", file( "akka" ) )
