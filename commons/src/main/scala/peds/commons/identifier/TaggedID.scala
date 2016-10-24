@@ -33,7 +33,7 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
           ( that.## == this.## ) &&
           ( that canEqual this ) &&
           ( this.id == that.id ) &&
-          ( this.tag == that.tag )
+          ( this.tag.name == that.tag.name )
         }
       }
 
@@ -41,7 +41,7 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
     }
   }
 
-  override def hashCode(): Int = 41 * ( 41 + id.## ) + tag.##
+  override def hashCode(): Int = 41 * ( 41 + id.## ) + tag.name.##
 
   override lazy val toString: String = tag.name + TaggedID.Delimiter + id.toString
 
