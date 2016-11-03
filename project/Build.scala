@@ -25,10 +25,12 @@ object Build extends Build {
       compile( joda ) ++
       compile( jodaConvert ) ++
       compile( scalazCore ) ++
+      compile( scalazConcurrent ) ++
       compile( shapeless ) ++
       compile( shapelessBuilder ) ++
       compile( akkaActor ) ++
-      test( scalatest )
+      test( scalatest ) ++
+      test( scalacheck )
     )
 
   lazy val akka = Project( "peds-akka", file( "akka" ) )

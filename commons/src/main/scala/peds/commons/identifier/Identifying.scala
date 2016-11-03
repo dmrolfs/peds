@@ -22,6 +22,7 @@ trait Identifying[T] extends LazyLogging {
   val idTag: Symbol
   implicit def tag( id: ID ): TID = TaggedID[ID]( idTag, id )
 
+  def castIntoTID( id: Any ): Option[TID] = evID.unapply( id ) map { tag }
   def idOf( o: T ): TID
   def fromString( idstr: String ): ID
   def nextId: TryV[TID]

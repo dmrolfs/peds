@@ -1,7 +1,7 @@
 package peds.commons.collection
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import com.typesafe.scalalogging.LazyLogging
 
 
