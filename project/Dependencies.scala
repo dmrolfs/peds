@@ -15,7 +15,7 @@ object Dependencies {
   def runtime( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "runtime" )
   def container( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "container" )
 
-  val akkaVersion = "2.4.11"
+  val akkaVersion = "2.4.12"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
@@ -26,17 +26,17 @@ object Dependencies {
   val akkaStreams = akkaModule( "akka-stream" )
   val akkaAgent = akkaModule( "akka-agent" )
 
-  val config = "com.typesafe" % "config" % "1.3.0"
+  val config = "com.typesafe" % "config" % "1.3.1"
   val eaio = "com.eaio.uuid" % "uuid" % "3.4"
   val math3 = "org.apache.commons" % "commons-math3" % "3.6.1"
   val codec = "commons-codec" % "commons-codec" % "1.10"
-  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.3.0"
-  val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
+  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.4.2"
+  val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
   val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.7"
   val shapelessBuilder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.0"
 
   val joda = "joda-time" % "joda-time" % "2.9.4"
-  val jodaConvert = "org.joda" % "joda-convert" % "1.8"
+  val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"
 
   val betterFiles = "com.github.pathikrit" %% "better-files" % "2.16.0"
   val metricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
@@ -49,5 +49,5 @@ object Dependencies {
   val scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % "7.2.6"
 
   val scalatest = "org.scalatest" %% "scalatest" % "3.0.0"
-  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.2"
+  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.4"
 }
