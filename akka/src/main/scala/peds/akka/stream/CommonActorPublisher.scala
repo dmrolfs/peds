@@ -14,7 +14,7 @@ import peds.akka.metrics.InstrumentedActor
   * Created by rolfsd on 3/30/16.
   */
 object CommonActorPublisher {
-  def props[O: ClassTag]: Props = Props( new Default[O]( subscriptionTimeoutDuration = 5.seconds ) )
+  def props[O: ClassTag]( subscriptionTimeout: Duration = Duration.Inf ): Props = Props( new Default[O]( subscriptionTimeout ) )
 
   private class Default[O: ClassTag]( override val subscriptionTimeoutDuration: Duration )
   extends CommonActorPublisher[O] with ConfigurationProvider
@@ -93,6 +93,11 @@ class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with Instrumen
         sender().path,
         buffer.size
       )
+      context stop self
+    }
+
+    case ActorPublisherMessage.SubscriptionTimeoutExceeded => {
+      log.warning( "subscription timeout exceeded. stopping common publisher at {}", self.path )
       context stop self
     }
 
