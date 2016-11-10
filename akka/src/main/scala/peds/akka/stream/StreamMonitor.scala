@@ -1,6 +1,7 @@
 package peds.akka.stream
 
 import akka.NotUsed
+import akka.agent.Agent
 import akka.stream.scaladsl.Flow
 import org.slf4j.LoggerFactory
 import com.typesafe.scalalogging.{Logger, StrictLogging}
@@ -62,61 +63,35 @@ object StreamMonitor extends StrictLogging { outer =>
     def watchConsumed( label: Symbol ): Flow[I, O, NotUsed] = outer.sink( label ).watch( underlying )
   }
 
+  import scala.concurrent.ExecutionContext.Implicits.global
 
-  def add( label: Symbol ): Unit = {
-    if ( all contains label ) {
-      tracked +:= label
-      logger info csvHeader( tracked )
-    }
+  def add( label: Symbol ): Unit = tracked.alter{ _ :+ label } foreach { t => logger info csvHeader(t) }
+  def set( labels: Symbol* ): Unit = tracked.alter( labels ) foreach { t => logger info csvHeader(t) }
+
+  def source( label: Symbol ): StreamMonitor = if ( notEnabled ) SilentMonitor else addMonitor( label, SourceMonitor(label) )
+  def flow( label: Symbol ): StreamMonitor = if ( notEnabled ) SilentMonitor else addMonitor( label, FlowMonitor(label) )
+  def sink( label: Symbol ): StreamMonitor = if ( notEnabled ) SilentMonitor else addMonitor( label, SinkMonitor(label) )
+
+  def addMonitor( label: Symbol, monitor: StreamMonitor ): StreamMonitor = {
+    all send { _ + (label -> monitor) }
+    monitor
   }
 
-  def set( labels: Symbol* ): Unit = {
-    tracked = labels filter { all contains _ }
-    logger info csvHeader( tracked )
+  @inline def publish: Unit = logger info csvLine( tracked.get(), all.get() )
+  private def csvLine( labels: Seq[Symbol], ms: Map[Symbol, StreamMonitor] ): String = {
+    labels.map{ l => ms.get(l).map{ m => s"${l.name}:${m.count}"} }.flatten.mkString( ", " )
   }
-
-  def source( label: Symbol ): StreamMonitor = {
-    if ( notEnabled ) SilentMonitor
-    else {
-      val m = SourceMonitor( label )
-      all += ( label -> m )
-      m
-    }
-  }
-
-  def flow( label: Symbol ): StreamMonitor = {
-    if ( notEnabled ) SilentMonitor
-    else {
-      val m = FlowMonitor( label )
-      all += ( label -> m )
-      m
-    }
-  }
-
-  def sink( label: Symbol ): StreamMonitor = {
-    if ( notEnabled ) SilentMonitor
-    else {
-      val m = SinkMonitor( label )
-      all += ( label -> m )
-      m
-    }
-  }
-
-  @inline def publish: Unit = logger info csvLine( tracked, all )
 
   @inline def isEnabled: Boolean = logger.underlying.isInfoEnabled
   @inline def notEnabled: Boolean = !isEnabled
 
 
   override protected val logger: Logger = Logger( LoggerFactory getLogger "StreamMonitor" )
-  private var all: Map[Symbol, StreamMonitor] = Map.empty[Symbol, StreamMonitor]
-  private var tracked: Seq[Symbol] = Seq.empty[Symbol]
+  private val all: Agent[Map[Symbol, StreamMonitor]] = Agent( Map.empty[Symbol, StreamMonitor] )
+  private val tracked: Agent[Seq[Symbol]] = Agent( Seq.empty[Symbol] )
 
   //todo could incorporate header and line into type class for different formats
   private def csvHeader( labels: Seq[Symbol] ): String = labels map { _.name } mkString ","
-  private def csvLine( labels: Seq[Symbol], ms: Map[Symbol, StreamMonitor] ): String = {
-    labels.map{ l => ms.get(l).map{ m => s"${l.name}:${m.count}"} }.flatten.mkString( ", " )
-  }
 
 
   final case class SourceMonitor private[stream]( override val label: Symbol ) extends StreamMonitor {
