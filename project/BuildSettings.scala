@@ -5,7 +5,7 @@ import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 object BuildSettings {
 
-  val VERSION = "0.4.3-SNAPSHOT"
+  val VERSION = "0.4.3"
 
   lazy val noPublishing = Seq(
     publish := (),
@@ -18,7 +18,7 @@ object BuildSettings {
     description := "A Scala library providing common and generally applicable support for system development, including utilities, data structures, algorithms and archetypes.",
     startYear := Some(2013),
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.12.1",
     resolvers ++= Dependencies.resolutionRepos,
     resolvers += Resolver.jcenterRepo,
     coverallsTokenFile := Some("~/.sbt/peds-coveralls-token.txt"),
