@@ -1,13 +1,13 @@
 package peds.akka.stream
 
-import akka.NotUsed
-
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.NotUsed
+import akka.actor.{Actor, ActorRef, Props, ActorLogging, Cancellable}
 import akka.event.LoggingReceive
 import akka.stream.scaladsl.Flow
+import com.codahale.metrics.{Metric, MetricFilter}
 import nl.grons.metrics.scala.MetricName
 import peds.akka.metrics.InstrumentedActor
 
@@ -59,10 +59,35 @@ class Limiter(
   import akka.actor.Status
 
   override lazy val metricBaseName: MetricName = MetricName( outer.metricNameRoot + classOf[Limiter].getName )
+  val availableMetricName: String = "available"
+  val waitingMetricName: String = "waiting"
+  val passingMeter = metrics meter "passing"
 
-  private var waitQueue = immutable.Queue.empty[ActorRef]
-  private var permitTokens = maxAvailableTokens
-  private val replenishTimer = context.system.scheduler.schedule(
+  override def preStart(): Unit = {
+    super.preStart()
+    initializeMetrics()
+  }
+  
+  def initializeMetrics(): Unit = {
+    stripLingeringMetrics()
+    metrics.gauge( waitingMetricName ){ waitQueue.size }
+    metrics.gauge( availableMetricName ) { permitTokens }
+  }
+
+  def stripLingeringMetrics(): Unit = {
+    metrics.registry.removeMatching(
+      new MetricFilter {
+        override def matches( name: String, metric: Metric ): Boolean = {
+          name.contains( classOf[Limiter].getName ) && ( name.contains(availableMetricName) || name.contains(waitingMetricName) )
+        }
+      }
+    )
+  }
+  
+
+  private var waitQueue: immutable.Queue[ActorRef] = immutable.Queue.empty[ActorRef]
+  private var permitTokens: Int = maxAvailableTokens
+  private val replenishTimer: Cancellable = context.system.scheduler.schedule(
     initialDelay = tokenRefreshPeriod,
     interval = tokenRefreshPeriod,
     receiver = self,
@@ -75,6 +100,7 @@ class Limiter(
     case ReplenishTokens => permitTokens = math.min( permitTokens + tokenRefreshAmount, maxAvailableTokens )
 
     case WantToPass => {
+      passingMeter.mark()
       permitTokens -= 1
       sender() ! MayPass
       if ( permitTokens == 0 ) context become around( closed )
@@ -87,7 +113,9 @@ class Limiter(
       releaseWaiting()
     }
 
-    case WantToPass => waitQueue = waitQueue enqueue sender()
+    case WantToPass => {
+      waitQueue = waitQueue enqueue sender()
+    }
   }
 
   private def releaseWaiting(): Unit = {
@@ -95,6 +123,7 @@ class Limiter(
     waitQueue = remainingQueue
     permitTokens -= toBeReleased.size
     toBeReleased foreach { _ ! MayPass }
+    passingMeter.mark( toBeReleased.size )
     if ( permitTokens > 0 ) context become around( open )
   }
 
