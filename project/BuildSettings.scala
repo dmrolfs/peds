@@ -5,7 +5,7 @@ import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 object BuildSettings {
 
-  val VERSION = "0.4.2"
+  val VERSION = "0.4.3"
 
   lazy val noPublishing = Seq(
     publish := (),
@@ -29,7 +29,6 @@ object BuildSettings {
       "-feature",
       "-unchecked",
       "-deprecation",
-      "-target:jvm-1.7",
       "-language:postfixOps",
       "-language:implicitConversions",
       "-Xlog-reflective-calls",
