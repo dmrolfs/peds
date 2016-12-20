@@ -49,5 +49,6 @@ object Dependencies {
   val scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % "7.2.8"
 
   val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
+  val scalactic = "org.scalactic" %% "scalactic" % "3.0.1"
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.4"
 }
