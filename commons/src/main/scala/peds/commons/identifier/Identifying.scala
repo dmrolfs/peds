@@ -44,11 +44,21 @@ trait Identifying[T] extends LazyLogging {
     }
   }
 
-  def safeParseId[I: ClassTag]( idstr: String ): I = {
-    idAs[I]( fromString( idstr ) ) match {
+  def safeParseId[I: ClassTag]( idrep: String ): I = {
+    idAs[I]( fromString( idrep ) ) match {
       case scalaz.\/-( id ) => id
       case scalaz.-\/( ex ) => {
-        logger.error( s"failed to parse id string:[${idstr}]", ex )
+        logger.error( s"failed to parse id string:[${idrep}]", ex )
+        throw ex
+      }
+    }
+  }
+
+  def safeParseTid[T: ClassTag]( idrep: String ): T = {
+    tidAs[T]( tag( fromString(idrep) ) ) match {
+      case \/-( r ) => r
+      case -\/( ex ) => {
+        logger.error( s"failed to parse TID from ${idrep}", ex )
         throw ex
       }
     }
