@@ -18,7 +18,7 @@ import akka.actor.Actor
  *
  * ActorStack does not override any other Actor behavior.
  */
-trait ActorStack extends Actor {
+trait ActorStack { outer: Actor =>
   /**
    * The around() method is used by Actor implementations to extend Actor.receive behavior through superclass and stacked traits.
    * This method must be used in all cases where it wants to retain the stack-extended behavior; otherwise the stacked

@@ -1,13 +1,13 @@
 package peds.akka.publish
 
-import akka.actor.ActorLogging
+import akka.actor.{ Actor, ActorLogging }
 import peds.akka.ActorStack
 
 
-trait ReliableReceiver extends ActorStack { outer: ActorLogging =>
+trait ReliableReceiver extends ActorStack { outer: Actor with ActorLogging =>
   override def around( r: Receive ): Receive = {
     case ReliablePublisher.ReliableMessage( deliveryId, message ) => {
-      log info s"ReliableReceiver.ReliableMessage(deliveryId=${deliveryId}, message=${message})"
+      log.info( "ReliableReceiver.ReliableMessage(deliveryId=[{}], message=[{}])", deliveryId, message )
       super.around( r )( message )
       sender() ! ReliablePublisher.Confirm( deliveryId )  //DMR: send confirmation after hanlding receive?  or before?
     }

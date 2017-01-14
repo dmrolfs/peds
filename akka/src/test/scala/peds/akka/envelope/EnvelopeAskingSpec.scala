@@ -2,7 +2,7 @@ package peds.akka.envelope
 
 import scala.concurrent.Await
 import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Props, ActorRef, ActorSystem, ActorLogging}
+import akka.actor.{Actor, Props, ActorRef, ActorSystem, ActorLogging}
 import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
 import scala.concurrent.duration._
 import akka.util.Timeout
@@ -14,7 +14,7 @@ object EnvelopeAskingSpec {
     case class Unhandled( message: Any )
   }
 
-  class TestActor( target: ActorRef ) extends EnvelopingActor with ActorLogging {
+  class TestActor( target: ActorRef ) extends Actor with EnvelopingActor with ActorLogging {
     override def receive: Receive = bare orElse around( wrapped )
 
     def bare: Receive = { 
