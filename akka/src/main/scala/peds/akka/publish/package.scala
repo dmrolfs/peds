@@ -37,7 +37,7 @@ package object publish extends LazyLogging {
     val target = context.system.eventStream
     val Event = TypeCase[target.Event]
     Event.unapply( event ) foreach { e =>
-      logger.info( "local stream publishing event:[{}] on target:[{}]", e, target )
+      logger.debug( "local stream publishing event:[{}] on target:[{}]", e, target )
       target publish e
     }
     Left( event )
