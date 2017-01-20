@@ -7,9 +7,11 @@ object IsolatedLifeCycleSupervisor {
   sealed trait Command
   case object WaitForStart extends Command
   case class StartChild( props: Props, name: String ) extends Command
+  case object GetChildren extends Command
 
   sealed trait Event
   case object Started extends Event
+  case class Children( children: Iterable[ChildStarted] ) extends Event
   case class ChildStarted( child: ActorRef ) extends Event {
     def name: String = child.path.name
   }
@@ -28,6 +30,8 @@ trait IsolatedLifeCycleSupervisor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case WaitForStart => sender() ! Started // signify that we've started
+
+    case GetChildren => sender() ! Children( context.children map { ChildStarted } )
 
     case StartChild( props, name ) => {
       val child = context.actorOf( props, name )
