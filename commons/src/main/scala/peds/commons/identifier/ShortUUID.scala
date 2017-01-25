@@ -65,7 +65,7 @@ case class ShortUUID( value: String ) extends Equals {
     case _ => false
   }
 
-  override def hashCode: Int = 41 * ( 41 + value.## )
+  override val hashCode: Int = 41 * ( 41 + value.## )
 
   override def toString: String = if ( this == ShortUUID.nilUUID ) "<nil short uuid>" else value
 }

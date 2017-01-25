@@ -41,7 +41,7 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
     }
   }
 
-  override def hashCode(): Int = 41 * ( 41 + id.## ) + tag.name.##
+  override val hashCode: Int = 41 * ( 41 + id.## ) + tag.name.##
 
   override lazy val toString: String = tag.name + TaggedID.Delimiter + id.toString
 

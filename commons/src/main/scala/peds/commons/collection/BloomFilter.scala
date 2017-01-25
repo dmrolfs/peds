@@ -5,6 +5,7 @@ import collection.immutable.BitSet
 import com.typesafe.scalalogging.LazyLogging
 
 
+@deprecated( "use fast bloomfilter", "20170112" )
 class BloomFilter[T] private ( 
   val size: Int, 
   val width: Int,

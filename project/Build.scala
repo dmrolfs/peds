@@ -49,7 +49,8 @@ object Build extends Build {
       compile( metricsGraphite ) ++
       compile( metricsScala ) ++
       test( akkaTestKit ) ++
-      test( scalatest ) 
+      test( scalatest ) ++
+      test( scalactic )
     )
 
   lazy val archetype = Project( "peds-archetype", file( "archetype" ) )

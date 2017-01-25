@@ -25,7 +25,7 @@ trait Enveloping {
 }
 
 
-trait EnvelopingActor extends Actor with ActorStack with Enveloping { outer: ActorLogging =>
+trait EnvelopingActor extends ActorStack with Enveloping { outer: Actor with ActorLogging =>
   // override def pathname: String = self.path.name
   override def pathname: String = self.path.toString
 

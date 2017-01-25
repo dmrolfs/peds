@@ -15,7 +15,7 @@ object Dependencies {
   def runtime( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "runtime" )
   def container( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "container" )
 
-  val akkaVersion = "2.4.14"
+  val akkaVersion = "2.4.16"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
@@ -49,5 +49,6 @@ object Dependencies {
   val scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % "7.2.8"
 
   val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
+  val scalactic = "org.scalactic" %% "scalactic" % "3.0.1"
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.4"
 }
