@@ -34,6 +34,7 @@ object Dependencies {
   val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
   val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.7"
   val shapelessBuilder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.0"
+  val fastutil = "it.unimi.dsi" % "fastutil" % "7.0.13" withSources() withJavadoc()
 
   val joda = "joda-time" % "joda-time" % "2.9.6"
   val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"

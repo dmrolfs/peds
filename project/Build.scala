@@ -44,6 +44,7 @@ object Build extends Build {
       compile( akkaSlf4j ) ++
       compile( akkaStreams ) ++
       compile( akkaAgent ) ++
+      compile( fastutil ) ++
       compile( betterFiles ) ++
       compile( metricsCore ) ++
       compile( metricsGraphite ) ++
