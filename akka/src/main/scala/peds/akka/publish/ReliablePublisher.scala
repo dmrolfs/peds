@@ -4,6 +4,7 @@ import akka.actor.{ActorContext, ActorPath, ActorLogging}
 import akka.persistence.{AtLeastOnceDelivery, PersistentActor}
 import akka.persistence.AtLeastOnceDelivery.{UnconfirmedDelivery, UnconfirmedWarning}
 import peds.akka.envelope._
+import peds.commons.util._
 
 
 object ReliablePublisher {
@@ -46,8 +47,8 @@ trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtL
   def handleUnconfirmedDeliveries( unconfirmedDeliveries: Seq[UnconfirmedDelivery] ): Unit = { 
     for { ud <- unconfirmedDeliveries } {
       log.warning( 
-        s"unconfirmed delivery for message[${ud.message.getClass.getSimpleName}] " +
-        s"to destination[${ud.destination}] with deliveryId=${ud.deliveryId}" 
+        "unconfirmed delivery for message[{}] to destination[{}] with deliveryId={}",
+        ud.message.getClass.safeSimpleName, ud.destination, ud.deliveryId
       )
     }
   }
