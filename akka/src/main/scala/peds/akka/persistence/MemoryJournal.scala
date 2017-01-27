@@ -16,13 +16,22 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
   * Created by rolfsd on 1/24/17.
   */
 class MemoryJournal extends AsyncWriteJournal with StrictLogging {
-  val initialSize: Int = MemoryJournal initialSizeFrom context.system.settings.config
+  val expectedPids: Int = MemoryJournal expectedPidsFrom context.system.settings.config
   implicit val ec = context.dispatcher
 
-  val journal: Agent[MemoryJournal.Adapter] = Agent( new MemoryJournal.Adapter( initialSize ) )
+  val journal: Agent[MemoryJournal.Adapter] = Agent( new MemoryJournal.Adapter( expectedPids ) )
 
   override def asyncWriteMessages( messages: immutable.Seq[AtomicWrite] ): Future[immutable.Seq[Try[Unit]]] = {
-    journal foreach { j => for ( w <- messages; p <- w.payload ) { j add p } }
+    journal foreach { j => 
+      for { 
+        w <- messages
+        p <- w.payload 
+      } { 
+        j add p
+        if ( expectedPids < j.size ) logger.warn( "nr pids:[{}] exceed journal's expected pids:[{}]", j.size.toString, expectedPids.toString )
+      } 
+    }
+
     Future successful Nil
   }
 
@@ -42,13 +51,13 @@ class MemoryJournal extends AsyncWriteJournal with StrictLogging {
     else {
       journal.future
       .map { j =>
-        val START = System.nanoTime()
+        // val START = System.nanoTime()
         val highest = j.highestSequenceNr( persistenceId )
         if ( highest != 0L ) {
           j.read( persistenceId, fromSequenceNr, math.min(toSequenceNr, highest), max ) foreach { recoveryCallback }
         }
-        val FINISH = System.nanoTime()
-        logger.warn( "asyncReplayMessages start:[{}] finish:[{}] duration:[{}]", START.toString, FINISH.toString, (FINISH - START).toString )
+        // val FINISH = System.nanoTime()
+        // logger.warn( "asyncReplayMessages start:[{}] finish:[{}] duration:[{}]", START.toString, FINISH.toString, (FINISH - START).toString )
       }
     }
   }
@@ -71,18 +80,20 @@ class MemoryJournal extends AsyncWriteJournal with StrictLogging {
 object MemoryJournal extends StrictLogging {
   val MemoryJournalPath = "peds.persistence.journal.memory"
 
-  val InitialSizePath = MemoryJournalPath + ".initial-size"
-  def initialSizeFrom( c: Config, default: => Int = 50000 ): Int = {
-    if ( c hasPath InitialSizePath ) c getInt InitialSizePath else default
+  val ExpectedPIDsPath = MemoryJournalPath + ".expected-persistence-ids"
+  def expectedPidsFrom( c: Config, default: => Int = 50000 ): Int = {
+    if ( c hasPath ExpectedPIDsPath ) c getInt ExpectedPIDsPath else default
   }
 
   private[MemoryJournal] class Adapter( initialSize: Int ) {
 
-    logger.warn( "MemoryJournal.Adapter supporing initial-pid-nr:[{}]", initialSize.toString )
+    logger.warn( "MemoryJournal.Adapter expecting up to [{}] pids", initialSize.toString )
 
     private var messages: Object2ObjectOpenHashMap[String, Vector[PersistentRepr]] = {
       new Object2ObjectOpenHashMap[String, Vector[PersistentRepr]]( initialSize )
     }
+
+    def size: Int = messages.size
 
     def add( p: PersistentRepr ): Unit = {
       val values = {
