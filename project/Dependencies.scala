@@ -35,6 +35,7 @@ object Dependencies {
   val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.1.7"
   val shapelessBuilder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.0"
   val fastutil = "it.unimi.dsi" % "fastutil" % "7.0.13" withSources() withJavadoc()
+  val persistLogging = "com.persist" %% "persist-logging" % "1.2.6"
 
   val joda = "joda-time" % "joda-time" % "2.9.6"
   val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"

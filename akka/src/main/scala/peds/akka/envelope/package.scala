@@ -62,7 +62,9 @@ package object envelope extends StrictLogging {
   
 
   /** Defines the work identifier that this message is part of */
-  case class WorkId( workId: ShortUUID = ShortUUID() )
+  case class WorkId( workId: ShortUUID = ShortUUID() ) {
+    override def toString: String = workId.toString
+  }
 
   object WorkId {
     val unknown = WorkId( ShortUUID.nilUUID )
@@ -72,6 +74,7 @@ package object envelope extends StrictLogging {
   /** Defines the sequence number of this message within the workId */
   case class MessageNumber( value: Long ) {
     def increment: MessageNumber = MessageNumber( value + 1 )
+    override def toString: String = value.toString
   }
 
   object MessageNumber {
