@@ -65,8 +65,8 @@ object StreamMonitor extends StrictLogging { outer =>
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def add( label: Symbol ): Unit = tracked.alter{ _ :+ label } foreach { t => logger info csvHeader(t) }
-  def set( labels: Symbol* ): Unit = tracked.alter( labels ) foreach { t => logger info csvHeader(t) }
+  def add( label: Symbol ): Unit = tracked.alter{ _ :+ label } foreach { t => logger debug csvHeader(t) }
+  def set( labels: Symbol* ): Unit = tracked.alter( labels ) foreach { t => logger debug csvHeader(t) }
 
   def source( label: Symbol ): StreamMonitor = if ( notEnabled ) SilentMonitor else addMonitor( label, SourceMonitor(label) )
   def flow( label: Symbol ): StreamMonitor = if ( notEnabled ) SilentMonitor else addMonitor( label, FlowMonitor(label) )
@@ -77,12 +77,12 @@ object StreamMonitor extends StrictLogging { outer =>
     monitor
   }
 
-  @inline def publish: Unit = logger info csvLine( tracked.get(), all.get() )
+  @inline def publish: Unit = logger debug csvLine( tracked.get(), all.get() )
   private def csvLine( labels: Seq[Symbol], ms: Map[Symbol, StreamMonitor] ): String = {
     labels.map{ l => ms.get(l).map{ m => s"${l.name}:${m.count}"} }.flatten.mkString( ", " )
   }
 
-  @inline def isEnabled: Boolean = logger.underlying.isInfoEnabled
+  @inline def isEnabled: Boolean = logger.underlying.isDebugEnabled
   @inline def notEnabled: Boolean = !isEnabled
 
 

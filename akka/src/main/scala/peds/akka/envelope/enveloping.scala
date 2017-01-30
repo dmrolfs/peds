@@ -1,6 +1,7 @@
 package peds.akka.envelope
 
-import akka.actor.{ Actor, ActorLogging }
+import akka.actor.{Actor, ActorLogging}
+import com.persist.logging.RequestId
 import peds.akka.ActorStack
 import peds.commons.util._
 
@@ -22,10 +23,12 @@ trait Enveloping {
   def envelopeHeader: Option[EnvelopeHeader] = currentHeaderVar
   protected def envelopeHeader_=( header: Option[EnvelopeHeader] ): Unit = { currentHeaderVar = header }
   @transient private[this] var currentHeaderVar: Option[EnvelopeHeader] = None
+
+  implicit def requestId: RequestId = RequestId( trackingId = workId.toString, spanId = messageNumber.toString )
 }
 
 
-trait EnvelopingActor extends ActorStack with Enveloping { outer: Actor with ActorLogging =>
+trait EnvelopingActor extends ActorStack with Enveloping { outer: Actor =>
   // override def pathname: String = self.path.name
   override def pathname: String = self.path.toString
 

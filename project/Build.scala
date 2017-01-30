@@ -20,6 +20,7 @@ object Build extends Build {
       compile( math3 ) ++
       compile( codec ) ++
       compile( logbackclassic ) ++
+      compile( persistLogging ) ++
       compile( json4sJackson ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
@@ -44,6 +45,7 @@ object Build extends Build {
       compile( akkaSlf4j ) ++
       compile( akkaStreams ) ++
       compile( akkaAgent ) ++
+      compile( persistLogging ) ++
       compile( fastutil ) ++
       compile( betterFiles ) ++
       compile( metricsCore ) ++
@@ -62,6 +64,7 @@ object Build extends Build {
       compile( eaio ) ++
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
+      compile( persistLogging ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
