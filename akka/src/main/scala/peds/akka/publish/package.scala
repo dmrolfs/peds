@@ -1,6 +1,6 @@
 package peds.akka
 
-import akka.actor.{ Actor, ActorContext, ActorLogging }
+import akka.actor.{ Actor, ActorContext }
 import com.typesafe.scalalogging.LazyLogging
 import shapeless.TypeCase
 import peds.commons.util.Chain
@@ -16,12 +16,12 @@ package object publish extends LazyLogging {
   /**
    * EventPublisher specifies 
    */
-  trait EventPublisher extends ActorStack { outer: Actor with ActorLogging =>
+  trait EventPublisher extends ActorStack { outer: Actor  =>
     def publish: Publisher = silent
   }
 
 
-  trait SilentPublisher extends EventPublisher { outer: Actor with ActorLogging =>
+  trait SilentPublisher extends EventPublisher { outer: Actor =>
     override def publish: Publisher = silent
   }
 
@@ -36,10 +36,7 @@ package object publish extends LazyLogging {
   def stream( implicit context: ActorContext ): Publisher = ( event: Any ) => {
     val target = context.system.eventStream
     val Event = TypeCase[target.Event]
-    Event.unapply( event ) foreach { e =>
-      logger.debug( "local stream publishing event:[{}] on target:[{}]", e, target )
-      target publish e
-    }
+    Event.unapply( event ) foreach { target.publish }
     Left( event )
   }
 
