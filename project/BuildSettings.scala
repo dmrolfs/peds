@@ -21,7 +21,7 @@ object BuildSettings {
     scalaVersion := "2.11.8",
     resolvers ++= Dependencies.resolutionRepos,
     resolvers += Resolver.jcenterRepo,
-    coverallsTokenFile := Some("~/.sbt/peds-coveralls-token.txt"),
+    coverallsTokenFile := Some("~/.sbt/omnibus-coveralls-token.txt"),
     scalacOptions := Seq(
       "-encoding", 
       "utf8",
@@ -58,7 +58,7 @@ object BuildSettings {
       Seq(
         pomExtra := <scm>
           <url>https://github.com</url>
-          <connection>https://github.com/dmrolfs/shapeless-builder.git</connection>
+          <connection>https://github.com/dmrolfs/omnibus.git</connection>
         </scm>
         <developers>
           <developer>
