@@ -99,11 +99,14 @@ object MemoryJournal extends StrictLogging {
       val values = {
         Option( messages get p.persistenceId )
         .map { vs =>
-          require(
-            vs.last.sequenceNr < p.sequenceNr,
-            s"added sequenceNr[${p.sequenceNr}] must be greater than last store:[${vs.last.sequenceNr}] "
-          )
-          vs :+ p
+          val result = vs :+ p
+          
+          val sortedResult = for { last <- vs.lastOption if p.sequenceNr <= last.sequenceNr } yield {
+            logger.warn( s"resorting since added sequenceNr[${p.sequenceNr}] is less than previous last element:[${vs.last.sequenceNr}]")
+            result.sortBy{ _.sequenceNr }
+          }
+
+          sortedResult getOrElse result
         }
         .getOrElse { Vector(p) }
       }
