@@ -48,7 +48,7 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
 }
 
 object TaggedID {
-  val Delimiter: String = "-"
+  val Delimiter: String = ":"
   val Regex = s"""((.+)${Delimiter})?(.+)""".r  // this breaks down if Delimiter needs to be escaped
   implicit def taggedId2Id[T]( tid: TaggedID[T] ): T = tid.id
 
