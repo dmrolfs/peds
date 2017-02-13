@@ -5,7 +5,7 @@ import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 object BuildSettings {
 
-  val VERSION = "0.4.7"
+  val VERSION = "0.4.8"
 
   lazy val noPublishing = Seq(
     publish := (),
@@ -23,7 +23,7 @@ object BuildSettings {
     resolvers += Resolver.jcenterRepo,
     coverallsTokenFile := Some("~/.sbt/peds-coveralls-token.txt"),
     scalacOptions := Seq(
-      "-encoding", 
+      "-encoding",
       "utf8",
       // "-Xlog-implicits",
       "-feature",
