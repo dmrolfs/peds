@@ -23,7 +23,7 @@ object BuildSettings {
     resolvers += Resolver.jcenterRepo,
     coverallsTokenFile := Some("~/.sbt/omnibus-coveralls-token.txt"),
     scalacOptions := Seq(
-      "-encoding", 
+      "-encoding",
       "utf8",
       // "-Xlog-implicits",
       "-feature",
