@@ -26,12 +26,10 @@ object ShortUUID {
   val nilUUID: ShortUUID = uuidToShort( UUID.nilUUID )
 
 
-  trait ShortUuidIdentifying[T] { self: Identifying[T] =>
+  trait ShortUuidIdentifying[T] { self: Identifying2[T] =>
     override type ID = ShortUUID
-    override val evID: ClassTag[ID] = classTag[ShortUUID]
-    override val evTID: ClassTag[TID] = classTag[TaggedID[ShortUUID]]
-    override def fromString( idstr: String ): ID = ShortUUID( idstr )
-    override def nextId: TryV[TID] = tag( ShortUUID() ).right
+    override def nextTID: TryV[TID] = tag( ShortUUID() ).right
+    override def idFromString( idRep: String ): ID = ShortUUID( idRep )
   }
 }
 
