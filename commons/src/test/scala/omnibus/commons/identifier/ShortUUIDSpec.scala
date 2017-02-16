@@ -9,26 +9,26 @@ import com.typesafe.scalalogging.LazyLogging
 class ShortUUIDSpec extends FlatSpec with Matchers with LazyLogging {
 
   "A ShortUUID" should "create a nil" in {
-    ShortUUID.short2UUID( ShortUUID.nilUUID ) shouldBe UUID.nilUUID
+    ShortUUID.toUUID( ShortUUID.zero ) shouldBe UUID.nilUUID
   }
 
   it should "represent uuid without loss" in {
     val expectedUuid = new UUID
-    val short = ShortUUID.uuidToShort( expectedUuid )
-    val replayedUuid = ShortUUID.short2UUID( short )
+    val short = ShortUUID.fromUUID( expectedUuid )
+    val replayedUuid = ShortUUID.toUUID( short )
     expectedUuid shouldBe replayedUuid
   }
   
   it should "convert from uuid implicitly" in {
     val uuid = new UUID
-    val expected = ShortUUID.uuidToShort( uuid )
+    val expected = ShortUUID.fromUUID( uuid )
     val actual: ShortUUID = uuid
     expected shouldBe actual
   }
   
   it should "convert to uuid implicitly" in {
     val expected = new UUID
-    val short = ShortUUID.uuidToShort( expected )
+    val short = ShortUUID.fromUUID( expected )
     val actual: UUID = short
     expected shouldBe actual
   }

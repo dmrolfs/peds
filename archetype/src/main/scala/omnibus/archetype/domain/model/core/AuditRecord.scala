@@ -10,24 +10,28 @@ trait AuditedEntity extends Entity {
 
 
 trait AuditRecord {
-  type UID
-  def createdBy: UID
+  type ID
+  def createdBy: ID
   def createdOn: joda.DateTime
-  def modifiedBy: UID
+  def modifiedBy: ID
   def modifiedOn: joda.DateTime
 }
 
-case class SimpleAuditRecord[ID]( 
-  override val createdBy: ID,
+object AuditRecord {
+  type Aux[ID0] = AuditRecord { type ID = ID0 }
+}
+
+case class SimpleAuditRecord[ID0](
+  override val createdBy: ID0,
   override val createdOn: joda.DateTime, 
-  override val modifiedBy: ID, 
+  override val modifiedBy: ID0,
   override val modifiedOn: joda.DateTime 
 ) extends AuditRecord {
-  def this( actorID: ID, timestamp: joda.DateTime ) = this( actorID, timestamp, actorID, timestamp )
-  override type UID = ID
+  def this( actorID: ID0, timestamp: joda.DateTime ) = this( actorID, timestamp, actorID, timestamp )
+  override type ID = ID0
 }
 
 object SimpleAuditRecord {
-  def apply[UID]( actorID: UID, timestamp: joda.DateTime ): SimpleAuditRecord[UID] = new SimpleAuditRecord( actorID, timestamp )
-  def apply[UID]( actorID: UID )( implicit clock: Clock ): SimpleAuditRecord[UID] = SimpleAuditRecord( actorID, clock() )
+  def apply[ID]( actorID: ID, timestamp: joda.DateTime ): SimpleAuditRecord[ID] = new SimpleAuditRecord( actorID, timestamp )
+  def apply[ID]( actorID: ID )( implicit clock: Clock ): SimpleAuditRecord[ID] = SimpleAuditRecord( actorID, clock() )
 }

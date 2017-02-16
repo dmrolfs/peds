@@ -67,7 +67,7 @@ package object envelope extends StrictLogging {
   }
 
   object WorkId {
-    val unknown = WorkId( ShortUUID.nilUUID )
+    val unknown = WorkId( ShortUUID.zero )
   }
 
   

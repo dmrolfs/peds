@@ -5,6 +5,7 @@ import java.util.Locale
 import org.joda.time.DateTime
 
 
+//todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 trait Address extends Effectivity with Equals {
   def address: String
 

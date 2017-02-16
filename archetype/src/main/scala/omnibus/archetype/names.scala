@@ -4,6 +4,7 @@ import scala.collection.mutable
 import org.joda.time.DateTime
 
 
+//todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 case object NameUsage extends Enumeration {
   type NameUsage = Value
   val Legal = Value( 1, "legal" )

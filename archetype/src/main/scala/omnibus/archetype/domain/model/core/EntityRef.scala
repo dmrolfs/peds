@@ -14,16 +14,16 @@ sealed trait EntityRef extends ((Symbol) => Any) with Ordered[EntityRef] {
 
   def id: TID
   def name: String
-  def clazz: Class[_]
 
   def identify: String = name + ":" + id
   override def toString: String = identify
 }
 
 object EntityRef {
+  type Aux[E <: Entity] = EntityRef { type Source = E }
+
   val ID: Symbol = 'id
   val NAME: Symbol = 'name
-  val CLAZZ: Symbol = 'class
 
 
   // def apply[T <: Entity : ClassTag]( entity: T ): EntityRef = {
@@ -42,7 +42,7 @@ object EntityRef {
   //   EntityRefImpl( id = id, name = name, clazz = clazz, meta = Map( meta:_* ) )
   // }
 
-  def unapply( ref: EntityRef ): Option[(ref.ID, String, Class[_])] = Some( (ref.id, ref.name, ref.clazz) )
+  def unapply( ref: EntityRef ): Option[(ref.ID, String)] = Some( (ref.id, ref.name) )
 
   trait EntityRefLike extends EntityRef with Equals {
     def meta: Map[Symbol, Any]
@@ -56,19 +56,12 @@ object EntityRef {
     override def get( property: Symbol ): Option[Any] = property match {
       case ID => Some( id )
       case NAME => Some( name )
-      case CLAZZ => Some( clazz )
       case p => meta get p
     }
 
     override def compare( rhs: EntityRef ): Int = this.## compare rhs.##
 
-    override def hashCode: Int = {
-      41 * (
-        41 * (
-          41 + id.##
-        ) + clazz.##
-      )
-    }
+    override def hashCode: Int = 41 * ( 41 + id.## )
 
     override def equals( rhs: Any ): Boolean = rhs match {
       case that: EntityRefLike => {
@@ -76,8 +69,7 @@ object EntityRef {
         else {
           ( that.## == this.## ) &&
           ( that canEqual this ) &&
-          ( this.id == that.id ) &&
-          ( this.clazz == that.clazz )
+          ( this.id == that.id )
         }
       }
 
@@ -85,7 +77,7 @@ object EntityRef {
     }
 
     override def toString: String = {
-      var result = s"EntityRef(name=$name, id=$id, class=${clazz.safeSimpleName}"
+      var result = s"EntityRef(name=$name, id=$id, class=${getClass.safeSimpleName}"
       if ( !meta.isEmpty ) result += s", meta=${meta}"
       result += ")"
       result

@@ -21,6 +21,7 @@ object Build extends Build {
       compile( codec ) ++
       compile( logbackclassic ) ++
       compile( persistLogging ) ++
+      compile( hashids ) ++
       compile( json4sJackson ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
@@ -46,6 +47,7 @@ object Build extends Build {
       compile( akkaStreams ) ++
       compile( akkaAgent ) ++
       compile( persistLogging ) ++
+      compile( hashids ) ++
       compile( fastutil ) ++
       compile( betterFiles ) ++
       compile( metricsCore ) ++
@@ -65,6 +67,7 @@ object Build extends Build {
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
       compile( persistLogging ) ++
+      compile( hashids ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++

@@ -1,23 +1,20 @@
 package omnibus.archetype.domain.model.core
 
-import scala.reflect._
-import scalaz._, Scalaz._
 import shapeless.Lens
-import com.typesafe.scalalogging.LazyLogging
-import omnibus.commons.TryV
 import omnibus.commons.identifier._
-import omnibus.commons.util._
 
 
 trait Identifiable {
   type ID
-  def id: TID
-
   type TID = TaggedID[ID]
-  val evID: ClassTag[ID]
-  val evTID: ClassTag[TID]
+  def id: TID
 }
 
+object Identifiable {
+  type Aux[ID0] = Identifiable { type ID = ID0 }
+
+  def apply( implicit i: Identifiable ): Aux[i.ID] = i
+}
 
 trait IdentifiableLensProvider[I <: Identifiable] {
   def idLens: Lens[I, I#TID]
