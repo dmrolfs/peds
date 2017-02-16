@@ -15,7 +15,6 @@ trait Entity extends Identifiable with Serializable {
 
 
 abstract class EntityIdentifying[E <: Entity: ClassTag] extends Identifying[E] {
-  // val evEntity: ClassTag[E]
   override type ID = E#ID
   override def tidOf( o: E ): TID = tag( o.id )
 
