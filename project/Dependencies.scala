@@ -27,6 +27,7 @@ object Dependencies {
   val akkaTestKit = akkaModule( "akka-testkit" )
   val akkaStreams = akkaModule( "akka-stream" )
   val akkaAgent = akkaModule( "akka-agent" )
+  val akkaQuery = akkaModule( "akka-persistence-query-experimental" )
 
   val config = "com.typesafe" % "config" % "1.3.1"
   val eaio = "com.eaio.uuid" % "uuid" % "3.4"
@@ -47,6 +48,10 @@ object Dependencies {
   val metricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
   val metricsGraphite = "io.dropwizard.metrics" % "metrics-graphite" % "3.1.2"
   val metricsScala = "nl.grons" %% "metrics-scala" % "3.5.5_a2.4"
+
+  val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.22"
+  val leveldb = "org.iq80.leveldb" % "leveldb" % "0.7" // "org.iq80.leveldb" % "leveldb" % "0.9"
+  val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
   val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.16.0"
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.2"
