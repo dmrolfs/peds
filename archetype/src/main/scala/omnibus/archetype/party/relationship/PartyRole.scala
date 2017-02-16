@@ -2,6 +2,7 @@ package omnibus.archetype.party.relationship
 
 import omnibus.archetype.party.Party
 
+//todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 
 trait PartyRole
 

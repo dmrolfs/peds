@@ -7,6 +7,7 @@ import relationship.{PartyRole, PartyRoleLike}
 import omnibus.commons.util._
 
 
+//todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 trait Party extends Entity with Equals {
   def addresses: Seq[Address]
   // def roles: Seq[PartyRoleLike[ID]]

@@ -4,6 +4,7 @@ import scala.concurrent.Future
 import omnibus.archetype.party.Party
 
 
+//todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 abstract class PartyRelationship[CP <: Party, SP <: Party] {
   type Client = CP
   type ClientRole <: PartyRoleLike[CP]
