@@ -5,7 +5,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.agent.Agent
 import akka.persistence.query.{EventEnvelope2, NoOffset, Offset}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, Materializer}
 import akka.stream.scaladsl.{Flow, Keep, Sink}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -21,7 +21,7 @@ class AgentProjection[T](
   offset: Offset = NoOffset
 )(
   implicit system: ActorSystem,
-  materializer: ActorMaterializer,
+  materializer: Materializer,
   ec: ExecutionContext
 ) extends LazyLogging {
   import AgentProjection.Directive
@@ -33,8 +33,9 @@ class AgentProjection[T](
     current
   }
 
+  //todo - revisit - this is probably unnecessary with use of Dynamic stream branching
   private def materializeCurrentView: Future[(T, Long)] = {
-    logger.info( "starting active plan projection source..." )
+    logger.info( "starting active projection source..." )
 
     queryJournal
       .currentEventsByTag( tag, offset )
@@ -57,8 +58,8 @@ class AgentProjection[T](
     Flow[EventEnvelope2]
       .map { e => logger.warn( "TEST enter filter - tagged event:[{}]", e.toString ); e }
       .collect {
-        case EventEnvelope2( offset, pid, snr, event ) if selectLensFor isDefinedAt event => {
-          Directive[T]( selectLensFor(event), pid, snr, offset, event )
+        case EventEnvelope2( o, pid, snr, event ) if selectLensFor isDefinedAt event => {
+          Directive[T]( selectLensFor(event), pid, snr, o, event )
         }
       }
   }
