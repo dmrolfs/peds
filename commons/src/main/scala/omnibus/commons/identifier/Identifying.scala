@@ -21,6 +21,8 @@ abstract class Identifying[T] {
   def nextTID: TryV[TID]
   def idFromString( idRep: String ): ID
   def tidFromString( idRep: String ): TID = idFromString( idRep )
+
+  override def toString: String = s"Identifying(${idTag})"
 }
 
 object Identifying {
