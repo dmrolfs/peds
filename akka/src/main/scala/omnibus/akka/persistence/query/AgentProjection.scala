@@ -29,6 +29,7 @@ class AgentProjection[T](
   val view: Agent[T] = Agent( zero )
 
   def start(): Future[T] = materializeCurrentView map { case (current, snr) =>
+    logger.info( "current view materialized. starting ongoing projection..." )
     startProjectionFrom( snr )
     current
   }
