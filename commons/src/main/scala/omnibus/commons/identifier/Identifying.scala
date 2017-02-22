@@ -14,7 +14,7 @@ import omnibus.commons.util._
 abstract class Identifying[T] {
   type ID
   type TID = TaggedID[ID]
-  val idTag: Symbol
+  def idTag: Symbol
   implicit def tag( id: ID ): TID = TaggedID[ID]( idTag, id )
 
   def tidOf( o: T ): TID
