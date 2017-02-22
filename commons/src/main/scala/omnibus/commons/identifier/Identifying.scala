@@ -14,13 +14,15 @@ import omnibus.commons.util._
 abstract class Identifying[T] {
   type ID
   type TID = TaggedID[ID]
-  val idTag: Symbol
+  def idTag: Symbol
   implicit def tag( id: ID ): TID = TaggedID[ID]( idTag, id )
 
   def tidOf( o: T ): TID
   def nextTID: TryV[TID]
   def idFromString( idRep: String ): ID
   def tidFromString( idRep: String ): TID = idFromString( idRep )
+
+  override def toString: String = s"Identifying(${idTag})"
 }
 
 object Identifying {

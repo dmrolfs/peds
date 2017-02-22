@@ -43,6 +43,7 @@ object Build extends Build {
       compile( akkaActor ) ++
       compile( akkaContrib ) ++
       compile( akkaPersistence ) ++
+      compile( akkaQuery ) ++
       compile( akkaSlf4j ) ++
       compile( akkaStreams ) ++
       compile( akkaAgent ) ++
@@ -53,6 +54,9 @@ object Build extends Build {
       compile( metricsCore ) ++
       compile( metricsGraphite ) ++
       compile( metricsScala ) ++
+      compile( cassandra ) ++
+      compile( leveldb ) ++
+      compile( leveldbjni ) ++
       test( akkaTestKit ) ++
       test( scalatest ) ++
       test( scalactic )
