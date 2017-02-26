@@ -19,17 +19,17 @@ object QueryJournal extends LazyLogging {
   def fromSystem( system: ActorSystem ): Journal = {
     journalFQN( system ) match {
       case fqn if fqn == classOf[CassandraJournal].getName ⇒ {
-        logger.warn( "#TEST cassandra journal recognized" )
+        logger.info( "cassandra journal recognized" )
         PersistenceQuery( system ).readJournalFor[CassandraReadJournal]( CassandraReadJournal.Identifier )
       }
 
       case fqn if fqn == "akka.persistence.journal.leveldb.LeveldbJournal" ⇒ {
-        logger.warn( "#TEST leveldb journal recognized" )
+        logger.info( "leveldb journal recognized" )
         PersistenceQuery( system ).readJournalFor[LeveldbReadJournal]( LeveldbReadJournal.Identifier )
       }
 
       case fqn ⇒ {
-        logger.warn( "#TEST journal FQN not recognized - creating empty read journal:[{}]", fqn )
+        logger.warn( "journal FQN not recognized - creating empty read journal:[{}]", fqn )
         QueryJournal.empty
       }
     }
@@ -89,16 +89,16 @@ object QueryJournal extends LazyLogging {
             jplugin.unwrapped.cast[String]
             .map { path ⇒
               if ( config.hasPath( path ) ) {
-                logger.warn( "#TEST looking for class in config path:[{}]", path )
+                logger.debug( "looking for class in config path:[{}]", path )
                 config.getConfig( path ).getString( "class" )
               } else {
-                logger.warn( "#TEST no configuration found for path:[{}] - return empty FQN", path )
+                logger.warn( "no configuration found for path:[{}] - return empty FQN", path )
                 ""
               }
             }
             .getOrElse { "" }
           }
-          logger.warn( "#TEST journal plugin string classname found:[{}]", fqn )
+          logger.info( "journal plugin string classname found:[{}]", fqn )
           fqn
         }
 
@@ -109,10 +109,10 @@ object QueryJournal extends LazyLogging {
           val jconfig = config.getConfig( JournalPluginPath )
           if ( jconfig.hasPath( "class" ) ) {
             val fqn = jconfig.getString( "class" )
-            logger.warn( "#TEST journal plugin class property found:[{}]", fqn )
+            logger.info( "journal plugin class property found:[{}]", fqn )
             fqn
           } else {
-            logger.warn( "#TEST no class specified for journal plugin" )
+            logger.warn( "no class specified for journal plugin" )
             ""
           }
         }
@@ -123,7 +123,7 @@ object QueryJournal extends LazyLogging {
         }
       }
     } else {
-      logger.warn( "#TEST no journal plugin specified" )
+      logger.warn( "no journal plugin specified" )
       ""
     }
   }
