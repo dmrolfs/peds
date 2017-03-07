@@ -39,7 +39,7 @@ object Dependencies {
   val shapelessBuilder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.1"
   val fastutil = "it.unimi.dsi" % "fastutil" % "7.0.13" withSources() withJavadoc()
   val persistLogging = "com.persist" %% "persist-logging" % "1.3.1"
-  val hashids = "com.github.dmrolfs" %% "hashids-scala" % "1.1.2-9ff5999"
+  // val hashids = "com.github.dmrolfs" %% "hashids-scala" % "1.1.2-9ff5999"
 
   val joda = "joda-time" % "joda-time" % "2.9.7"
   val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"

@@ -5,7 +5,7 @@ import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 object BuildSettings {
 
-  val VERSION = "0.5.0-SNAPSHOT"
+  val VERSION = "0.5.2"
 
   lazy val noPublishing = Seq(
     publish := (),

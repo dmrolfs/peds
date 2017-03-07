@@ -21,7 +21,7 @@ object Build extends Build {
       compile( codec ) ++
       compile( logbackclassic ) ++
       compile( persistLogging ) ++
-      compile( hashids ) ++
+      // compile( hashids ) ++
       compile( json4sJackson ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
@@ -48,7 +48,7 @@ object Build extends Build {
       compile( akkaStreams ) ++
       compile( akkaAgent ) ++
       compile( persistLogging ) ++
-      compile( hashids ) ++
+      // compile( hashids ) ++
       compile( fastutil ) ++
       compile( betterFiles ) ++
       compile( metricsCore ) ++
@@ -71,7 +71,7 @@ object Build extends Build {
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
       compile( persistLogging ) ++
-      compile( hashids ) ++
+      // compile( hashids ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
@@ -87,7 +87,7 @@ object Build extends Build {
   //     compile( config ) ++
   //     compile( slickPersistence ) ++
   //     compile( mysqlConnector ) ++
-  //     test( specs2 ) 
+  //     test( specs2 )
   //   )
 
   // lazy val spray = Project( "omnibus-spray", file( "spray" ) )
@@ -100,7 +100,7 @@ object Build extends Build {
   //     compile( sprayCan ) ++
   //     compile( sprayRouting ) ++
   //     compile( json4sJackson ) ++
-  //     test( specs2 ) 
+  //     test( specs2 )
   //   )
 
 }
