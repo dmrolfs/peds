@@ -15,6 +15,7 @@ project/boot/
 project/plugins/project/
 
 # Scala-IDE specific
+.ensime_config
 .scala_dependencies
 .worksheet
 .idea/

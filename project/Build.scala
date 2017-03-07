@@ -11,7 +11,7 @@ object Build extends Build {
     .aggregate( commons, akka, archetype )
     .settings( basicSettings ++ doNotPublishSettings: _* )
 
-  lazy val commons = Project( "peds-commons", file( "commons" ) )
+  lazy val commons = Project( "omnibus-commons", file( "commons" ) )
     .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
       compile( "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" ) ++
@@ -21,6 +21,7 @@ object Build extends Build {
       compile( codec ) ++
       compile( logbackclassic ) ++
       compile( persistLogging ) ++
+      // compile( hashids ) ++
       compile( json4sJackson ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
@@ -34,7 +35,7 @@ object Build extends Build {
       test( scalacheck )
     )
 
-  lazy val akka = Project( "peds-akka", file( "akka" ) )
+  lazy val akka = Project( "omnibus-akka", file( "akka" ) )
     .dependsOn( commons )
     .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
@@ -42,21 +43,26 @@ object Build extends Build {
       compile( akkaActor ) ++
       compile( akkaContrib ) ++
       compile( akkaPersistence ) ++
+      compile( akkaQuery ) ++
       compile( akkaSlf4j ) ++
       compile( akkaStreams ) ++
       compile( akkaAgent ) ++
       compile( persistLogging ) ++
+      // compile( hashids ) ++
       compile( fastutil ) ++
       compile( betterFiles ) ++
       compile( metricsCore ) ++
       compile( metricsGraphite ) ++
       compile( metricsScala ) ++
+      compile( cassandra ) ++
+      compile( leveldb ) ++
+      compile( leveldbjni ) ++
       test( akkaTestKit ) ++
       test( scalatest ) ++
       test( scalactic )
     )
 
-  lazy val archetype = Project( "peds-archetype", file( "archetype" ) )
+  lazy val archetype = Project( "omnibus-archetype", file( "archetype" ) )
     .dependsOn( commons )
     .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
@@ -65,6 +71,7 @@ object Build extends Build {
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++
       compile( persistLogging ) ++
+      // compile( hashids ) ++
       compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
@@ -73,17 +80,17 @@ object Build extends Build {
       test( scalatest )
     )
 
-  // lazy val slick = Project( "peds-slick", file( "slick" ) )
+  // lazy val slick = Project( "omnibus-slick", file( "slick" ) )
   //   .dependsOn( commons )
   //   .settings( moduleSettings: _* )
   //   .settings( libraryDependencies ++=
   //     compile( config ) ++
   //     compile( slickPersistence ) ++
   //     compile( mysqlConnector ) ++
-  //     test( specs2 ) 
+  //     test( specs2 )
   //   )
 
-  // lazy val spray = Project( "peds-spray", file( "spray" ) )
+  // lazy val spray = Project( "omnibus-spray", file( "spray" ) )
   //   .dependsOn( commons )
   //   .settings( moduleSettings: _* )
   //   .settings( libraryDependencies ++=
@@ -93,7 +100,7 @@ object Build extends Build {
   //     compile( sprayCan ) ++
   //     compile( sprayRouting ) ++
   //     compile( json4sJackson ) ++
-  //     test( specs2 ) 
+  //     test( specs2 )
   //   )
 
 }
