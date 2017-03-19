@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
   val resolutionRepos = Seq(
     "spray repo" at "http://repo.spray.io",
-    "eaio.com" at "http://eaio.com/maven2",
+    "eaio.com" at "http://repo.eaio.com/maven2",
     "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
     "omen-bintray" at "http://dl.bintray.com/omen/maven",
     "Typesafe releases" at "http://repo.typesafe.com/typesafe/releases",
@@ -30,7 +30,8 @@ object Dependencies {
   val akkaQuery = akkaModule( "akka-persistence-query-experimental" )
 
   val config = "com.typesafe" % "config" % "1.3.1"
-  val eaio = "com.eaio.uuid" % "uuid" % "3.4"
+  val ficus = "com.iheart" %% "ficus" % "1.4.0"
+  val eaio = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.0"
   val math3 = "org.apache.commons" % "commons-math3" % "3.6.1"
   val codec = "commons-codec" % "commons-codec" % "1.10"
   val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.5.0"
@@ -40,6 +41,7 @@ object Dependencies {
   val fastutil = "it.unimi.dsi" % "fastutil" % "7.0.13" withSources() withJavadoc()
   val persistLogging = "com.persist" %% "persist-logging" % "1.3.1"
   // val hashids = "com.github.dmrolfs" %% "hashids-scala" % "1.1.2-9ff5999"
+  val squants = "org.typelevel"  %% "squants"  % "1.1.0"
 
   val joda = "joda-time" % "joda-time" % "2.9.7"
   val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"
