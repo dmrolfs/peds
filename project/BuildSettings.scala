@@ -18,7 +18,7 @@ object BuildSettings {
     description := "A Scala library providing common and generally applicable support for system development, including utilities, data structures, algorithms and archetypes.",
     startYear := Some(2013),
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-    scalaVersion := "2.12.1",
+    scalaVersion := "2.12.2",
     resolvers ++= Dependencies.resolutionRepos,
     resolvers += Resolver.jcenterRepo,
     coverallsTokenFile := Some("~/.sbt/omnibus-coveralls-token.txt"),

@@ -3,7 +3,7 @@ package omnibus.akka.persistence.query
 import scala.concurrent.{ExecutionContext, Future}
 import akka.{Done, NotUsed}
 import akka.actor.ActorSystem
-import akka.persistence.query.{EventEnvelope2, NoOffset, Offset}
+import akka.persistence.query.{EventEnvelope, NoOffset, Offset}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import com.typesafe.scalalogging.LazyLogging
@@ -29,7 +29,7 @@ class ProjectionSubscriber(
     .map { e => logger.warn( "#TEST processing new tagged event: [{}]", e ); e }
     //      .via( filterKnownEventsFlow )
     .to(
-      Sink foreach { envelope: EventEnvelope2 =>
+      Sink foreach { envelope: EventEnvelope =>
         logger.warn( "#TEST applying lens @ snr:[{}] to event-envelope:[{}]", envelope.sequenceNr.toString, envelope.toString )
         applyLensFor( envelope.event )
       }
@@ -37,16 +37,16 @@ class ProjectionSubscriber(
     .run()
   }
 
-//  private def filterKnownEventsFlow: Flow[EventEnvelope2, Any, NotUsed] = {
-//    Flow[EventEnvelope2]
+//  private def filterKnownEventsFlow: Flow[EventEnvelope, Any, NotUsed] = {
+//    Flow[EventEnvelope]
 //      .map { e => logger.warn( "#TEST enter filter - tagged event:[{}]", e.toString ); e }
 //      .collect {
-//        case EventEnvelope2( o, pid, snr, event ) if applyLensFor isDefinedAt event =>
+//        case EventEnvelope( o, pid, snr, event ) if applyLensFor isDefinedAt event =>
 //      }
 //  }
 
-  private def sink: Sink[EventEnvelope2, Future[Done]] = {
-    Sink.foreach { envelope: EventEnvelope2 =>
+  private def sink: Sink[EventEnvelope, Future[Done]] = {
+    Sink.foreach { envelope: EventEnvelope =>
       logger.warn( "#TEST applying lens @ snr:[{}] to event-envelope:[{}]", envelope.sequenceNr.toString, envelope.toString )
       applyLensFor( envelope.event )
     }

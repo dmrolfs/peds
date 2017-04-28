@@ -44,7 +44,7 @@ object ShortUUID {
   }
 }
 
-class ShortUUID private[identifier]( val repr: String ) extends Equals {
+class ShortUUID private[identifier]( val repr: String ) extends Serializable with Equals {
 // class ShortUUID( ids: Seq[Long] ) extends Equals {
   // import ShortUUID.hashids
 

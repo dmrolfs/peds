@@ -17,7 +17,7 @@ object Dependencies {
   def runtime( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "runtime" )
   def container( deps: ModuleID* ): Seq[ModuleID] = deps map ( _ % "container" )
 
-  val akkaVersion = "2.4.17"
+  val akkaVersion = "2.5.0"
   def akkaModule( id: String ) = "com.typesafe.akka" %% id % akkaVersion
 
   val akkaActor = akkaModule( "akka-actor" )
@@ -27,7 +27,7 @@ object Dependencies {
   val akkaTestKit = akkaModule( "akka-testkit" )
   val akkaStreams = akkaModule( "akka-stream" )
   val akkaAgent = akkaModule( "akka-agent" )
-  val akkaQuery = akkaModule( "akka-persistence-query-experimental" )
+  val akkaQuery = akkaModule( "akka-persistence-query" )
 
   val config = "com.typesafe" % "config" % "1.3.1"
   val ficus = "com.iheart" %% "ficus" % "1.4.0"
@@ -51,7 +51,7 @@ object Dependencies {
   val metricsGraphite = "io.dropwizard.metrics" % "metrics-graphite" % "3.1.2"
   val metricsScala = "nl.grons" %% "metrics-scala" % "3.5.5_a2.4"
 
-  val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.22"
+  val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.51"
   val leveldb = "org.iq80.leveldb" % "leveldb" % "0.7" // "org.iq80.leveldb" % "leveldb" % "0.9"
   val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
