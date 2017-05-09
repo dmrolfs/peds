@@ -16,7 +16,9 @@ object Build extends Build {
     .settings( libraryDependencies ++=
       compile( "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" ) ++
       compile( config ) ++
+      compile( ficus ) ++
       compile( eaio ) ++
+      compile( squants ) ++
       compile( math3 ) ++
       compile( codec ) ++
       compile( logbackclassic ) ++
@@ -40,6 +42,7 @@ object Build extends Build {
     .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
+      compile( ficus ) ++
       compile( akkaActor ) ++
       compile( akkaContrib ) ++
       compile( akkaPersistence ) ++
@@ -67,6 +70,7 @@ object Build extends Build {
     .settings( moduleSettings ++ publishSettings: _* )
     .settings( libraryDependencies ++=
       compile( config ) ++
+      compile( ficus ) ++
       compile( eaio ) ++
       compile( logbackclassic ) ++
       compile( json4sJackson ) ++

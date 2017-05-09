@@ -4,8 +4,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.agent.Agent
-import akka.persistence.query.{EventEnvelope2, NoOffset, Offset}
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.persistence.query.{EventEnvelope, NoOffset, Offset}
+import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -56,11 +56,11 @@ class AgentProjection[T](
       .run()
   }
 
-  private def filterKnownEventsFlow: Flow[EventEnvelope2, Directive[T], NotUsed] = {
-    Flow[EventEnvelope2]
+  private def filterKnownEventsFlow: Flow[EventEnvelope, Directive[T], NotUsed] = {
+    Flow[EventEnvelope]
       .map { e => logger.warn( "TEST enter filter - tagged event:[{}]", e.toString ); e }
       .collect {
-        case EventEnvelope2( o, pid, snr, event ) if selectLensFor isDefinedAt event => {
+        case EventEnvelope( o, pid, snr, event ) if selectLensFor isDefinedAt event => {
           Directive[T]( selectLensFor(event), pid, snr, o, event )
         }
       }

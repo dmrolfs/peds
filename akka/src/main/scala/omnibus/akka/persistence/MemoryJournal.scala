@@ -22,14 +22,21 @@ class MemoryJournal extends AsyncWriteJournal with StrictLogging {
   val journal: Agent[MemoryJournal.Adapter] = Agent( new MemoryJournal.Adapter( expectedPids ) )
 
   override def asyncWriteMessages( messages: immutable.Seq[AtomicWrite] ): Future[immutable.Seq[Try[Unit]]] = {
-    journal foreach { j => 
-      for { 
+    journal foreach { j =>
+      for {
         w <- messages
-        p <- w.payload 
-      } { 
+        p <- w.payload
+      } {
         j add p
-        if ( expectedPids < j.size ) logger.warn( "nr pids:[{}] exceed journal's expected pids:[{}]", j.size.toString, expectedPids.toString )
-      } 
+        if ( expectedPids < j.size ) {
+          logger.warn(
+            "number of pids:[{}] exceed journal's expected:[{}] review and override {} in your application.conf",
+            j.size.toString,
+            expectedPids.toString,
+            MemoryJournal.ExpectedPIDsPath
+          )
+        }
+      }
     }
 
     Future successful Nil
@@ -100,7 +107,7 @@ object MemoryJournal extends StrictLogging {
         Option( messages get p.persistenceId )
         .map { vs =>
           val result = vs :+ p
-          
+
           val sortedResult = for { last <- vs.lastOption if p.sequenceNr <= last.sequenceNr } yield {
             logger.warn( s"resorting since added sequenceNr[${p.sequenceNr}] is less than previous last element:[${vs.last.sequenceNr}]")
             result.sortBy{ _.sequenceNr }

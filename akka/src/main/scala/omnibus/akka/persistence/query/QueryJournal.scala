@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import akka.persistence.cassandra.journal.CassandraJournal
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
-import akka.persistence.query.{EventEnvelope, EventEnvelope2, Offset, PersistenceQuery}
+import akka.persistence.query.{EventEnvelope, Offset, PersistenceQuery}
 import akka.persistence.query.scaladsl._
 import akka.stream.scaladsl.Source
 import com.typesafe.config.{ConfigObject, ConfigValueType}
@@ -36,22 +36,22 @@ object QueryJournal extends LazyLogging {
   }
 
   type Journal = ReadJournal
-    with AllPersistenceIdsQuery
+    with PersistenceIdsQuery
     with CurrentPersistenceIdsQuery
     with EventsByPersistenceIdQuery
     with CurrentEventsByPersistenceIdQuery
-    with EventsByTagQuery2
-    with CurrentEventsByTagQuery2
+    with EventsByTagQuery
+    with CurrentEventsByTagQuery
 
 
   object empty extends ReadJournal
-                       with AllPersistenceIdsQuery
+                       with PersistenceIdsQuery
                        with CurrentPersistenceIdsQuery
                        with EventsByPersistenceIdQuery
                        with CurrentEventsByPersistenceIdQuery
-                       with EventsByTagQuery2
-                       with CurrentEventsByTagQuery2 {
-    override def allPersistenceIds(): Source[String, NotUsed] = Source.empty[String]
+                       with EventsByTagQuery
+                       with CurrentEventsByTagQuery {
+    override def persistenceIds(): Source[String, NotUsed] = Source.empty[String]
 
     override def currentPersistenceIds(): Source[String, NotUsed] = Source.empty[String]
 
@@ -67,10 +67,10 @@ object QueryJournal extends LazyLogging {
       toSequenceNr: Long
     ): Source[EventEnvelope, NotUsed] = Source.empty[EventEnvelope]
 
-    override def eventsByTag( tag: String, offset: Offset ): Source[EventEnvelope2, NotUsed] = Source.empty[EventEnvelope2]
+    override def eventsByTag( tag: String, offset: Offset ): Source[EventEnvelope, NotUsed] = Source.empty[EventEnvelope]
 
-    override def currentEventsByTag( tag: String, offset: Offset ): Source[EventEnvelope2, NotUsed] = {
-      Source.empty[EventEnvelope2]
+    override def currentEventsByTag( tag: String, offset: Offset ): Source[EventEnvelope, NotUsed] = {
+      Source.empty[EventEnvelope]
     }
   }
 
