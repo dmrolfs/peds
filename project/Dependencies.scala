@@ -43,7 +43,7 @@ object Dependencies {
   // val hashids = "com.github.dmrolfs" %% "hashids-scala" % "1.1.2-9ff5999"
   val squants = "org.typelevel"  %% "squants"  % "1.1.0"
 
-  val joda = "joda-time" % "joda-time" % "2.9.7"
+  val joda = "joda-time" % "joda-time" % "2.9.9"
   val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"
 
   val betterFiles = "com.github.pathikrit" %% "better-files" % "2.17.1"
