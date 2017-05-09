@@ -34,25 +34,25 @@ object Dependencies {
   val eaio = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.0"
   val math3 = "org.apache.commons" % "commons-math3" % "3.6.1"
   val codec = "commons-codec" % "commons-codec" % "1.10"
-  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.5.0"
+  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.5.2"
   val scalalogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
-  val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.2.1"
+  val logbackclassic = "ch.qos.logback" % "logback-classic" % "1.2.2"
   val shapelessBuilder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.1"
-  val fastutil = "it.unimi.dsi" % "fastutil" % "7.0.13" withSources() withJavadoc()
-  val persistLogging = "com.persist" %% "persist-logging" % "1.3.1"
+  val fastutil = "it.unimi.dsi" % "fastutil" % "7.2.0" withSources() withJavadoc()
+  val persistLogging = "com.persist" %% "persist-logging" % "1.3.2"
   // val hashids = "com.github.dmrolfs" %% "hashids-scala" % "1.1.2-9ff5999"
-  val squants = "org.typelevel"  %% "squants"  % "1.1.0"
+  val squants = "org.typelevel"  %% "squants"  % "1.2.0"
 
   val joda = "joda-time" % "joda-time" % "2.9.9"
   val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"
 
-  val betterFiles = "com.github.pathikrit" %% "better-files" % "2.17.1"
-  val metricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
-  val metricsGraphite = "io.dropwizard.metrics" % "metrics-graphite" % "3.1.2"
-  val metricsScala = "nl.grons" %% "metrics-scala" % "3.5.5_a2.4"
+  val betterFiles = "com.github.pathikrit" %% "better-files" % "3.0.0"
+  val metricsCore = "io.dropwizard.metrics" % "metrics-core" % "3.2.2"
+  val metricsGraphite = "io.dropwizard.metrics" % "metrics-graphite" % "3.2.2"
+  val metricsScala = "nl.grons" %% "metrics-scala" % "3.5.6_a2.4"
 
-  val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.51"
-  val leveldb = "org.iq80.leveldb" % "leveldb" % "0.7" // "org.iq80.leveldb" % "leveldb" % "0.9"
+  val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.52"
+  val leveldb = "org.iq80.leveldb" % "leveldb" % "0.9" // "org.iq80.leveldb" % "leveldb" % "0.9"
   val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
   val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.16.0"
