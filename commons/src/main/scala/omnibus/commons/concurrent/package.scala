@@ -2,11 +2,15 @@ package omnibus.commons
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util._
-import scalaz.{-\/, \/-}
-import scalaz.concurrent.{Strategy, Task}
-
+import monix.eval.Task
+//import scalaz.{-\/, \/-}
+//import scalaz.concurrent.{Strategy, Task}
+import monix.execution.Scheduler
 
 package object concurrent {
+  type EC[_] = ExecutionContext
+  type S[_] = Scheduler
+
   def tryToFuture[T]( t: => Try[T] ): Future[T] = {
     t match{
       case Success(s) => Future successful { s }
@@ -61,15 +65,7 @@ package object concurrent {
     * reasonable output. If you eagerly cache its input Future though, the results are on your own head.
     */
   implicit class FutureAPI[A](self: => Future[A]) {
-
-    def toTask( implicit ec: ExecutionContext, S: Strategy ): Task[A] = {
-      Task async { cb =>
-        self onComplete {
-          case Success( a ) => S { cb( \/-(a) ) }
-          case Failure( ex ) => S { cb( -\/(ex) ) }
-        }
-      }
-    }
+    def toTask(): Task[A] = Task fromFuture self
   }
 
   /**
@@ -102,16 +98,6 @@ package object concurrent {
     * scheduler the Task was composed against.
     */
   implicit class TaskAPI[A]( val self: Task[A] ) extends AnyVal {
-
-    def unsafeToFuture(): Future[A] = {
-      val p = Promise[A]()
-
-      self unsafePerformAsync {
-        case \/-( a ) => p.complete( Success(a) ); ()
-        case -\/( ex ) => p.complete( Failure(ex) ); ()
-      }
-
-      p.future
-    }
+    def unsafeToFuture[_: S](): Future[A] = self.runAsync
   }
 }

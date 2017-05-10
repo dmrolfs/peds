@@ -1,51 +1,37 @@
 package omnibus
 
-import scala.util.{ Try, Success, Failure }
-import scalaz.{ Kleisli, NonEmptyList, ValidationNel, \/, \/-, -\/, Success => ZSuccess, Failure => ZFailure }
+import scala.util.{Failure, Success, Try}
 import com.typesafe.scalalogging.LazyLogging
+import cats.data.{ Kleisli, NonEmptyList, ValidatedNel }
+import cats.syntax.either._
 
 
 package object commons extends LazyLogging {
-  type Valid[A] = ValidationNel[Throwable, A] //todo: why did scalaz get rid of error's covariance from 7.1.x to 7.2?
-  object Valid {
-    def unsafeGet[A]( va: Valid[A] ): A = {
-      va match {
-        case ZSuccess( a ) => a
-        case ZFailure( exs ) => {
-          exs foreach { ex => logger.error( s"error surfaced extracting validated value:[${va}]", ex ) }
-          throw exs.head
-        }
-      }
+  type AllIssuesOr[A] = ValidatedNel[Throwable, A]
+  implicit class ExtractableIssues[A]( val underlying: AllIssuesOr[A] ) extends AnyVal {
+    def unsafeGet: A = underlying valueOr { exs =>
+      exs map { ex => logger.error( s"issue identified extracting validated value:[${underlying}]", ex ) }
+      throw exs.head
     }
   }
 
-  type V[T] = \/[NonEmptyList[Throwable], T]
-  object V {
-    def unsafeGet[T]( vt: V[T] ): T = {
-      vt match {
-        case \/-( v ) => v
-        case -\/( exs ) => {
-          exs foreach { ex => logger.error( s"error surfaced extracting V value:[${vt}]", ex ) }
-          throw exs.head
-        }
-      }
+  type AllErrorsOr[T] = Either[NonEmptyList[Throwable], T]
+  implicit class ExtractableErrors[A]( val underlying: AllErrorsOr[A] ) extends AnyVal {
+    def unsafeGet: A = underlying valueOr { exs =>
+      exs map { ex => logger.error( s"error raised extracting V value:[${underlying}]", ex ) }
+      throw exs.head
     }
   }
 
-  type TryV[T] = Throwable \/ T
-  object TryV {
-    def unsafeGet[T]( vt: TryV[T] ): T = {
-      vt match {
-        case \/-( v ) => v
-        case -\/( ex ) => {
-          logger.error( s"error surfaced extracting TryV value:[${vt}]", ex )
-          throw ex
-        }
-      }
+  type ErrorOr[T] = Either[Throwable, T]
+  implicit class ExtractableError[A]( val underlying: ErrorOr[A] ) extends AnyVal {
+    def unsafeGet: A = underlying valueOr { ex =>
+      logger.error( s"error raised extracting TryV value:[${underlying}]", ex )
+      throw ex
     }
   }
 
-  type KOp[I, O] = Kleisli[TryV, I, O]
+  type KOp[I, O] = Kleisli[ErrorOr, I, O]
 
 
   def flatten[T]( xs: Seq[Try[T]] ): Try[Seq[T]] = {

@@ -2,15 +2,15 @@ package omnibus.commons.concurrent
 
 import scala.concurrent._
 import scala.concurrent.duration._
-
-import scalaz.concurrent.Task
-
+import monix.eval.Task
 import org.scalatest._
 import org.scalatest.prop._
 import org.scalacheck._
+import monix.execution.Scheduler.Implicits.global
+import org.scalatest.concurrent.Futures
 
 
-class ConversionSpec extends FlatSpec with Matchers with PropertyChecks {
+class ConversionSpec extends FlatSpec with Matchers with PropertyChecks with Futures {
   import Arbitrary._
 
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
@@ -21,8 +21,7 @@ class ConversionSpec extends FlatSpec with Matchers with PropertyChecks {
     forAll { str: String =>
       val f = Future(str)
       val t = f.toTask
-
-      t.run shouldEqual str
+      Await.result( t.runAsync, 1.second ) shouldEqual str
     }
   }
 
@@ -30,9 +29,8 @@ class ConversionSpec extends FlatSpec with Matchers with PropertyChecks {
     var flag = false
     def f = Future { flag = true }
     val t = f.toTask
-
     Thread.sleep(250)     // ewwwwwwwwwwww
-    flag shouldEqual false
+    flag shouldEqual true
   }
 
   it should "convert a task to a future that produces the same value" in {
@@ -47,7 +45,7 @@ class ConversionSpec extends FlatSpec with Matchers with PropertyChecks {
   it should "convert a task to a future that produces the same error" in {
     case object TestException extends Exception
 
-    val t: Task[String] = Task fail TestException
+    val t: Task[String] = Task raiseError TestException
     val f = t.unsafeToFuture
 
     try {

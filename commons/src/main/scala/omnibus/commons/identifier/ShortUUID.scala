@@ -1,13 +1,12 @@
 package omnibus.commons.identifier
 
 import java.nio.ByteBuffer
-import scala.reflect._
-import scalaz._, Scalaz._
+import cats.syntax.either._
 import org.apache.commons.codec.binary.Base64
 import com.eaio.uuid.UUID
 // import org.hashids._
 // import org.hashids.syntax._
-import omnibus.commons.TryV
+import omnibus.commons.ErrorOr
 
 
 object ShortUUID {
@@ -39,7 +38,7 @@ object ShortUUID {
 
   trait ShortUuidIdentifying[T] { self: Identifying[T] =>
     override type ID = ShortUUID
-    override def nextTID: TryV[TID] = tag( ShortUUID() ).right
+    override def nextTID: ErrorOr[TID] = tag( ShortUUID() ).asRight
     override def idFromString( idRep: String ): ID = ShortUUID fromString idRep
   }
 }

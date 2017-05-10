@@ -4,7 +4,7 @@ object Dependencies {
   val resolutionRepos = Seq(
     "spray repo" at "http://repo.spray.io",
     "eaio.com" at "http://repo.eaio.com/maven2",
-    "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
+//    "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
     "omen-bintray" at "http://dl.bintray.com/omen/maven",
     "Typesafe releases" at "http://repo.typesafe.com/typesafe/releases",
     "dl-john-ky" at "http://dl.john-ky.io/maven/releases",
@@ -57,8 +57,29 @@ object Dependencies {
 
   val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.16.0"
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.2"
-  val scalazCore = "org.scalaz" %% "scalaz-core" % "7.2.8"
-  val scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % "7.2.8"
+
+  object Cats {
+    val version = "0.9.0"
+    def module( id: String ) = "org.typelevel" %% s"cats-${id}" % version
+
+    val core = module( "core" )
+    val kernel = module( "kernel" )
+    val macros = module( "macros" )
+
+    val all = Seq( core, kernel, macros )
+  }
+
+  object Monix {
+    val version = "2.3.0"
+    def module( id: String ) = "io.monix" %% s"""monix${if (id.nonEmpty) '-'+id else "" }""" % version
+
+    val core = module( "" )
+    val cats = module( "cats" )
+
+    val all = Seq( core, cats )
+  }
+//  val scalazCore = "org.scalaz" %% "scalaz-core" % "7.2.8"
+//  val scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % "7.2.8"
 
   val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
   val scalactic = "org.scalactic" %% "scalactic" % "3.0.1"
