@@ -1,10 +1,8 @@
 package omnibus.commons
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util._
 import monix.eval.Task
-//import scalaz.{-\/, \/-}
-//import scalaz.concurrent.{Strategy, Task}
 import monix.execution.Scheduler
 
 package object concurrent {
@@ -44,14 +42,14 @@ package object concurrent {
     * toTask in a referentially transparent fashion, as if the constituent Future had been constructed as a Task
     * all along.
     *
-    * $ - toTask takes an implicit ExecutionContext and an implicit Strategy. You should make
-    * sure that the appropriate values of each are in scope. If you are not overriding Scalaz's default implicit Strategy
-    * for the rest of your Task composition, then you can just rely on the default Strategy. The point is just to
+    * $ - toTask takes an implicit ExecutionContext and an implicit Scheduler. You should make
+    * sure that the appropriate values of each are in scope. If you are not overriding Monix's default implicit Scheduler
+    * for the rest of your Task composition, then you can just rely on the default Scheduler. The point is just to
     * make sure that the Task resulting from toTask is context-shifted into the same thread pool you're using for
     * normal Task(s).
     *
     * $ - toTask and unsafeToFuture are not strict inverses. They add overhead and defeat fairness algorithms in
-    * both scala.concurrent and scalaz/scalaz-stream. So… uh… don't repeatedly convert back and forth, k?
+    * both scala.concurrent and monix. So… uh… don't repeatedly convert back and forth, k?
     *
     * There is a major pitfall here. The toTask conversion can only give you a referentially transparent Task if you
     * religiously avoid eagerly caching its dispatch receiver. As a general rule, this isn't a bad idiom:
@@ -88,7 +86,7 @@ package object concurrent {
     * libraries that require values of type Future.
     *
     * $ - toTask and unsafeToFuture are not strict inverses. They add overhead and defeat fairness algorithms in
-    * both scala.concurrent and scalaz/scalaz-stream. So… uh… don't repeatedly convert back and forth, k?
+    * both scala.concurrent and monix. So… uh… don't repeatedly convert back and forth, k?
     *
     * There is a major pitfall here. The unsafeToFuture immediately runs the input Task (as mentioned above). There
     * really isn't anything else that could be done here, since Future is eager, but it's worth mentioning. Additionally,
