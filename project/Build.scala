@@ -33,8 +33,6 @@ object Build extends Build {
       compile ( Cats.macros ) ++
       compile( Monix.core ) ++
       compile( Monix.cats ) ++
-//      compile( scalazCore ) ++
-//      compile( scalazConcurrent ) ++
       compile( shapeless ) ++
       compile( shapelessBuilder ) ++
       compile( akkaActor ) ++
