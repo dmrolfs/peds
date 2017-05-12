@@ -1,6 +1,6 @@
 package omnibus.commons
 
-import scalaz._, Scalaz._
+import cats.syntax.validated._
 import org.apache.commons.math3.analysis.interpolation.{ LinearInterpolator, SplineInterpolator }
 
 
@@ -9,14 +9,14 @@ package object math {
   type Interpolator = (Double) => Double
 
   object Interpolator {
-    def apply( xs: Array[Double], ys: Array[Double] ): Valid[Interpolator]= {
+    def apply( xs: Array[Double], ys: Array[Double] ): AllIssuesOr[Interpolator]= {
       checkDimensions( xs, ys ) map { case (x, y) => if ( x.size < 3 ) linearInterpolator(x, y) else splineInterpolator(x, y) }
     }
     
-    def checkDimensions( xs: Array[Double], ys: Array[Double] ): Valid[(Array[Double], Array[Double])] = {
-      if ( xs.size < 2 ) Validation.failureNel( NumberIsTooSmallError(xs) )
-      else if ( xs.size != ys.size ) Validation.failureNel( MismatchedDimensionsError(xs, ys) )
-      else ( xs, ys ).successNel
+    def checkDimensions( xs: Array[Double], ys: Array[Double] ): AllIssuesOr[(Array[Double], Array[Double])] = {
+      if ( xs.size < 2 ) NumberIsTooSmallError(xs).invalidNel
+      else if ( xs.size != ys.size ) MismatchedDimensionsError(xs, ys).invalidNel
+      else ( xs, ys ).validNel
     }
 
     val linearGenerator = new LinearInterpolator

@@ -5,13 +5,12 @@ import scala.concurrent.duration.FiniteDuration
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorRefFactory, Cancellable, Props, ReceiveTimeout}
 import akka.event.LoggingReceive
 import akka.util.Timeout
-
-import scalaz.Scalaz._
-import scalaz.{-\/, Validation, \/-}
+import cats.syntax.validated._
+import cats.syntax.either._
 import nl.grons.metrics.scala.{Meter, MetricName, Timer}
 import omnibus.akka.metrics.InstrumentedActor
+import omnibus.commons.{AllIssuesOr, AllErrorsOr}
 import omnibus.commons.identifier.ShortUUID
-import omnibus.commons.{V, Valid}
 
 
 /**
@@ -60,16 +59,14 @@ object ResponseCollector {
   }
 
   object Countdown {
-    def apply[T]( expectedMessages: Int ): Valid[Tracker[T]] = {
+    def apply[T]( expectedMessages: Int ): AllIssuesOr[Tracker[T]] = {
       checkExpectedMessages( expectedMessages ) map { em => SimpleCountdown[T]( expectedMessages = em ) }
     }
 
-    def checkExpectedMessages( expected: Int ): Valid[Int] = {
-      if ( expected >= 0 ) expected.successNel
+    def checkExpectedMessages( expected: Int ): AllIssuesOr[Int] = {
+      if ( expected >= 0 ) expected.validNel
       else {
-        Validation.failureNel(
-          new IllegalArgumentException( s"expected messages [${expected}] must be greater than or equal to 0" )
-        )
+        new IllegalArgumentException( s"expected messages [${expected}] must be greater than or equal to 0" ).invalidNel
       }
     }
 
@@ -85,12 +82,12 @@ object ResponseCollector {
   object MatchIds {
     def toSet[I]: I => Set[I] = (id: I) => { Set( id ) }
 
-    def fromPlural[M, I]( expectedIds: Set[I], toIds: M => Set[I] ): Valid[Tracker[M]] = {
-      SimpleMatchIds( expectedIds, toIds ).successNel
+    def fromPlural[M, I]( expectedIds: Set[I], toIds: M => Set[I] ): AllIssuesOr[Tracker[M]] = {
+      SimpleMatchIds( expectedIds, toIds ).validNel
     }
 
-    def fromSingular[M, I]( expectedIds: Set[I], toId: M => I ): Valid[Tracker[M]] = {
-      SimpleMatchIds( expectedIds, toSet compose toId ).successNel
+    def fromSingular[M, I]( expectedIds: Set[I], toId: M => I ): AllIssuesOr[Tracker[M]] = {
+      SimpleMatchIds( expectedIds, toSet compose toId ).validNel
     }
 
 
@@ -105,10 +102,10 @@ object ResponseCollector {
   }
 
 
-  abstract class Reducer[T] extends Function1[Iterable[T], V[Iterable[T]]]
+  abstract class Reducer[T] extends Function1[Iterable[T], AllErrorsOr[Iterable[T]]]
 
   class IdentityReducer[T] extends Reducer[T] {
-    override def apply( responses: Iterable[T] ): V[Iterable[T]] = { responses.right }
+    override def apply( responses: Iterable[T] ): AllErrorsOr[Iterable[T]] = { responses.asRight }
   }
 
 
@@ -216,9 +213,9 @@ class ResponseCollector[T](
     if ( state == Full ) conclusionsMeter.mark()
 
     reducer( responses ) match {
-      case \/-( rs ) => result.success( Result( payload = rs, state ) )
-      case -\/( exs ) => {
-        exs foreach { ex => log.error( "failed to reduce responses for [{}] due to: {}", label, ex ) }
+      case Right( rs ) => result.success( Result( payload = rs, state ) )
+      case Left( exs ) => {
+        exs map { ex => log.error( "failed to reduce responses for [{}] due to: {}", label, ex ) }
         // not throwing since stopping anyway
       }
     }

@@ -14,7 +14,8 @@ import scala.concurrent.{ Future, ExecutionContext }
  * easy to build abstractions upon this.
  *
  * But what if you don’t want to add another dependency and just want to make this tiny bit more practical? I can be done and is
- * not that complicated. You will also learn something and maybe even become motivated to bite the bullet and start using Scalaz.
+ * not that complicated. You will also learn something and maybe even become motivated to bite the bullet and start using
+ * Cats/Monix.
  *
  * Meaning
  *

@@ -28,8 +28,11 @@ object Build extends Build {
       compile( scalalogging ) ++
       compile( joda ) ++
       compile( jodaConvert ) ++
-      compile( scalazCore ) ++
-      compile( scalazConcurrent ) ++
+      compile ( Cats.core ) ++
+      compile ( Cats.kernel ) ++
+      compile ( Cats.macros ) ++
+      compile( Monix.core ) ++
+      compile( Monix.cats ) ++
       compile( shapeless ) ++
       compile( shapelessBuilder ) ++
       compile( akkaActor ) ++
