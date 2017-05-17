@@ -1,9 +1,7 @@
 package omnibus.commons.identifier
 
 import scala.reflect.ClassTag
-import scalaz._
-import Scalaz._
-import omnibus.commons.TryV
+import omnibus.commons.ErrorOr
 import omnibus.commons.util._
 
 
@@ -18,7 +16,7 @@ abstract class Identifying[T] {
   implicit def tag( id: ID ): TID = TaggedID[ID]( idTag, id )
 
   def tidOf( o: T ): TID
-  def nextTID: TryV[TID]
+  def nextTID: ErrorOr[TID]
   def idFromString( idRep: String ): ID
   def tidFromString( idRep: String ): TID = idFromString( idRep )
 
@@ -37,7 +35,7 @@ object Identifying {
       override type ID = tid.ID
       override val idTag: Symbol = tid.idTag
       override def tidOf( obj: Option[T] ): TID = tag( tid.tidOf( obj.get ).id )
-      override def nextTID: TryV[TID] = tid.nextTID map { id => tag( id.id ) }
+      override def nextTID: ErrorOr[TID] = tid.nextTID map { id => tag( id.id ) }
       override def idFromString( idRep: String ): ID = tid idFromString idRep
     }
   }

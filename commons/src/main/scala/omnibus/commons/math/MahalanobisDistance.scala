@@ -1,10 +1,12 @@
 package omnibus.commons.math
 
-import scalaz._, Scalaz._
-import org.apache.commons.math3.linear.{ LUDecomposition, RealMatrix, MatrixUtils }
+import scala.util.Try
+import cats.data.Validated
+import cats.syntax.validated._
+import org.apache.commons.math3.linear.{LUDecomposition, MatrixUtils, RealMatrix}
 import org.apache.commons.math3.ml.distance.DistanceMeasure
 import org.apache.commons.math3.stat.correlation.Covariance
-import omnibus.commons.Valid
+import omnibus.commons.AllIssuesOr
 
 
 /**
@@ -30,34 +32,30 @@ trait MahalanobisDistance extends DistanceMeasure {
 }
 
 object MahalanobisDistance {
-  def fromCovariance( covariance: RealMatrix ): Valid[MahalanobisDistance] = {
+  def fromCovariance( covariance: RealMatrix ): AllIssuesOr[MahalanobisDistance] = {
     checkCovarianceMatrixDimension( covariance ) map { cov =>
       SimpleMahalanobisDistance( dimension = cov.getRowDimension, covariance = cov )
     }
   }
 
-  def fromPoints( group: RealMatrix ): Valid[MahalanobisDistance] = {
+  def fromPoints( group: RealMatrix ): AllIssuesOr[MahalanobisDistance] = {
     checkCovariance( group )
-    .disjunction
-    .recover { case exs => identityMatrix( group.getColumnDimension ) }
+    .orElse { identityMatrix( group.getColumnDimension ).validNel }
     .map { cov => SimpleMahalanobisDistance( dimension = group.getColumnDimension, covariance = cov ) }
-    .validation
   }
 
-  def checkCovarianceMatrixDimension( square: RealMatrix ): Valid[RealMatrix] = {
-    if ( square.getRowDimension == square.getColumnDimension ) square.successNel
+  def checkCovarianceMatrixDimension( square: RealMatrix ): AllIssuesOr[RealMatrix] = {
+    if ( square.getRowDimension == square.getColumnDimension ) square.validNel
     else {
-      Validation.failureNel(
-        new IllegalArgumentException(
-          s"matrix must be square: Row Dimension [${square.getRowDimension}] " +
-          s"not equal to Column Dimension [${square.getColumnDimension}]"
-        )
-      )
+      new IllegalArgumentException(
+        s"matrix must be square: Row Dimension [${square.getRowDimension}] " +
+        s"not equal to Column Dimension [${square.getColumnDimension}]"
+      ).invalidNel
     }
   }
 
-  def checkCovariance( group: RealMatrix ): Valid[RealMatrix] = {
-    Validation.fromTryCatchNonFatal{ new Covariance( group ).getCovarianceMatrix }.toValidationNel
+  def checkCovariance( group: RealMatrix ): AllIssuesOr[RealMatrix] = {
+    Validated.catchNonFatal{ new Covariance( group ).getCovarianceMatrix }.toValidatedNel
   }
 
   def identityMatrix( dimension: Int ): RealMatrix = MatrixUtils createRealIdentityMatrix dimension
