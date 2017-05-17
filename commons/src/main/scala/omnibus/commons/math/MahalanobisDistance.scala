@@ -55,9 +55,7 @@ object MahalanobisDistance {
   }
 
   def checkCovariance( group: RealMatrix ): AllIssuesOr[RealMatrix] = {
-    Validated
-    .fromTry { Try { new Covariance( group ).getCovarianceMatrix } }
-    .toValidatedNel
+    Validated.catchNonFatal{ new Covariance( group ).getCovarianceMatrix }.toValidatedNel
   }
 
   def identityMatrix( dimension: Int ): RealMatrix = MatrixUtils createRealIdentityMatrix dimension
