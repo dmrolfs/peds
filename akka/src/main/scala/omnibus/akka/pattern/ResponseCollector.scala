@@ -1,6 +1,6 @@
 package omnibus.akka.pattern
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration.FiniteDuration
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorRefFactory, Cancellable, Props, ReceiveTimeout}
 import akka.event.LoggingReceive
@@ -24,8 +24,7 @@ object ResponseCollector {
   )(
     matcher: PartialFunction[Any, T]
   )(
-    implicit resultExecutionContext: ExecutionContext,
-    timeout: Timeout,
+    implicit timeout: Timeout,
     factory: ActorRefFactory
   ): (Future[Result[T]], ActorRef) = {
     val result = Promise[Result[T]]()

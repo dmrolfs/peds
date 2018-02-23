@@ -1,6 +1,6 @@
 package omnibus.akka.supervision
 
-import akka.actor.{ Actor, ActorRef, Props, ActorLogging, Terminated, DeathPactException }
+import akka.actor.{ Actor, ActorRef, Props, ActorLogging }
 
 
 object IsolatedLifeCycleSupervisor {

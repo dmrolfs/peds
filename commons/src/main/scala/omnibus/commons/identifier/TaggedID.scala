@@ -50,6 +50,8 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
 object TaggedID {
   val Delimiter: String = ":"
   val Regex = s"""((.+)${Delimiter})?(.+)""".r  // this breaks down if Delimiter needs to be escaped
+
+  import scala.language.implicitConversions
   implicit def taggedId2Id[T]( tid: TaggedID[T] ): T = tid.id
 
   private[identifier] val toBoxed: Map[Class[_], Class[_]] = Map(

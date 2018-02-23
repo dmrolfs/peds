@@ -1,13 +1,10 @@
 package omnibus.commons.io
 
 
-import java.io.{ ObjectOutputStream, ByteArrayOutputStream, ObjectInputStream, ByteArrayInputStream }
-
-
 /**
  * A Serializer represents a bimap between an object and an array of bytes representing that object.
  *
- * Serializers are loaded using reflection during [[SUBSYSTEM]]
+ * Serializers are loaded using reflection during SUBSYSTEM
  * start-up, where two constructors are tried in order:
  *
  * <ul>
@@ -23,7 +20,7 @@ import java.io.{ ObjectOutputStream, ByteArrayOutputStream, ObjectInputStream, B
  * avoid strange match errors and inequalities which arise from different class loaders loading
  * the same class.
  */
-// @deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
+@deprecated( "use serialization package", "0.63" )
 trait Deserializer[Format, T] {
 
   /**

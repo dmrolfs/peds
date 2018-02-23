@@ -2,12 +2,9 @@ package omnibus.commons.partial
 
 import scala.annotation.tailrec
 import org.json4s._
-import org.json4s.jackson.JsonMethods._
 
 
 trait JsonReducable {
-  import JsonReducable._
-
   implicit def jsonReducable( implicit xform: Transformable[JValue] ): Reducable[JValue] = new Reducable[JValue] {
     override def elide( data: JValue, spec: PartialCriteria ): JValue = {
       data match {
@@ -23,7 +20,7 @@ trait JsonReducable {
                 loop( tail, spec, partials :+ ( head._1 -> elide( head._2, nextSpec ) ) )
               }
 
-              case head :: tail => {
+              case _ :: tail => {
                 // trace( "NO MATCH. head="+head)
                 loop( tail, spec, partials )
               }
@@ -50,9 +47,6 @@ trait JsonReducable {
 }
 
 object JsonReducable {
-  lazy val trace = omnibus.commons.log.Trace[JsonReducable]
-
-
   trait Searchable[+J] extends Any {
     type SimpleResult
     type RecursiveResult
@@ -66,8 +60,8 @@ object JsonReducable {
     type SimpleResult = JValue
     type RecursiveResult = Seq[JValue]
 
-    override def \( fieldName: String ): SimpleResult = trace.block( """#### JValue.\ ####""" ) {JString( s"""'$fieldName' is undefined on object: $this""" ) }
-    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JValue.\\ ####""" ) {Nil}
+    override def \( fieldName: String ): SimpleResult = JString( s"""'$fieldName' is undefined on object: $this""" )
+    override def \\( fieldName: String ): RecursiveResult = Nil
   }
 
 
@@ -75,11 +69,11 @@ object JsonReducable {
     type SimpleResult = JValue
     type RecursiveResult = Seq[JValue]
 
-    override def \( fieldName: String ): SimpleResult = trace.block( """#### JObject.\ ####""" ) {
+    override def \( fieldName: String ): SimpleResult = {
       underlying.obj find { _._1 == fieldName } map { _._2 } getOrElse { JNothing /*JString( s"""'$fieldName' is undefined on object: $this""" )*/ }
     }
 
-    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JObject.\\ ####""" ) {
+    override def \\( fieldName: String ): RecursiveResult = {
       underlying.obj.foldLeft( Seq[JValue]() ){ (o, nameValue) => 
         nameValue match {
           case (key, value: JObject) if key == fieldName => o ++ ( value +: ( value \\ fieldName ) )
@@ -96,9 +90,9 @@ object JsonReducable {
     type SimpleResult = JValue
     type RecursiveResult = Seq[JValue]
 
-    override def \( fieldName: String ): SimpleResult = trace.block( """#### JArray.\ ####""" ) {JString( s"""'$fieldName' is undefined on object: $this""" ) }
+    override def \( fieldName: String ): SimpleResult = JString( s"""'$fieldName' is undefined on object: $this""" )
 
-    override def \\( fieldName: String ): RecursiveResult = trace.block( """#### JArray.\\ ####""" ) {
+    override def \\( fieldName: String ): RecursiveResult = {
       underlying.arr flatMap { 
         case o: JObject => o \\ fieldName 
         case a: JArray => a \\ fieldName
@@ -111,7 +105,6 @@ object JsonReducable {
 
   case object JsonTransformable extends Transformable[JValue] {
     import Transformable._
-    lazy val trace = omnibus.commons.log.Trace( "JsonTransformable" )
 
     override def execute = sort
 
@@ -120,7 +113,7 @@ object JsonReducable {
       case (data: JObject, epv) if epv._2 == "sort-desc" => sortByEpv( data, epv )( JValueOrdering.reverse )
     }
 
-    private def sortByEpv( data: JObject, epv: ElemPropValue )( implicit ord: Ordering[JValue] ): JObject = trace.block( "sortByEpv" ) {
+    private def sortByEpv( data: JObject, epv: ElemPropValue )( implicit ord: Ordering[JValue] ): JObject = {
       // trace( "data="+data )
       // trace( "epv="+epv )
 
@@ -129,7 +122,7 @@ object JsonReducable {
 
       val xIncl = for ( (prop, value) <- incl  ) yield {
         // trace( prop+"="+value )
-        if ( prop == epv._1 ) trace.block( "%%%%% WATCH %%%%%" ) {
+        if ( prop == epv._1 ) {
           val result = value match {
             // case v: JArray => trace(s"JArray[${v.elements.size}]");new JArray( v.elements sortBy { c => trace.block("""array.\"""){c \ epv._3} } )
             case v: JArray => {
@@ -142,11 +135,10 @@ object JsonReducable {
               new JArray( elems )
             }
 
-            case o: JObject => trace(s"JObject${o.obj.size}");o
+            case o: JObject => o
 
-            case j => trace("no match");j
+            case j => j
           }
-trace( "IN LOOP" )
           prop -> result
         }
         else prop -> value

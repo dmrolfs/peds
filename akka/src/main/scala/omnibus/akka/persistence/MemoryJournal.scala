@@ -8,18 +8,21 @@ import akka.agent.Agent
 import akka.persistence.{AtomicWrite, PersistentRepr}
 import akka.persistence.journal.AsyncWriteJournal
 import com.typesafe.config.Config
-import com.typesafe.scalalogging.StrictLogging
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
+import journal._
 
 
 /**
   * Created by rolfsd on 1/24/17.
   */
-class MemoryJournal extends AsyncWriteJournal with StrictLogging {
+class MemoryJournal extends AsyncWriteJournal {
+  private val logger = Logger[MemoryJournal]
+
   val expectedPids: Int = MemoryJournal expectedPidsFrom context.system.settings.config
   implicit val ec = context.dispatcher
 
-  val journal: Agent[MemoryJournal.Adapter] = Agent( new MemoryJournal.Adapter( expectedPids ) )
+  import com.github.ghik.silencer.silent
+  @silent val journal: Agent[MemoryJournal.Adapter] = Agent( new MemoryJournal.Adapter( expectedPids ) )
 
   override def asyncWriteMessages( messages: immutable.Seq[AtomicWrite] ): Future[immutable.Seq[Try[Unit]]] = {
     journal foreach { j =>
@@ -30,10 +33,9 @@ class MemoryJournal extends AsyncWriteJournal with StrictLogging {
         j add p
         if ( expectedPids < j.size ) {
           logger.warn(
-            "number of pids:[{}] exceed journal's expected:[{}] review and override {} in your application.conf",
-            j.size.toString,
-            expectedPids.toString,
-            MemoryJournal.ExpectedPIDsPath
+            s"number of pids:[${j.size.toString}] exceed journal's " +
+            s"expected:[${expectedPids.toString}] review and " +
+            s"override ${MemoryJournal.ExpectedPIDsPath} in your application.conf"
           )
         }
       }
@@ -74,7 +76,7 @@ class MemoryJournal extends AsyncWriteJournal with StrictLogging {
       journal send { j =>
         val toSeqNr = math.min( toSequenceNr, j.highestSequenceNr(persistenceId) )
         j.deleteTo( persistenceId, toSeqNr )
-        logger.debug( "[{}] for pid:[{}] deleted messages to sequenceNr:[{}]", self.path, persistenceId, toSeqNr.toString )
+        logger.debug( s"[${self.path}] for pid:[${persistenceId}] deleted messages to sequenceNr:[${toSeqNr}]"  )
         j
       }
     }
@@ -84,7 +86,9 @@ class MemoryJournal extends AsyncWriteJournal with StrictLogging {
 }
 
 //todo optimize via Agent?
-object MemoryJournal extends StrictLogging {
+object MemoryJournal {
+  private val logger = Logger[MemoryJournal.type]
+
   val MemoryJournalPath = "omnibus.persistence.journal.memory"
 
   val ExpectedPIDsPath = MemoryJournalPath + ".expected-persistence-ids"
@@ -94,9 +98,9 @@ object MemoryJournal extends StrictLogging {
 
   private[MemoryJournal] class Adapter( initialSize: Int ) {
 
-    logger.warn( "MemoryJournal.Adapter expecting up to [{}] pids", initialSize.toString )
+    logger.warn( s"MemoryJournal.Adapter expecting up to [${initialSize}] pids" )
 
-    private var messages: Object2ObjectOpenHashMap[String, Vector[PersistentRepr]] = {
+    private val messages: Object2ObjectOpenHashMap[String, Vector[PersistentRepr]] = {
       new Object2ObjectOpenHashMap[String, Vector[PersistentRepr]]( initialSize )
     }
 
@@ -109,7 +113,10 @@ object MemoryJournal extends StrictLogging {
           val result = vs :+ p
 
           val sortedResult = for { last <- vs.lastOption if p.sequenceNr <= last.sequenceNr } yield {
-            logger.warn( s"resorting since added sequenceNr[${p.sequenceNr}] is less than previous last element:[${vs.last.sequenceNr}]")
+            logger.warn(
+              s"resorting since added sequenceNr[${p.sequenceNr}] " +
+              s"is less than previous last element:[${vs.last.sequenceNr}]"
+            )
             result.sortBy{ _.sequenceNr }
           }
 
@@ -136,7 +143,7 @@ object MemoryJournal extends StrictLogging {
       }
       .foreach { updated =>
         messages.put( pid, updated )
-        logger.debug( "for pid:[{}] deleted toSequenceNr:[{}] with updated size:[{}]", pid, toSequenceNr.toString, updated.size.toString )
+        logger.debug( s"for pid:[${pid}] deleted toSequenceNr:[${toSequenceNr}] with updated size:[${updated.size}]" )
       }
     }
 
@@ -146,7 +153,6 @@ object MemoryJournal extends StrictLogging {
       else if ( ms(last).sequenceNr <= toSequenceNr ) last
       else {
         val middle = ( ( start + last ) / 2 ).toInt
-        val vm = ms( middle )
         ms( middle ).sequenceNr match {
           case m if m == toSequenceNr => middle
           case m if m < toSequenceNr => indexToSequenceNr( toSequenceNr, ms, start = middle + 1, last )

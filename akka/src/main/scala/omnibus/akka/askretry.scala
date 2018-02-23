@@ -53,9 +53,16 @@ object AskRetry {
   /**
    * Utility method to initiate the RetryingActor
    */
-  private def retry[T](actor: ActorRef, msg: T, maxAttempts: Int, rate: FiniteDuration)(implicit context: ActorContext): Future[Any] = {
+  private def retry[T](
+    actor: ActorRef,
+    msg: T,
+    maxAttempts: Int,
+    rate: FiniteDuration
+  )(
+    implicit context: ActorContext
+  ): Future[Any] = {
     // Sets a proper timeout for the ask request
-    implicit val to = Timeout.durationToTimeout(rate * (maxAttempts + 1))
+    implicit val to = Timeout.durationToTimeout(rate * (maxAttempts + 1).toLong)
     // Starts a retry actor and use the ask pattern to get the response future
     context.actorOf(RetryingActor.props) ? Ask(actor, msg, rate, maxAttempts)
   }

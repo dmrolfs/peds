@@ -1,7 +1,6 @@
 package omnibus.akka.envelope
 
-import akka.actor.{Actor, ActorLogging}
-import com.persist.logging.RequestId
+import akka.actor.Actor
 import omnibus.akka.ActorStack
 import omnibus.commons.util._
 
@@ -24,7 +23,7 @@ trait Enveloping {
   protected def envelopeHeader_=( header: Option[EnvelopeHeader] ): Unit = { currentHeaderVar = header }
   @transient private[this] var currentHeaderVar: Option[EnvelopeHeader] = None
 
-  implicit def requestId: RequestId = RequestId( trackingId = workId.toString, spanId = messageNumber.toString )
+  implicit def requestId: RequestId = RequestId.summon()
 }
 
 

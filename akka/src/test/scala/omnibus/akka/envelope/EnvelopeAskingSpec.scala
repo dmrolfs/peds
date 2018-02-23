@@ -20,8 +20,8 @@ object EnvelopeAskingSpec {
     def bare: Receive = { 
       case "A" => sender() ! "REPLY FROM A" 
       case "B" => sender() sendEnvelope "REPLY FROM B"
-      case Envelope( "C", h ) => sender() ! "REPLY FROM C" 
-      case Envelope( "D", h ) => sender() sendEnvelope "REPLY FROM D"
+      case Envelope( "C", _ ) => sender() ! "REPLY FROM C"
+      case Envelope( "D", _ ) => sender() sendEnvelope "REPLY FROM D"
     }
 
     def wrapped: Receive = { 

@@ -8,14 +8,16 @@ import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
 import akka.persistence.query.{EventEnvelope, Offset, PersistenceQuery}
 import akka.persistence.query.scaladsl._
 import akka.stream.scaladsl.Source
-import com.typesafe.config.{ConfigObject, ConfigValueType}
-import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.config.ConfigValueType
+import journal._
 
 
 /**
   * Created by rolfsd on 2/15/17.
   */
-object QueryJournal extends LazyLogging {
+object QueryJournal {
+  private val logger = Logger[QueryJournal.type]
+
   def fromSystem( system: ActorSystem ): Journal = {
     journalFQN( system ) match {
       case fqn if fqn == classOf[CassandraJournal].getName ⇒ {
@@ -29,7 +31,7 @@ object QueryJournal extends LazyLogging {
       }
 
       case fqn ⇒ {
-        logger.warn( "journal FQN not recognized - creating empty read journal:[{}]", fqn )
+        logger.warn( s"journal FQN not recognized - creating empty read journal:[${fqn}]" )
         QueryJournal.empty
       }
     }
@@ -45,12 +47,12 @@ object QueryJournal extends LazyLogging {
 
 
   object empty extends ReadJournal
-                       with PersistenceIdsQuery
-                       with CurrentPersistenceIdsQuery
-                       with EventsByPersistenceIdQuery
-                       with CurrentEventsByPersistenceIdQuery
-                       with EventsByTagQuery
-                       with CurrentEventsByTagQuery {
+  with PersistenceIdsQuery
+  with CurrentPersistenceIdsQuery
+  with EventsByPersistenceIdQuery
+  with CurrentEventsByPersistenceIdQuery
+  with EventsByTagQuery
+  with CurrentEventsByTagQuery {
     override def persistenceIds(): Source[String, NotUsed] = Source.empty[String]
 
     override def currentPersistenceIds(): Source[String, NotUsed] = Source.empty[String]
@@ -89,27 +91,24 @@ object QueryJournal extends LazyLogging {
             jplugin.unwrapped.cast[String]
             .map { path ⇒
               if ( config.hasPath( path ) ) {
-                logger.debug( "looking for class in config path:[{}]", path )
+                logger.debug( s"looking for class in config path:[${path}]" )
                 config.getConfig( path ).getString( "class" )
               } else {
-                logger.warn( "no configuration found for path:[{}] - return empty FQN", path )
+                logger.warn( s"no configuration found for path:[${path}] - return empty FQN" )
                 ""
               }
             }
             .getOrElse { "" }
           }
-          logger.info( "journal plugin string classname found:[{}]", fqn )
+          logger.info( s"journal plugin string classname found:[${fqn}]" )
           fqn
         }
 
         case ConfigValueType.OBJECT ⇒ {
-          import scala.reflect._
-          //          import scala.collection.JavaConversions._
-          val ConfigObjectType = classTag[ConfigObject]
           val jconfig = config.getConfig( JournalPluginPath )
           if ( jconfig.hasPath( "class" ) ) {
             val fqn = jconfig.getString( "class" )
-            logger.info( "journal plugin class property found:[{}]", fqn )
+            logger.info( s"journal plugin class property found:[${fqn}]" )
             fqn
           } else {
             logger.warn( "no class specified for journal plugin" )
@@ -118,7 +117,7 @@ object QueryJournal extends LazyLogging {
         }
 
         case t ⇒ {
-          logger.warn( "unrecognized config type:[{}] for path:[{}]", t.toString, JournalPluginPath )
+          logger.warn( s"unrecognized config type:[${t}] for path:[${JournalPluginPath}]" )
           ""
         }
       }

@@ -1,29 +1,17 @@
 package omnibus.akka
 
-import akka.actor.{ Actor, ActorContext }
-import com.typesafe.scalalogging.LazyLogging
+import akka.actor.ActorContext
 import shapeless.TypeCase
 import omnibus.commons.util.Chain
 
 
-package object publish extends LazyLogging {
+package object publish {
   /** Publisher is a chained operation that supports publishing via multiple links. If a publishing link returns Left(event), 
    * the next publishing link will be processed; otherwise if Right(event) is returned then publishing will cease.
    */
   type Publisher = Chain.Link[Any, Unit]
 
 
-  /**
-   * EventPublisher specifies 
-   */
-  trait EventPublisher extends ActorStack { outer: Actor  =>
-    def publish: Publisher = silent
-  }
-
-
-  trait SilentPublisher extends EventPublisher { outer: Actor =>
-    override def publish: Publisher = silent
-  }
 
 
   /** Publish event to actor's sender */

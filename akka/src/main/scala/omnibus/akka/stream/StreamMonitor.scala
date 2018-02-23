@@ -3,16 +3,16 @@ package omnibus.akka.stream
 import akka.NotUsed
 import akka.agent.Agent
 import akka.stream.scaladsl.Flow
-import org.slf4j.LoggerFactory
-import com.typesafe.scalalogging.{Logger, StrictLogging}
 import nl.grons.metrics.scala.{Meter, MetricName}
 import omnibus.akka.metrics.Instrumented
 import omnibus.commons.util._
+import journal._
 
 
 /**
   * Created by rolfsd on 12/3/15.
   */
+@deprecated( "need to investigate current options", "0.63" )
 trait StreamMonitor extends Instrumented {
   def label: Symbol
   def meter: Meter
@@ -56,7 +56,7 @@ trait StreamMonitor extends Instrumented {
   override def toString: String = f"""$label[${count}]"""
 }
 
-object StreamMonitor extends StrictLogging { outer =>
+object StreamMonitor { outer =>
   implicit class MakeFlowMonitor[I, O]( val underlying: Flow[I, O, NotUsed] ) extends AnyVal {
     def watchFlow( label: Symbol ): Flow[I, O, NotUsed] = outer.flow( label ).watch( underlying )
     def watchSourced( label: Symbol ): Flow[I, O, NotUsed] = outer.source( label ).watch( underlying )
@@ -77,16 +77,16 @@ object StreamMonitor extends StrictLogging { outer =>
     monitor
   }
 
-  @inline def publish: Unit = logger debug csvLine( tracked.get(), all.get() )
+  def publish(): Unit = logger.debug( csvLine( tracked.get(), all.get() ) )
   private def csvLine( labels: Seq[Symbol], ms: Map[Symbol, StreamMonitor] ): String = {
     labels.map{ l => ms.get(l).map{ m => s"${l.name}:${m.count}"} }.flatten.mkString( ", " )
   }
 
-  @inline def isEnabled: Boolean = logger.underlying.isDebugEnabled
+  @inline def isEnabled: Boolean = logger.backend.isDebugEnabled
   @inline def notEnabled: Boolean = !isEnabled
 
 
-  override protected val logger: Logger = Logger( LoggerFactory getLogger "StreamMonitor" )
+  final protected val logger: Logger = Logger( "StreamMonitor" )
   private val all: Agent[Map[Symbol, StreamMonitor]] = Agent( Map.empty[Symbol, StreamMonitor] )
   private val tracked: Agent[Seq[Symbol]] = Agent( Seq.empty[Symbol] )
 

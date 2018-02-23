@@ -1,6 +1,6 @@
 package omnibus.archetype
 
-import org.joda.time.{ DateTime, Interval, LocalDate }
+import org.joda.time.{ DateTime, LocalDate }
 import com.github.nscala_time.time.Imports._
 
 
@@ -68,5 +68,6 @@ object Enablement {
   val SimpleEnabled: Enablement = Enablement( true )
   val SimpleDisabled: Enablement = Enablement( false )
 
+  import scala.language.implicitConversions
   implicit def enablement2Boolean( e: Enablement ): Boolean = e.toBoolean
 }

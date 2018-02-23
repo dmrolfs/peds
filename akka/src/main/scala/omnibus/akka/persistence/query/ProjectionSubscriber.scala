@@ -1,12 +1,10 @@
 package omnibus.akka.persistence.query
 
-import scala.concurrent.{ExecutionContext, Future}
-import akka.{Done, NotUsed}
-import akka.actor.ActorSystem
+import akka.NotUsed
 import akka.persistence.query.{EventEnvelope, NoOffset, Offset}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import com.typesafe.scalalogging.LazyLogging
+import journal._
 
 
 /**
@@ -18,19 +16,19 @@ class ProjectionSubscriber(
   applyLensFor: PartialFunction[Any, Unit],
   offset: Offset = NoOffset
 )(
-  implicit system: ActorSystem,
-  materializer: Materializer//,
-//  ec: ExecutionContext
-) extends LazyLogging {
+  implicit materializer: Materializer
+) {
+  private val logger = Logger[ProjectionSubscriber]
+
   def run(): NotUsed = {
     logger.info( "starting active projection subscriber...")
     queryJournal
     .eventsByTag( tag, offset )
-    .map { e => logger.warn( "#TEST processing new tagged event: [{}]", e ); e }
+    .map { e => logger.warn( s"#TEST processing new tagged event: [${e}]" ); e }
     //      .via( filterKnownEventsFlow )
     .to(
       Sink foreach { envelope: EventEnvelope =>
-        logger.warn( "#TEST applying lens @ snr:[{}] to event-envelope:[{}]", envelope.sequenceNr.toString, envelope.toString )
+        logger.warn( s"#TEST applying lens @ snr:[${envelope.sequenceNr}] to event-envelope:[${envelope}]" )
         applyLensFor( envelope.event )
       }
     )
@@ -45,10 +43,10 @@ class ProjectionSubscriber(
 //      }
 //  }
 
-  private def sink: Sink[EventEnvelope, Future[Done]] = {
-    Sink.foreach { envelope: EventEnvelope =>
-      logger.warn( "#TEST applying lens @ snr:[{}] to event-envelope:[{}]", envelope.sequenceNr.toString, envelope.toString )
-      applyLensFor( envelope.event )
-    }
-  }
+//  private def sink: Sink[EventEnvelope, Future[Done]] = {
+//    Sink.foreach { envelope: EventEnvelope =>
+//      logger.warn( s"#TEST applying lens @ snr:[${envelope.sequenceNr}] to event-envelope:[${envelope}]" )
+//      applyLensFor( envelope.event )
+//    }
+//  }
 }

@@ -3,7 +3,7 @@ package omnibus.archetype.party
 import org.joda.time.LocalDate
 import omnibus.archetype.domain.model.core.Entity
 import omnibus.archetype.{Address, OrganizationName, PersonName}
-import relationship.{PartyRole, PartyRoleLike}
+import relationship.PartyRole
 import omnibus.commons.util._
 
 

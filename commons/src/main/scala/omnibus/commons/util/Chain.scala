@@ -2,6 +2,8 @@ package omnibus.commons.util
 
 
 object Chain {
+  import scala.language.implicitConversions
+
   type Link[A, B] = A => Either[A, B]
   implicit def func2Chain[A, B]( f: Link[A, B] ): Chain[A, B] = new Chain[A, B]( f )
 }

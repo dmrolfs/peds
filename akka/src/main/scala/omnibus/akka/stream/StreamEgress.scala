@@ -7,13 +7,14 @@ import akka.event.LoggingReceive
 import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, RequestStrategy, WatermarkRequestStrategy}
 import nl.grons.metrics.scala.{Meter, MetricName}
 import omnibus.akka.metrics.InstrumentedActor
+import com.github.ghik.silencer.silent
 
 
 /**
   * Created by rolfsd on 4/19/16.
   */
 object StreamEgress {
-  def props( subscriberMagnet: SubscriberMagnet, high: Int, low: Option[Int] = None ): Props = {
+  def props( subscriberMagnet: SubscriberMagnet, high: Int ): Props = {
     Props( new Default(subscriberMagnet, high) )
   }
 
@@ -22,11 +23,13 @@ object StreamEgress {
   }
 
   object SubscriberMagnet {
+    import scala.language.implicitConversions
+
     implicit def fromRef( ref: ActorRef ): SubscriberMagnet = new SubscriberMagnet {
       override def apply(): ActorRef = ref
     }
 
-    implicit def fromPathForReliableFullOptions(
+    @silent implicit def fromPathForReliableFullOptions(
       tuple: ( ActorPath, FiniteDuration, Option[FiniteDuration], Option[Int])
     )(
       implicit context: ActorContext
@@ -45,7 +48,7 @@ object StreamEgress {
       }
     }
 
-    implicit def fromPathForReliableNoReconnectionLimit(
+    @silent implicit def fromPathForReliableNoReconnectionLimit(
       tuple: ( ActorPath, FiniteDuration, FiniteDuration)
     )(
       implicit context: ActorContext
@@ -58,7 +61,7 @@ object StreamEgress {
       }
     }
 
-    implicit def fromPathForReliableNoReconnections(
+    @silent implicit def fromPathForReliableNoReconnections(
       tuple: ( ActorPath, FiniteDuration )
     )(
       implicit context: ActorContext
@@ -86,6 +89,7 @@ object StreamEgress {
 
 import StreamEgress.SubscriberMagnet
 
+@silent
 class StreamEgress( subscriberMagnet: SubscriberMagnet ) extends ActorSubscriber with InstrumentedActor with ActorLogging {
   outer: StreamEgress.WatermarkProvider =>
 
@@ -102,7 +106,7 @@ class StreamEgress( subscriberMagnet: SubscriberMagnet ) extends ActorSubscriber
   override def receive: Receive = LoggingReceive { around( egress orElse maintenance ) }
 
   val egress: Receive = {
-    case next @ ActorSubscriberMessage.OnNext( message ) => {
+    case ActorSubscriberMessage.OnNext( message ) => {
       egressMeter.mark()
       log.debug( "StreamEgress[{}]: Sending [{}] message:[{}]", this.##, subscriber, message )
       subscriber ! message
@@ -111,29 +115,29 @@ class StreamEgress( subscriberMagnet: SubscriberMagnet ) extends ActorSubscriber
     case ActorSubscriberMessage.OnComplete => {
       log.debug(
         "StreamEgress[{}][{}] received OnComplete from [{}] forwarding to subscriber:[{}]",
-        self.path,
-        this.##,
-        sender().path,
-        subscriber.path
+        self.path, this.##, sender().path, subscriber.path
       )
+
       subscriber ! ActorSubscriberMessage.OnComplete
     }
     case onError @ ActorSubscriberMessage.OnError( cause ) => {
       log.error(
         cause,
         "StreamEgress[{}][{}] received OnError from [{}] forwarding to subscriber:[{}]",
-        self.path,
-        this.##,
-        sender().path,
-        subscriber.path
+        self.path, this.##, sender().path, subscriber.path
       )
+
       subscriber ! onError
     }
   }
 
   val maintenance: Receive = {
-    case Terminated( deadActor ) => {
-      log.warning( "StreamEgress[{}][{}] notified of death of subscriber:[{}] -- stopping", self.path, this.##, subscriber.path )
+    case _: Terminated => {
+      log.warning(
+        "StreamEgress[{}][{}] notified of death of subscriber:[{}] -- stopping",
+        self.path, this.##, subscriber.path
+      )
+
       context stop self
     }
   }

@@ -1,6 +1,5 @@
 package omnibus.commons.math
 
-import scala.util.Try
 import cats.data.Validated
 import cats.syntax.validated._
 import org.apache.commons.math3.linear.{LUDecomposition, MatrixUtils, RealMatrix}

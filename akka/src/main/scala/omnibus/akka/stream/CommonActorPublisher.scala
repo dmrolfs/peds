@@ -8,6 +8,7 @@ import akka.event.LoggingReceive
 import akka.stream.actor.{ActorPublisher, ActorPublisherMessage, ActorSubscriberMessage}
 import nl.grons.metrics.scala.MetricName
 import omnibus.akka.metrics.InstrumentedActor
+import com.github.ghik.silencer.silent
 
 
 /**
@@ -25,6 +26,7 @@ object CommonActorPublisher {
   }
 }
 
+@silent
 class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with InstrumentedActor with ActorLogging {
   outer: CommonActorPublisher.ConfigurationProvider =>
 
@@ -46,7 +48,7 @@ class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with Instrumen
       if ( buffer.isEmpty && totalDemand > 0 ) {
         log.debug(
           "CommonActorPublisher[{}]: there is demand [{}] so short-circuiting buffer[{}] to onNext message: [{}]",
-          (self.path, this##),
+          (self.path, this.##),
           (totalDemand,isActive),
           buffer.size,
           message

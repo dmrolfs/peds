@@ -2,22 +2,23 @@ package omnibus.commons.partial
 
 import scala.annotation.tailrec
 import scala.xml.{Elem, Node}
+import journal._
 import omnibus.commons.math.OrderingHelper
 
 
 trait XmlReducable {
-  import XmlReducable._
+  private val log = Logger[XmlReducable]
 
   implicit def xmlReducable( implicit xform: Transformable[Elem] ): Reducable[Elem] = new Reducable[Elem] {
-    override def elide( data: Elem, spec: PartialCriteria ): Elem = trace.block( "elide" ) {
+    override def elide( data: Elem, spec: PartialCriteria ): Elem = {
       @tailrec def loop( nodes: List[Node], spec: PartialCriteria, partials: Vector[Node] ): Vector[Node] = /*trace.block("loop")*/ {
-        trace( "spec="+spec )
-        trace( "nodes="+nodes.map(_.label).mkString("[",",","]") )
+        log.debug( "spec="+spec )
+        log.debug( "nodes="+nodes.map(_.label).mkString("[",",","]") )
 
         nodes match {
           case (head: Elem) :: tail if spec.contains( head.label ) && spec.get( head.label ).get.isComposite => {
-            trace( "head="+head.label )
-            trace( "matched Elem with spec and composite")
+            log.debug( "head="+head.label )
+            log.debug( "matched Elem with spec and composite")
             loop( 
               tail, 
               spec, 
@@ -25,29 +26,29 @@ trait XmlReducable {
             )
           }
           case head :: tail if spec.contains( head.label ) => {
-            trace( "head="+head.label )
-            trace( "matched Elem with spec and not composite")
+            log.debug( "head="+head.label )
+            log.debug( "matched Elem with spec and not composite")
             loop( tail, spec, partials :+ head )
           }
           case head :: tail => {
-            trace( "head="+head.label )
-            trace( "matched Elem but not in spec")
+            log.debug( "head="+head.label )
+            log.debug( "matched Elem but not in spec")
             loop( tail, spec, partials )
           }
           case Nil => {
-            trace( "matched Nil")
+            log.debug( "matched Nil")
             partials
           }
         }
       }
 
-      trace( "spec="+spec )
+      log.debug( "spec="+spec )
       val partials = loop( 
         xform.transform( data, spec ).child.toList, 
         spec, 
         Vector.empty 
       )
-      trace( "partials="+partials )
+      log.debug( "partials="+partials )
       Elem( 
         prefix = data.prefix, 
         label = data.label, 
@@ -61,8 +62,6 @@ trait XmlReducable {
 }
 
 object XmlReducable {
-  lazy val trace = omnibus.commons.log.Trace[XmlReducable]
-
   case object XmlTransformable extends Transformable[Elem] {
     import Transformable._
 

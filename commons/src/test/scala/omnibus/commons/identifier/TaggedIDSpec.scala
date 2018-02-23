@@ -1,10 +1,9 @@
 package omnibus.commons.identifier
 
 import org.scalatest._
-import com.typesafe.scalalogging.LazyLogging
 
 
-class TaggedIDSpec extends FlatSpec with Matchers with LazyLogging {
+class TaggedIDSpec extends FlatSpec with Matchers {
 
   "A TaggedID" should "match equality if underlying id matches" in {
     val id = ShortUUID()

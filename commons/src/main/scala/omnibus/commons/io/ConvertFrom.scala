@@ -13,7 +13,7 @@ import omnibus.commons.log.Trace
  *
  *  @see Builder
  */
-// @deprecated( "want to replace with a more complete type class framework (eg, via play or spray) or even scala-pickling", "7/1/2013" )
+@deprecated( "use serialization package", "0.63" )
 @implicitNotFound(msg = "Cannot convert an instance of type ${To} based on a source of type ${From}.")
 trait ConvertFrom[-From, +To] extends Function1[From, To]
 

@@ -1,7 +1,6 @@
 package omnibus.akka.envelope
 
 import omnibus.commons.util._
-import com.typesafe.scalalogging.StrictLogging
 
 
 case class EnvelopeHeader(
@@ -21,7 +20,7 @@ case class EnvelopeHeader(
 // the meta-information we need in order to see what's what
 case class Envelope( payload: Any, header: EnvelopeHeader )
 
-object Envelope extends StrictLogging {
+object Envelope {
   // An implicit conversion makes things easy for us; we can convert from an Any
   // to an Envelope with our implicit
   import scala.language.implicitConversions
@@ -39,7 +38,7 @@ object Envelope extends StrictLogging {
     message match {
       case e: Envelope => e //DMR: update w implicit values?
 
-      case m => {
+      case _ => {
         Envelope(
           message,
           EnvelopeHeader(

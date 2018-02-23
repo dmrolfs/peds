@@ -6,14 +6,12 @@ import better.files._
 import com.codahale.metrics.{ Reporter => CReporter, CsvReporter, MetricFilter, MetricRegistry }
 import com.codahale.metrics.graphite.{ PickledGraphite, GraphiteReporter }
 import com.typesafe.config.{ Config, ConfigFactory }
-import com.typesafe.scalalogging.LazyLogging
-import nl.grons.metrics.scala.InstrumentedBuilder
 
 
 /**
   * Created by rolfsd on 12/15/15.
   */
-object Reporter extends LazyLogging {
+object Reporter {
   def startReporter( config: Config )( implicit registry: MetricRegistry ): Option[CReporter] = {
     val publishFrequency = if ( config hasPath "publish-frequency" ) {
       config getDuration "publish-frequency"

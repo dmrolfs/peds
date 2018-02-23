@@ -39,6 +39,4 @@ package object math {
     extends IllegalArgumentException( s"""xs [${xs.mkString(",")}] size different than ys [${ys.mkString(",")}]""" ) with MathError
   }
 
-
-  trait MathError
 }

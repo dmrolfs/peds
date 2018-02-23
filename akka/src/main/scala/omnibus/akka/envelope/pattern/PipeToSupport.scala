@@ -10,6 +10,8 @@ import omnibus.akka.envelope._
   * Created by rolfsd on 6/9/16.
   */
 trait PipeToSupport {
+  import scala.language.implicitConversions
+
   /**
     * Import this implicit conversion to gain the `pipeTo` method on [[scala.concurrent.Future]]:
     *

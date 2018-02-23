@@ -25,8 +25,6 @@ trait Transformable[A] {
 object Transformable {
   type ElemPropValue = Tuple3[String, String, String]
   trait Transform[A] extends Function2[A, ElemPropValue, A]
-
-  lazy val trace = omnibus.commons.log.Trace( "Transformable" )
 }
 
 

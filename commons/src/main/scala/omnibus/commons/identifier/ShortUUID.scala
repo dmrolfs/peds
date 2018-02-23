@@ -16,6 +16,8 @@ object ShortUUID {
   def fromString( rep: String ): ShortUUID = new ShortUUID( rep )
   // def fromString( rep: String ): ShortUUID = new ShortUUID( rep.unhashid )
 
+  import scala.language.implicitConversions
+
   implicit def fromUUID( uuid: UUID ): ShortUUID = {
     // val clock: Long = uuid.getClockSeqAndNode
     // val isClockNegative: Long = if ( clock < 0L ) 1L else 0L
@@ -52,12 +54,12 @@ class ShortUUID private[identifier]( val repr: String ) extends Serializable wit
   def isNil: Boolean = this == ShortUUID.zero
 
   def toUUID: UUID = {
-    @inline def actual( magnitude: Long, isNegative: Long ): Long = magnitude * ( if (isNegative == 1L) -1L else 1L )
-
+    //    @inline def actual( magnitude: Long, isNegative: Long ): Long = magnitude * ( if (isNegative == 1L) -1L else 1L )
     // val List( isClockNegative, clockMagnitude, isTimeNegative, timeMagnitude ) = ids
     // val clock = actual( clockMagnitude, isClockNegative )
     // val time = actual( timeMagnitude, isTimeNegative )
     // new UUID( time, clock )
+
     val bytes = Base64 decodeBase64 repr
     val bb = ByteBuffer allocate 16
     bb put bytes

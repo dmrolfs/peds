@@ -3,11 +3,9 @@ package omnibus.commons.partial
 import org.scalatest._
 import org.scalatest.Matchers
 import org.json4s.jackson.JsonMethods._
-import org.json4s.JsonDSL._
-import com.typesafe.scalalogging.LazyLogging
 
 
-class JsonPartialSpec extends FlatSpec with Matchers with LazyLogging {
+class JsonPartialSpec extends FlatSpec with Matchers {
   import JsonElisionSpec._
   import JsonReducable._
 

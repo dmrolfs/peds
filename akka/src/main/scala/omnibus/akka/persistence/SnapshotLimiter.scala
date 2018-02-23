@@ -8,8 +8,10 @@ trait SnapshotLimiter extends PersistentActor { outer: ActorLogging =>
   private var _lastSnapshotNr: Long = 0L
 
   private def resetSnapshotMonitor(): Unit = _lastSnapshotNr = lastSequenceNr
-  private def journaledEventsSinceSnapshot(): Long = lastSequenceNr - _lastSnapshotNr
+
   def isRedundantSnapshot: Boolean = lastSequenceNr <= _lastSnapshotNr
+
+  protected def journaledEventsSinceSnapshot(): Long = lastSequenceNr - _lastSnapshotNr
 
   override def saveSnapshot( snapshot: Any ): Unit = {
     if ( !isRedundantSnapshot ) {

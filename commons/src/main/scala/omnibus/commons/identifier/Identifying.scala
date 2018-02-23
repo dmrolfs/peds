@@ -13,6 +13,8 @@ abstract class Identifying[T] {
   type ID
   type TID = TaggedID[ID]
   def idTag: Symbol
+
+  import scala.language.implicitConversions
   implicit def tag( id: ID ): TID = TaggedID[ID]( idTag, id )
 
   def tidOf( o: T ): TID

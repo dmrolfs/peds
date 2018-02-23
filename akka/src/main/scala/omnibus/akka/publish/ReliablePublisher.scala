@@ -1,6 +1,6 @@
 package omnibus.akka.publish
 
-import akka.actor.{ActorContext, ActorPath, ActorLogging}
+import akka.actor.{ActorPath, ActorLogging}
 import akka.persistence.{AtLeastOnceDelivery, PersistentActor}
 import akka.persistence.AtLeastOnceDelivery.{UnconfirmedDelivery, UnconfirmedWarning}
 import omnibus.akka.envelope._
@@ -18,7 +18,7 @@ object ReliablePublisher {
 trait ReliablePublisher extends EventPublisher { outer: PersistentActor with AtLeastOnceDelivery with Enveloping with ActorLogging =>
   import ReliablePublisher._
 
-  def reliablePublisher( destination: ActorPath )( implicit context: ActorContext ): Publisher = {
+  def reliablePublisher( destination: ActorPath ): Publisher = {
     ( event: Any ) => {
       val deliveryIdToMessage = (deliveryId: Long) => {
         log.info( "ReliablePublisher.publish.DELIVER: deliveryId=[{}] dest=[{}] event=[{}]", deliveryId, destination, event )

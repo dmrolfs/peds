@@ -1,7 +1,5 @@
 package omnibus.archetype.domain.model.core
 
-import shapeless.Lens
-
 
 trait ConcurrencySafety {
   def concurrencyVersion: Int

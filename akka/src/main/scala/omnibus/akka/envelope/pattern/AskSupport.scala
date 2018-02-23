@@ -1,13 +1,13 @@
 package omnibus.akka.envelope.pattern
 
+import scala.concurrent.Future
 import akka.actor.ActorRef
 import akka.util.Timeout
 import omnibus.akka.envelope.{ComponentPath, Envelope}
 
-import scala.concurrent.Future
-
 
 trait AskSupport {
+  import scala.language.implicitConversions
   implicit def ask( actorRef: ActorRef ): AskableEnvelopingActorRef = new AskableEnvelopingActorRef( actorRef )
 }
 

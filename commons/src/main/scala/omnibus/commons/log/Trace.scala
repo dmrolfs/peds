@@ -1,10 +1,11 @@
 package omnibus.commons.log
 
 import scala.reflect.ClassTag
-import com.typesafe.scalalogging.{Logger => TypesafeLogger}
 import omnibus.commons.util._
+import journal.{ Logger => JournalLogger }
 
 
+@deprecated( "use Journal Logger.debug", "0.63" )
 class Trace[L: Traceable]( val name: String, logger: L ) {
   
   /** Determine whether trace logging is enabled.
@@ -38,10 +39,11 @@ class Trace[L: Traceable]( val name: String, logger: L ) {
 }
 
 
+@deprecated( "use Journal Logger.debug", "0.63" )
 object Trace {
   import org.slf4j.{LoggerFactory => Slf4jLoggerFactory}
 
-  type DefaultLogger = TypesafeLogger
+  type DefaultLogger = JournalLogger
 
   def apply[L: Traceable]( name: String, logger: L ): Trace[L] = new Trace( name, logger )
   
@@ -52,7 +54,7 @@ object Trace {
    *
    * @return the `Trace`.
    */
-  def apply( name: String ): Trace[DefaultLogger] = new Trace( name, TypesafeLogger( Slf4jLoggerFactory getLogger name ) )
+  def apply( name: String ): Trace[DefaultLogger] = new Trace( name, JournalLogger( Slf4jLoggerFactory getLogger name ) )
 
   /** Get the logger for the specified class, using the class's fully
    * qualified name as the logger name.
@@ -62,7 +64,7 @@ object Trace {
    * @return the `Trace`.
    */
   def apply( cls: Class[_] ): Trace[DefaultLogger] = {
-    new Trace( cls.safeSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger cls) )
+    new Trace( cls.safeSimpleName, JournalLogger( Slf4jLoggerFactory getLogger cls) )
   }
 
   /** Get the logger for the specified class type, using the class's fully
@@ -72,13 +74,13 @@ object Trace {
    */
   def apply[C: ClassTag](): Trace[DefaultLogger] = {
     val clazz = implicitly[ClassTag[C]].runtimeClass
-    new Trace( clazz.safeSimpleName, TypesafeLogger( Slf4jLoggerFactory getLogger clazz ) )
+    new Trace( clazz.safeSimpleName, JournalLogger( Slf4jLoggerFactory getLogger clazz ) )
   }
 
   
   import omnibus.commons.util.ThreadLocal
   import collection._
-  private var scopeStack = new ThreadLocal( mutable.Stack[String]() )
+  private val scopeStack = new ThreadLocal( mutable.Stack[String]() )
   val stackLabel = "fnstack"
   lazy val stackTrace = Trace( stackLabel )
   
@@ -108,7 +110,7 @@ object Trace {
     }
   }
 
-  def enter( label: String ) {
+  def enter( label: String ): Unit = {
     if ( stackTrace.isEnabled ) {
       scopeStack withValue { s =>
         stackTrace( " " * (s.length * 2) + "+ %s".format(label) )
@@ -117,7 +119,7 @@ object Trace {
     }
   }
   
-  def exit[T]( extra: T ) {
+  def exit[T]( extra: T ): Unit = {
     if ( stackTrace.isEnabled ) {
       scopeStack withValue { s =>
         val label = s.pop

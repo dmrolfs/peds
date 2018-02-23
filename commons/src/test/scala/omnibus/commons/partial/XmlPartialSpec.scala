@@ -4,10 +4,9 @@ import scala.xml._
 import org.scalatest._
 import org.scalatest.Matchers
 import org.scalatest.StreamlinedXml
-import com.typesafe.scalalogging.LazyLogging
 
 
-class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with LazyLogging {
+class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml {
   import XmlPartialSpec._
 
   "An elided XML API" should "filter simple list" in {

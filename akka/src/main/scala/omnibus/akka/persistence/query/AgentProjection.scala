@@ -2,12 +2,11 @@ package omnibus.akka.persistence.query
 
 import scala.concurrent.{ExecutionContext, Future}
 import akka.NotUsed
-import akka.actor.ActorSystem
 import akka.agent.Agent
 import akka.persistence.query.{EventEnvelope, NoOffset, Offset}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink}
-import com.typesafe.scalalogging.LazyLogging
+import journal._
 
 
 /**
@@ -20,16 +19,18 @@ class AgentProjection[T](
   selectLensFor: PartialFunction[Any, T => T],
   offset: Offset = NoOffset
 )(
-  implicit system: ActorSystem,
-  materializer: Materializer,
+  implicit materializer: Materializer,
   ec: ExecutionContext
-) extends LazyLogging {
+) {
   import AgentProjection.Directive
 
-  val view: Agent[T] = Agent( zero )
+  private val logger = Logger[AgentProjection[_]]
+
+  import com.github.ghik.silencer.silent
+  @silent val view: Agent[T] = Agent( zero )
 
   def start(): Future[T] = materializeCurrentView map { case (current, snr) =>
-    logger.warn( "#TEST:DEBUG: current materialization: [{}]", current.toString )
+    logger.warn( s"#TEST:DEBUG: current materialization: [${current}]" )
     logger.info( "current view materialized. starting ongoing projection..." )
     startProjectionFrom( snr )
     current
@@ -50,7 +51,7 @@ class AgentProjection[T](
     logger.info( "starting active projection" )
     queryJournal
       .eventsByTag( tag, Offset.sequence(sequenceId) )
-      .map { e => logger.warn( "TEST AgentProjection processing new tagged event:[{}]", e ); e }
+      .map { e => logger.warn( s"TEST AgentProjection processing new tagged event:[${e}]" ); e }
       .via( filterKnownEventsFlow )
       .to( sink )
       .run()
@@ -58,7 +59,7 @@ class AgentProjection[T](
 
   private def filterKnownEventsFlow: Flow[EventEnvelope, Directive[T], NotUsed] = {
     Flow[EventEnvelope]
-      .map { e => logger.warn( "TEST enter filter - tagged event:[{}]", e.toString ); e }
+      .map { e => logger.warn( s"TEST enter filter - tagged event:[${e}]" ); e }
       .collect {
         case EventEnvelope( o, pid, snr, event ) if selectLensFor isDefinedAt event => {
           Directive[T]( selectLensFor(event), pid, snr, o, event )
@@ -68,7 +69,7 @@ class AgentProjection[T](
 
   private def sink: Sink[Directive[T], Future[(T, Long)]] = {
     Sink.foldAsync( (view.get(), 0L) ) { case ( (_, lastSnr), d ) =>
-      logger.warn( "#TEST applying directive:[{}] @ snr:[{}]", d, d.sequenceNr.toString )
+      logger.warn( s"#TEST applying directive:[${d}] @ snr:[${d.sequenceNr}]" )
       view
         .alter { d.lens }
         .map { ( _, math.max(lastSnr, d.sequenceNr) ) }

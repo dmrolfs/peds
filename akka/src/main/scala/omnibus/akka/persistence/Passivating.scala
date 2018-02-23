@@ -45,14 +45,14 @@ trait Passivating extends Actor with ActorStack { outer: Actor with ActorLogging
 
   def hasNoInfluence( message: Any): Boolean = { 
     message match {
-      case m: NotInfluenceReceiveTimeout => true
-      case m: SaveSnapshotSuccess => true
-      case m: SaveSnapshotFailure => true
-      case m: DeleteMessagesSuccess => true
-      case m: DeleteMessagesFailure => true
-      case StopMessageType( m ) => true
+      case _: NotInfluenceReceiveTimeout => true
+      case _: SaveSnapshotSuccess => true
+      case _: SaveSnapshotFailure => true
+      case _: DeleteMessagesSuccess => true
+      case _: DeleteMessagesFailure => true
+      case StopMessageType( _ ) => true
       case Envelope( payload, _ ) => hasNoInfluence( payload )
-      case m => false
+      case _ => false
     }
   }
 

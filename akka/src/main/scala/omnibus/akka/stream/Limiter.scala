@@ -123,7 +123,7 @@ class Limiter(
     waitQueue = remainingQueue
     permitTokens -= toBeReleased.size
     toBeReleased foreach { _ ! MayPass }
-    passingMeter.mark( toBeReleased.size )
+    passingMeter.mark( toBeReleased.size.toLong )
     if ( permitTokens > 0 ) context become around( open )
   }
 

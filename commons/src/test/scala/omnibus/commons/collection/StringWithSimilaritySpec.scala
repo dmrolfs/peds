@@ -2,7 +2,7 @@ package omnibus.commons.collection
 
 import org.scalatest._
 import org.scalatest.Matchers
-import com.typesafe.scalalogging.LazyLogging
+import journal._
 
 
 /**
@@ -16,7 +16,10 @@ import com.typesafe.scalalogging.LazyLogging
  * If these values are wrong, someone needs to update Wikipedia,
  * because I'm use their results to validate my implementation!
  */
-class StringWithSimilaritySpec extends FlatSpec with Matchers with LazyLogging {
+@deprecated( "", "" )
+class StringWithSimilaritySpec extends FlatSpec with Matchers {
+	val log = Logger[StringWithSimilaritySpec]
+
 	"A string with similarity" should "Matching window returns valid distance" in {
 		val one = "martha"
 		val two = "marhta"

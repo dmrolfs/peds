@@ -2,10 +2,9 @@ package omnibus.commons.partial
 
 import org.scalatest._
 import org.scalatest.Matchers
-import com.typesafe.scalalogging.LazyLogging
 
 
-class PartialParserSpec extends FlatSpec with Matchers with LazyLogging {
+class PartialParserSpec extends FlatSpec with Matchers {
   val parser = new PartialParser
 
   "A Partial Spec Parser" should "produce an empty composite with empty spec" in {

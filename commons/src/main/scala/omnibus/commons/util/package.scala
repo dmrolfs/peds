@@ -1,13 +1,10 @@
 package omnibus.commons
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.reflect.ClassTag
 import scala.util.{ Failure, Success, Try }
-import com.typesafe.scalalogging.LazyLogging
-import shapeless.syntax.typeable._
 
 
-package object util extends LazyLogging {
+package object util {
 
   /**
    * Transforms a function into one that accepts Future arguments and outputs Future results. Used in function composition that pertains

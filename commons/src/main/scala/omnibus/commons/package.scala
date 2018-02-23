@@ -1,33 +1,60 @@
 package omnibus
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import com.typesafe.scalalogging.LazyLogging
-import cats.data.{ Kleisli, NonEmptyList, ValidatedNel }
+import cats.data.{Kleisli, NonEmptyList, ValidatedNel}
 import cats.syntax.either._
+import journal._
 
 
-package object commons extends LazyLogging {
+package object commons {
+  private val log = Logger[this.type]
+
+  type EC[_] = ExecutionContext
+
   type AllIssuesOr[A] = ValidatedNel[Throwable, A]
   implicit class ExtractableIssues[A]( val underlying: AllIssuesOr[A] ) extends AnyVal {
-    def unsafeGet: A = underlying valueOr { exs =>
-      exs map { ex => logger.error( s"issue identified extracting validated value:[${underlying}]", ex ) }
-      throw exs.head
+    def unsafeGet: A = {
+      underlying valueOr { exs =>
+        exs map { ex => log.error( s"issue identified extracting validated value:[${underlying}]", ex ) }
+        throw exs.head
+      }
+    }
+
+    def unsafeToErrorOr: ErrorOr[A] = {
+      underlying
+      .toEither
+      .leftMap { exs =>
+        exs map { ex => log.error( s"error raised extracting value:[${underlying}]", ex ) }
+        exs.head
+      }
     }
   }
 
   type AllErrorsOr[T] = Either[NonEmptyList[Throwable], T]
   implicit class ExtractableErrors[A]( val underlying: AllErrorsOr[A] ) extends AnyVal {
-    def unsafeGet: A = underlying valueOr { exs =>
-      exs map { ex => logger.error( s"error raised extracting V value:[${underlying}]", ex ) }
-      throw exs.head
+    def unsafeGet: A = {
+      underlying valueOr { exs =>
+        exs map { ex => log.error( s"error raised extracting V value:[${underlying}]", ex ) }
+        throw exs.head
+      }
+    }
+
+    def unsafeToErrorOr: ErrorOr[A] = {
+      underlying leftMap { exs =>
+        exs map { ex => log.error( s"error raised extracting value:[${underlying}]", ex ) }
+        exs.head
+      }
     }
   }
 
   type ErrorOr[T] = Either[Throwable, T]
   implicit class ExtractableError[A]( val underlying: ErrorOr[A] ) extends AnyVal {
-    def unsafeGet: A = underlying valueOr { ex =>
-      logger.error( s"error raised extracting TryV value:[${underlying}]", ex )
-      throw ex
+    def unsafeGet: A = {
+      underlying valueOr { ex =>
+        log.error( s"error raised extracting TryV value:[${underlying}]", ex )
+        throw ex
+      }
     }
   }
 

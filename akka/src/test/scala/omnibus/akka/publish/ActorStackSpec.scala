@@ -4,9 +4,7 @@ import akka.testkit.{TestProbe, TestKit, ImplicitSender}
 import akka.actor.{Props, ActorRef, Actor, ActorSystem}
 import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
 import scala.concurrent.duration._
-import akka.pattern.pipe
 import akka.util.Timeout
-import akka.actor.Status.Failure
 import omnibus.akka.ActorStack
 
 

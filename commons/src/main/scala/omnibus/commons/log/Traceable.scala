@@ -1,6 +1,7 @@
 package omnibus.commons.log
 
 
+//@deprecated( "use Journal Logger.debug", "0.63" )
 trait Traceable[L] {
   /** Determine whether trace logging is enabled.
    */

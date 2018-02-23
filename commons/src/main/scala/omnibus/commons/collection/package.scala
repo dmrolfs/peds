@@ -2,6 +2,7 @@ package omnibus.commons
 
 package object collection {
   import scala.language.implicitConversions
-  
-  implicit def string2StringWithSimilarity( str: String ) = new StringWithSimilarity( str )
+
+  @deprecated( "use rockymadden/stringmetric library instead", "0.61" )
+  implicit def string2StringWithSimilarity( str: String ): StringWithSimilarity = new StringWithSimilarity( str )
 }

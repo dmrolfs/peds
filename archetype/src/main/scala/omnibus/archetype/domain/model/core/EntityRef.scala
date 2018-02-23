@@ -1,7 +1,5 @@
 package omnibus.archetype.domain.model.core
 
-import scala.reflect.ClassTag
-import scala.language.existentials
 import omnibus.commons.util._
 
 

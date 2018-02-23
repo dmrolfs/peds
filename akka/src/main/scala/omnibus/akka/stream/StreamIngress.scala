@@ -10,6 +10,7 @@ import akka.stream.actor._
 import nl.grons.metrics.scala.{Meter, MetricName}
 import omnibus.akka.envelope.EnvelopingActor
 import omnibus.akka.metrics.InstrumentedActor
+import com.github.ghik.silencer.silent
 
 
 /**
@@ -22,6 +23,7 @@ object StreamIngress {
   case object CompleteAndStop extends IngressProtocol
 }
 
+@silent
 class StreamIngress[T: ClassTag] extends ActorPublisher[T] with EnvelopingActor with InstrumentedActor with ActorLogging {
   override lazy val metricBaseName: MetricName = MetricName( classOf[StreamIngress[T]] )
   val ingressdMeter: Meter = metrics meter "ingress"
@@ -51,7 +53,7 @@ class StreamIngress[T: ClassTag] extends ActorPublisher[T] with EnvelopingActor 
       }
     }
 
-    case ActorPublisherMessage.Request( n ) => deliverBuffer()
+    case _: ActorPublisherMessage.Request => deliverBuffer()
 
     case ActorPublisherMessage.Cancel => {
       log.info( "StreamIngress[{}][{}] received Cancel from [{}]", self.path, this.##, sender().path )

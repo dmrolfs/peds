@@ -3,10 +3,9 @@ package omnibus.commons.identifier
 import com.eaio.uuid.UUID
 import org.scalatest._
 import org.scalatest.Matchers
-import com.typesafe.scalalogging.LazyLogging
 
 
-class ShortUUIDSpec extends FlatSpec with Matchers with LazyLogging {
+class ShortUUIDSpec extends FlatSpec with Matchers {
 
   "A ShortUUID" should "create a nil" in {
     ShortUUID.toUUID( ShortUUID.zero ) shouldBe UUID.nilUUID
