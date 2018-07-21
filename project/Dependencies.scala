@@ -36,7 +36,7 @@ object Dependencies {
     )
   }
 
-  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0"
+  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
 
   object omnibus extends SimpleModule {
     override val groupId = "com.github.dmrolfs"
@@ -61,7 +61,7 @@ object Dependencies {
   object akka extends SimpleModule {
     override val groupId = "com.typesafe.akka"
     override val artifactIdRoot = "akka"
-    override val version = "2.5.10"
+    override val version = "2.5.14"
     def all: Seq[ModuleID] = Seq( actor, stream, agent, cluster, clusterSharding, contrib, persistence, remote, slf4j )
 
     val actor = module( "actor" ) withSources() withJavadoc()
@@ -92,7 +92,7 @@ object Dependencies {
   object cats extends SimpleModule {
     override val groupId = "org.typelevel"
     override val artifactIdRoot = "cats"
-    override val version = "1.0.1"
+    override val version = "1.1.0"
 
     val core = module( "core" )
     val kernel = module( "kernel" )
@@ -113,9 +113,9 @@ object Dependencies {
   }
 
   object time {
-    val joda = "joda-time" % "joda-time" % "2.9.9"
-    val jodaConvert = "org.joda" % "joda-convert" % "2.0"
-    val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.18.0"
+    val joda = "joda-time" % "joda-time" % "2.10"
+    val jodaConvert = "org.joda" % "joda-convert" % "2.1.1"
+    val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.20.0"
     def all = Seq( joda, jodaConvert, scalaTime )
   }
 
@@ -173,14 +173,14 @@ object Dependencies {
   }
 
   object facility {
-    val enumeratum = "com.beachape" %% "enumeratum" % "1.5.12"
+    val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
     val guava = "com.google.guava" % "guava" % "21.0"
     // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
     val fastutil = "it.unimi.dsi" % "fastutil" % "7.2.0" withSources() withJavadoc()
     val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
-    val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.5.3"
+    val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.5.4"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
-    val uuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.0"
+    val uuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
     val config = "com.typesafe" % "config" % "1.3.3"
     val ficus = "com.iheart" %% "ficus" % "1.4.3"
     val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
@@ -222,7 +222,7 @@ object Dependencies {
 
   object quality {
     val scalatest = "org.scalatest" %% "scalatest" % "3.0.5" withSources() withJavadoc()
-    val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.5"
+    val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.0"
 
     val cats = "com.ironcorelabs" %% "cats-scalatest" % "2.2.0"
     val inmemory = "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.1.0"
@@ -230,7 +230,7 @@ object Dependencies {
     object mockito extends SimpleModule {
       override val groupId = "org.mockito"
       override val artifactIdRoot = "mockito"
-      override val version = "2.15.0"
+      override val version = "2.19.1"
       override val isScala = false
       val core = module( "core" ) withSources() withJavadoc()
     }
