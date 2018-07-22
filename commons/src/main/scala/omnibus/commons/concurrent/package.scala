@@ -1,6 +1,6 @@
 package omnibus.commons
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util._
 import monix.eval.Task
 import monix.execution.Scheduler
@@ -10,12 +10,11 @@ package object concurrent {
   type S[_] = Scheduler
 
   def tryToFuture[T]( t: => Try[T] ): Future[T] = {
-    t match{
-      case Success(s) => Future successful { s }
-      case Failure(ex) => Future failed { ex }
+    t match {
+      case Success( s )  => Future successful { s }
+      case Failure( ex ) => Future failed { ex }
     }
   }
-
 
   /**
     * Adapted from Verizon's Delorean library to provide correct and stable conversions between Future to Task.
@@ -62,7 +61,7 @@ package object concurrent {
     * In other words, f is a def and not a val. With this sort of machinery, toTask will give you a
     * reasonable output. If you eagerly cache its input Future though, the results are on your own head.
     */
-  implicit class FutureAPI[A](self: => Future[A]) {
+  implicit class FutureAPI[A]( self: => Future[A] ) {
     def toTask(): Task[A] = Task fromFuture self
   }
 

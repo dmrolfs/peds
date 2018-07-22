@@ -6,8 +6,7 @@ import java.nio.ByteBuffer
 import scala.util.control.NoStackTrace
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import omnibus.commons.serialization.serializers.{ByteBufferSerializer, JavaSerializer}
-
+import omnibus.commons.serialization.serializers.{ ByteBufferSerializer, JavaSerializer }
 
 /**
   * A Serializer represents a bimap between an object and an array of bytes representing that object.
@@ -15,6 +14,7 @@ import omnibus.commons.serialization.serializers.{ByteBufferSerializer, JavaSeri
   * This mechanism is forked from akka.serialization.Serializer.
   */
 trait Serializer {
+
   /**
     * Completely unique value to identify this implementation of Serializer, used to optimize network traffic.
     * Values from 0 to 40 are reserved for internal usage.
@@ -35,7 +35,7 @@ trait Serializer {
     * Produces an object from an array of bytes, with an optional type-hint;
     * the class should be loaded using ActorSystem.dynamicAccess.
     */
-  @throws(classOf[NotSerializableException])
+  @throws( classOf[NotSerializableException] )
   def fromBinary( bytes: Array[Byte], manifest: Option[Class[_]] ): AnyRef
 
   /**
@@ -46,11 +46,13 @@ trait Serializer {
   /**
     * Java API: deserialize with type hint
     */
-  @throws(classOf[NotSerializableException])
-  final def fromBinary( bytes: Array[Byte], clazz: Class[_] ): AnyRef = fromBinary( bytes, Option(clazz) )
+  @throws( classOf[NotSerializableException] )
+  final def fromBinary( bytes: Array[Byte], clazz: Class[_] ): AnyRef =
+    fromBinary( bytes, Option( clazz ) )
 }
 
 object Serializer {
+
   /**
     * SECURITY BEST-PRACTICE is to disable java serialization for its multiple known attack surfaces.
     *
@@ -116,16 +118,17 @@ trait BaseSerializer extends Serializer {
     *
     * See [[Serializer#identifier]].
     */
-  override val identifier: TypeIdentifier = BaseSerializer.identifierFromConfig( this.getClass, config )
+  override val identifier: TypeIdentifier =
+    BaseSerializer.identifierFromConfig( this.getClass, config )
 }
 
 object BaseSerializer {
+
   /** INTERNAL API */
   private[platform] def identifierFromConfig( clazz: Class[_], config: Config ): TypeIdentifier = {
     config.as[TypeIdentifier]( s"""${Serializer.SerializationIdentifiersKey}."${clazz.getName}"""" )
   }
 }
-
 
 /**
   * Java API for creating a Serializer: make sure to include a constructor which
@@ -137,7 +140,7 @@ object BaseSerializer {
   */
 abstract class JSerializer extends Serializer {
 
-  @throws(classOf[NotSerializableException])
+  @throws( classOf[NotSerializableException] )
   final override def fromBinary( bytes: Array[Byte], manifest: Option[Class[_]] ): AnyRef = {
     fromBinaryJava( bytes, manifest.orNull )
   }
@@ -145,17 +148,18 @@ abstract class JSerializer extends Serializer {
   /**
     * This method must be implemented, manifest may be null.
     */
-  protected def fromBinaryJava( bytes: Array[Byte], manifest: Class[_]) : AnyRef
+  protected def fromBinaryJava( bytes: Array[Byte], manifest: Class[_] ): AnyRef
 }
-
-
 
 /*
  * forked from akka.serialization.DisabledJavaSerializer.
  */
-final case class DisabledJavaSerializer( config: Config ) extends Serializer with ByteBufferSerializer {
+final case class DisabledJavaSerializer( config: Config )
+    extends Serializer
+    with ByteBufferSerializer {
   // use same identifier as JavaSerializer, since it's a replacement
-  override val identifier: TypeIdentifier = BaseSerializer.identifierFromConfig( classOf[JavaSerializer], config )
+  override val identifier: TypeIdentifier =
+    BaseSerializer.identifierFromConfig( classOf[JavaSerializer], config )
 
   private[this] val empty = Array.empty[Byte]
 
@@ -169,13 +173,13 @@ final case class DisabledJavaSerializer( config: Config ) extends Serializer wit
     throw DisabledJavaSerializer.IllegalSerialization
   }
 
-  @throws(classOf[NotSerializableException])
+  @throws( classOf[NotSerializableException] )
   override def fromBinary( bytes: Array[Byte], clazz: Option[Class[_]] ): AnyRef = {
 //    log.warning(LogMarker.Security, "Incoming message attempted to use Java Serialization even though `akka.actor.allow-java-serialization = off` was set!")
     throw DisabledJavaSerializer.IllegalDeserialization
   }
 
-  @throws(classOf[NotSerializableException])
+  @throws( classOf[NotSerializableException] )
   override def fromBinary( buf: ByteBuffer, manifest: String ): AnyRef = {
     // we don't capture the manifest or mention it in the log as the default setting for includeManifest is set to false.
 //    log.warning(LogMarker.Security, "Incoming message attempted to use Java Serialization even though `akka.actor.allow-java-serialization = off` was set!")
@@ -190,7 +194,9 @@ final case class DisabledJavaSerializer( config: Config ) extends Serializer wit
 }
 
 object DisabledJavaSerializer {
-  final class JavaSerializationException( msg: String ) extends RuntimeException(msg) with NoStackTrace
+  final class JavaSerializationException( msg: String )
+      extends RuntimeException( msg )
+      with NoStackTrace
 
   final val IllegalSerialization = new JavaSerializationException(
     s"""

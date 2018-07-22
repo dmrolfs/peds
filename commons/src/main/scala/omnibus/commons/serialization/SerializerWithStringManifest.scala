@@ -2,11 +2,11 @@ package omnibus.commons.serialization
 
 import java.io.NotSerializableException
 
-
 /*
  * forked from akka.serialization.SerializerWithStringManifest.
  */
 abstract class SerializerWithStringManifest extends Serializer {
+
   /**
     * Returns whether this serializer needs a manifest in the fromBinary method
     */
@@ -28,7 +28,7 @@ abstract class SerializerWithStringManifest extends Serializer {
     * when performing rolling upgrades, i.e. running a cluster with mixed
     * versions for while. The problem will be logged and data is dropped.
     */
-  @throws(classOf[NotSerializableException])
+  @throws( classOf[NotSerializableException] )
   def fromBinary( bytes: Array[Byte], manifest: String ): AnyRef
 
   /**

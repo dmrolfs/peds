@@ -2,14 +2,13 @@ package omnibus.commons.identifier
 
 import scala.reflect.ClassTag
 
-
 case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
   def get: T = id
 
   def mapTo[B: ClassTag]: TaggedID[B] = {
     val boxedClass = {
       val b = implicitly[ClassTag[B]].runtimeClass
-      if ( b.isPrimitive ) TaggedID.toBoxed( b ) else b
+      if (b.isPrimitive) TaggedID.toBoxed( b ) else b
     }
     require( boxedClass ne null )
     TaggedID[B]( tag, boxedClass.cast( id ).asInstanceOf[B] )
@@ -28,12 +27,12 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
   override def equals( rhs: Any ): Boolean = {
     rhs match {
       case that: TaggedID[_] => {
-        if ( this eq that ) true
+        if (this eq that) true
         else {
-          ( that.## == this.## ) &&
-          ( that canEqual this ) &&
-          ( this.id == that.id ) &&
-          ( this.tag.name == that.tag.name )
+          (that.## == this.##) &&
+          (that canEqual this) &&
+          (this.id == that.id) &&
+          (this.tag.name == that.tag.name)
         }
       }
 
@@ -41,7 +40,7 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
     }
   }
 
-  override val hashCode: Int = 41 * ( 41 + id.## ) + tag.name.##
+  override val hashCode: Int = 41 * (41 + id.##) + tag.name.##
 
   override lazy val toString: String = tag.name + TaggedID.Delimiter + id.toString
 
@@ -49,7 +48,7 @@ case class TaggedID[+T]( tag: Symbol, id: T ) extends Equals {
 
 object TaggedID {
   val Delimiter: String = ":"
-  val Regex = s"""((.+)${Delimiter})?(.+)""".r  // this breaks down if Delimiter needs to be escaped
+  val Regex = s"""((.+)${Delimiter})?(.+)""".r // this breaks down if Delimiter needs to be escaped
 
   import scala.language.implicitConversions
   implicit def taggedId2Id[T]( tid: TaggedID[T] ): T = tid.id

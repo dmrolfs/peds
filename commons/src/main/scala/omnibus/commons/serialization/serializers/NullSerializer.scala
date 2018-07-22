@@ -1,8 +1,7 @@
 package omnibus.commons.serialization.serializers
 
 import java.io.NotSerializableException
-import omnibus.commons.serialization.{Serializer, TypeIdentifier}
-
+import omnibus.commons.serialization.{ Serializer, TypeIdentifier }
 
 /**
   * This is a special Serializer that Serializes and deserializes nulls only.
@@ -14,7 +13,8 @@ class NullSerializer extends Serializer {
   override def includeManifest: Boolean = false
   override def identifier: TypeIdentifier = TypeIdentifier.Undefined
   override def toBinary( o: AnyRef ): Array[Byte] = nullAsBytes
-  @throws(classOf[NotSerializableException])
+
+  @throws( classOf[NotSerializableException] )
   override def fromBinary( bytes: Array[Byte], clazz: Option[Class[_]] ): AnyRef = null
 }
 

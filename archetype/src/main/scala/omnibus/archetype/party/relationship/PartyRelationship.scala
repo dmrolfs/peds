@@ -3,7 +3,6 @@ package omnibus.archetype.party.relationship
 import scala.concurrent.Future
 import omnibus.archetype.party.Party
 
-
 //todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 abstract class PartyRelationship[CP <: Party, SP <: Party] {
   type Client = CP
@@ -19,11 +18,13 @@ abstract class PartyRelationship[CP <: Party, SP <: Party] {
   def supplierRole: SupplierRole
 }
 
-
 trait PartyRelationshipRepositoryComponent {
 
-  def partyRelationshipRepository[CP <: Party, SP <: Party, PR <: PartyRelationship[CP, SP]]: PartyRelationshipRepository[CP, SP, PR]
-
+  def partyRelationshipRepository[CP <: Party, SP <: Party, PR <: PartyRelationship[CP, SP]]: PartyRelationshipRepository[
+    CP,
+    SP,
+    PR
+  ]
 
   trait PartyRelationshipRepository[CP <: Party, SP <: Party, PR <: PartyRelationship[CP, SP]] {
     type Relationship = PR

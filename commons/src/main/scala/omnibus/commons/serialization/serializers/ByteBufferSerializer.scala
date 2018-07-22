@@ -3,7 +3,6 @@ package omnibus.commons.serialization.serializers
 import java.io.NotSerializableException
 import java.nio.ByteBuffer
 
-
 /**
   * Serializer between an object and a `ByteBuffer` representing that object.
   *
@@ -52,6 +51,6 @@ trait ByteBufferSerializer {
     * Produces an object from a `ByteBuffer`, with an optional type-hint;
     * the class should be loaded using ActorSystem.dynamicAccess.
     */
-  @throws(classOf[NotSerializableException])
+  @throws( classOf[NotSerializableException] )
   def fromBinary( buf: ByteBuffer, manifest: String ): AnyRef
 }
