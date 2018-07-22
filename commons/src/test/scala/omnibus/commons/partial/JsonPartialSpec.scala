@@ -4,11 +4,9 @@ import org.scalatest._
 import org.scalatest.Matchers
 import org.json4s.jackson.JsonMethods._
 
-
 class JsonPartialSpec extends FlatSpec with Matchers {
   import JsonElisionSpec._
   import JsonReducable._
-
 
   "An elided JSON API" should "filter simple list" in {
     elide( myers, "inquiryId, orderId" ) shouldBe parse(
@@ -49,7 +47,10 @@ class JsonPartialSpec extends FlatSpec with Matchers {
 
   it should "filter simple mix of prime and two simple composite list" in {
     // trace( "myers data = "+myers )
-    elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines" ) shouldBe parse(
+    elide(
+      myers,
+      "inquiryId,orderId,person:(name:(given,family)),report:offenders:address:addressLines"
+    ) shouldBe parse(
       """{
         "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
         "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
@@ -66,7 +67,7 @@ class JsonPartialSpec extends FlatSpec with Matchers {
   }
 
   it should "filter and sort" in {
-    val actual = elide( myers, "report:offenders+sort=fullname:address:addressLines" ) 
+    val actual = elide( myers, "report:offenders+sort=fullname:address:addressLines" )
     val expected = parse(
       """{
         "report" : {
@@ -152,7 +153,7 @@ class JsonPartialSpec extends FlatSpec with Matchers {
       }"""
     )
 
-    ( elide( data, "bars+sort=foo" ) \ "bars" ) shouldBe parse( 
+    (elide( data, "bars+sort=foo" ) \ "bars") shouldBe parse(
       """{
         "bars": [{
           "alpha": "a",
@@ -167,7 +168,7 @@ class JsonPartialSpec extends FlatSpec with Matchers {
       }"""
     ) \ "bars"
 
-    ( elide( data, "bars+sort=foo:alpha" ) \ "bars" ) shouldBe parse( 
+    (elide( data, "bars+sort=foo:alpha" ) \ "bars") shouldBe parse(
       """{ "bars": [{ "alpha": "a" }, { "alpha": "b" }, { "alpha": "c" }] }"""
     ) \ "bars"
   }
@@ -204,7 +205,7 @@ class JsonPartialSpec extends FlatSpec with Matchers {
       }"""
     )
 
-    ( elide( data, "bars+sort-desc=foo" ) \ "bars" ) shouldBe parse(
+    (elide( data, "bars+sort-desc=foo" ) \ "bars") shouldBe parse(
       """{
         "bars": [{
           "alpha": "c",
@@ -219,7 +220,7 @@ class JsonPartialSpec extends FlatSpec with Matchers {
       }"""
     ) \ "bars"
 
-    ( elide( data, "bars+sort-desc=foo:alpha" ) \ "bars" ) shouldBe parse(
+    (elide( data, "bars+sort-desc=foo:alpha" ) \ "bars") shouldBe parse(
       """{
         "bars": [{
           "alpha": "c"
@@ -233,7 +234,10 @@ class JsonPartialSpec extends FlatSpec with Matchers {
   }
 
   it should "filter nested" in {
-    elide( myers, "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)" ) shouldBe parse(
+    elide(
+      myers,
+      "person:(name:(given,family)),report:offenders:offensesByDegree:Other:(description,date)"
+    ) shouldBe parse(
       """{
         "person": { "name": { "family": "Myers", "given": "Michael" } },
         "report": {
@@ -281,8 +285,9 @@ class JsonPartialSpec extends FlatSpec with Matchers {
 }
 
 object JsonElisionSpec {
-  val source = 
-"""{
+
+  val source =
+    """{
   "inquiryId": "381e07f0-453d-11e2-b04c-22000a91952c",
   "orderId": "564eaf86-11ae-4d22-b4e8-26bc00484b8c",
   "person": {

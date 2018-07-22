@@ -1,7 +1,6 @@
 package omnibus.commons.repository
 
-
-trait Criteria[Q] extends (Q => Q) {
+trait Criteria[Q] extends (Q => Q ) {
   // type Query
   type Predicate
 

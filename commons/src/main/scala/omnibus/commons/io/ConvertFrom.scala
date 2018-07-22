@@ -4,28 +4,31 @@ import scala.annotation.implicitNotFound
 import scala.reflect.ClassTag
 import omnibus.commons.log.Trace
 
-
 /** A base trait for conversion factories.
- *
- *  @tparam From  the type of the source format that requests
- *                a conversion.
- *  @tparam To    the type of object to be created.
- *
- *  @see Builder
- */
+  *
+  *  @tparam From  the type of the source format that requests
+  *                a conversion.
+  *  @tparam To    the type of object to be created.
+  *
+  *  @see Builder
+  */
 @deprecated( "use serialization package", "0.63" )
-@implicitNotFound(msg = "Cannot convert an instance of type ${To} based on a source of type ${From}.")
+@implicitNotFound(
+  msg = "Cannot convert an instance of type ${To} based on a source of type ${From}."
+)
 trait ConvertFrom[-From, +To] extends Function1[From, To]
 
 object ConvertFrom {
   val trace = Trace[ConvertFrom.type]
 
-  type Conversion = (Class[_], Class[_])
+  type Conversion = ( Class[_], Class[_] )
 
-  private var myConversions: Map[Conversion, ConvertFrom[_,_]] = Map.empty
+  private var myConversions: Map[Conversion, ConvertFrom[_, _]] = Map.empty
   def conversions: Set[Conversion] = myConversions.keySet
 
-  def register[From, To]( cf: ConvertFrom[From, To] )( implicit mFrom: ClassTag[From], mTo: ClassTag[To] ): Unit = {
+  def register[From, To](
+    cf: ConvertFrom[From, To]
+  )( implicit mFrom: ClassTag[From], mTo: ClassTag[To] ): Unit = {
     import scala.language.existentials
 
     val k = mFrom.runtimeClass -> mTo.runtimeClass
@@ -33,12 +36,13 @@ object ConvertFrom {
     trace( "registering " + k )
   }
 
-  def convert[From, To]( source: From )( implicit mFrom: ClassTag[From], mTo: ClassTag[To] ): To = trace.block("convert") {
-    import scala.language.existentials
-    
-    val k = mFrom.runtimeClass -> mTo.runtimeClass
-    trace( "key="+k )
-    val c = myConversions( k ).asInstanceOf[ConvertFrom[From, To]]
-    c( source )
-  }
+  def convert[From, To]( source: From )( implicit mFrom: ClassTag[From], mTo: ClassTag[To] ): To =
+    trace.block( "convert" ) {
+      import scala.language.existentials
+
+      val k = mFrom.runtimeClass -> mTo.runtimeClass
+      trace( "key=" + k )
+      val c = myConversions( k ).asInstanceOf[ConvertFrom[From, To]]
+      c( source )
+    }
 }

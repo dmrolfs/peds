@@ -8,7 +8,6 @@ import com.eaio.uuid.UUID
 // import org.hashids.syntax._
 import omnibus.commons.ErrorOr
 
-
 object ShortUUID {
   // implicit val hashids: Hashids = Hashids.reference( "omnibus comprises several items" )
 
@@ -37,7 +36,6 @@ object ShortUUID {
 
   val zero: ShortUUID = fromUUID( UUID.nilUUID )
 
-
   trait ShortUuidIdentifying[T] { self: Identifying[T] =>
     override type ID = ShortUUID
     override def nextTID: ErrorOr[TID] = tag( ShortUUID() ).asRight
@@ -45,7 +43,7 @@ object ShortUUID {
   }
 }
 
-class ShortUUID private[identifier]( val repr: String ) extends Serializable with Equals {
+class ShortUUID private[identifier] ( val repr: String ) extends Serializable with Equals {
 // class ShortUUID( ids: Seq[Long] ) extends Equals {
   // import ShortUUID.hashids
 
@@ -73,14 +71,14 @@ class ShortUUID private[identifier]( val repr: String ) extends Serializable wit
 
   override def equals( rhs: Any ): Boolean = rhs match {
     case that: ShortUUID => {
-      if ( this eq that ) true
+      if (this eq that) true
       else {
         // val List( lhsIsClockNegative, lhsClockMagnitude, lhsIsTimeNegative, lhsTimeMagnitude ) = this.ids
         // val List( rhsIsClockNegative, rhsClockMagnitude, rhsIsTimeNegative, rhsTimeMagnitude ) = that.rep.unhashid
 
-        ( that.## == this.## ) &&
-        ( that canEqual this ) &&
-        ( that.repr == this.repr )
+        (that.## == this.##) &&
+        (that canEqual this) &&
+        (that.repr == this.repr)
         // ( lhsTimeMagnitude == rhsTimeMagnitude ) &&
         // ( lhsClockMagnitude == rhsClockMagnitude ) &&
         // ( lhsIsClockNegative == rhsIsClockNegative ) &&
@@ -91,7 +89,7 @@ class ShortUUID private[identifier]( val repr: String ) extends Serializable wit
     case _ => false
   }
 
-  override val hashCode: Int = 41 * ( 41 + repr.## )
+  override val hashCode: Int = 41 * (41 + repr.##)
   // override val hashCode: Int = {
   //   val List( isClockNegative, clockMagnitude, isTimeNegative, timeMagnitude ) = ids
   //   41 * (
@@ -103,5 +101,5 @@ class ShortUUID private[identifier]( val repr: String ) extends Serializable wit
   //   ) + timeMagnitude.##
   // }
 
-  override def toString: String = if ( this == ShortUUID.zero ) "<zero-uuid>" else repr
+  override def toString: String = if (this == ShortUUID.zero) "<zero-uuid>" else repr
 }

@@ -3,7 +3,6 @@ package omnibus.archetype.domain.model.core
 import shapeless.Lens
 import omnibus.commons.identifier._
 
-
 trait Identifiable {
   type ID
   type TID = TaggedID[ID]

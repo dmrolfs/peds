@@ -2,8 +2,7 @@ package omnibus.archetype.domain.model.core
 
 import omnibus.commons.util._
 
-
-sealed trait EntityRef extends ((Symbol) => Any) with Ordered[EntityRef] {
+sealed trait EntityRef extends (( Symbol ) => Any ) with Ordered[EntityRef] {
   type Source <: Entity
   type ID = Source#ID
   type TID = Source#TID
@@ -23,7 +22,6 @@ object EntityRef {
   val ID: Symbol = 'id
   val NAME: Symbol = 'name
 
-
   // def apply[T <: Entity : ClassTag]( entity: T ): EntityRef = {
   //   EntityRefImpl[T]( id = entity.id, name = entity.name, clazz = implicitly[ClassTag[T]].runtimeClass )
   // }
@@ -40,34 +38,36 @@ object EntityRef {
   //   EntityRefImpl( id = id, name = name, clazz = clazz, meta = Map( meta:_* ) )
   // }
 
-  def unapply( ref: EntityRef ): Option[(ref.ID, String)] = Some( (ref.id, ref.name) )
+  def unapply( ref: EntityRef ): Option[( ref.ID, String )] = Some( ( ref.id, ref.name ) )
 
   trait EntityRefLike extends EntityRef with Equals {
     def meta: Map[Symbol, Any]
 
     override def apply( property: Symbol ): Any = {
       get( property ) getOrElse {
-        throw new NoSuchElementException( s"${toString} does not contain requested property: $property" )
+        throw new NoSuchElementException(
+          s"${toString} does not contain requested property: $property"
+        )
       }
     }
 
     override def get( property: Symbol ): Option[Any] = property match {
-      case ID => Some( id )
+      case ID   => Some( id )
       case NAME => Some( name )
-      case p => meta get p
+      case p    => meta get p
     }
 
     override def compare( rhs: EntityRef ): Int = this.## compare rhs.##
 
-    override def hashCode: Int = 41 * ( 41 + id.## )
+    override def hashCode: Int = 41 * (41 + id.##)
 
     override def equals( rhs: Any ): Boolean = rhs match {
       case that: EntityRefLike => {
-        if ( this eq that ) true
+        if (this eq that) true
         else {
-          ( that.## == this.## ) &&
-          ( that canEqual this ) &&
-          ( this.id == that.id )
+          (that.## == this.##) &&
+          (that canEqual this) &&
+          (this.id == that.id)
         }
       }
 
@@ -76,7 +76,7 @@ object EntityRef {
 
     override def toString: String = {
       var result = s"EntityRef(name=$name, id=$id, class=${getClass.safeSimpleName}"
-      if ( !meta.isEmpty ) result += s", meta=${meta}"
+      if (!meta.isEmpty) result += s", meta=${meta}"
       result += ")"
       result
     }
