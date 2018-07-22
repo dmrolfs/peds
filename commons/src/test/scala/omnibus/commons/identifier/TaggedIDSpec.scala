@@ -2,7 +2,6 @@ package omnibus.commons.identifier
 
 import org.scalatest._
 
-
 class TaggedIDSpec extends FlatSpec with Matchers {
 
   "A TaggedID" should "match equality if underlying id matches" in {
