@@ -28,7 +28,7 @@ object Dependencies {
 
 
   object silencer {
-    private val version = "0.6"
+    private val version = "1.1"
 
     val all = Seq(
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % version),

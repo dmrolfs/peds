@@ -3,9 +3,6 @@ import BuildSettings._
 
 name := "omnibus"
 organization in ThisBuild := "com.github.dmrolfs"
-scalaVersion in ThisBuild := "2.12.4"
-
-crossScalaVersions in ThisBuild := Seq("2.11.12")
 
 // ivyScala := ivyScala.value map {
 //   _.copy(overrideScalaVersion = true)
