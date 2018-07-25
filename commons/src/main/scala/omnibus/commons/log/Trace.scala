@@ -2,9 +2,9 @@ package omnibus.commons.log
 
 import scala.reflect.ClassTag
 import omnibus.commons.util._
-import journal.{ Logger => JournalLogger }
+import scribe.Logger
 
-@deprecated( "use Journal Logger.debug", "0.63" )
+@deprecated( "use scribe.trace", "0.63" )
 class Trace[L: Traceable]( val name: String, logger: L ) {
 
   /** Determine whether trace logging is enabled.
@@ -43,9 +43,7 @@ class Trace[L: Traceable]( val name: String, logger: L ) {
 
 @deprecated( "use Journal Logger.debug", "0.63" )
 object Trace {
-  import org.slf4j.{ LoggerFactory => Slf4jLoggerFactory }
-
-  type DefaultLogger = JournalLogger
+  type DefaultLogger = scribe.Logger
 
   def apply[L: Traceable]( name: String, logger: L ): Trace[L] = new Trace( name, logger )
 
@@ -56,8 +54,7 @@ object Trace {
     *
     * @return the `Trace`.
     */
-  def apply( name: String ): Trace[DefaultLogger] =
-    new Trace( name, JournalLogger( Slf4jLoggerFactory getLogger name ) )
+  def apply( name: String ): Trace[DefaultLogger] = new Trace( name, Logger( name ) )
 
   /** Get the logger for the specified class, using the class's fully
     * qualified name as the logger name.
@@ -67,7 +64,7 @@ object Trace {
     * @return the `Trace`.
     */
   def apply( cls: Class[_] ): Trace[DefaultLogger] = {
-    new Trace( cls.safeSimpleName, JournalLogger( Slf4jLoggerFactory getLogger cls ) )
+    new Trace( cls.safeSimpleName, Logger( cls.safeSimpleName ) )
   }
 
   /** Get the logger for the specified class type, using the class's fully
@@ -77,7 +74,7 @@ object Trace {
     */
   def apply[C: ClassTag](): Trace[DefaultLogger] = {
     val clazz = implicitly[ClassTag[C]].runtimeClass
-    new Trace( clazz.safeSimpleName, JournalLogger( Slf4jLoggerFactory getLogger clazz ) )
+    new Trace( clazz.safeSimpleName, Logger( clazz.safeSimpleName ) )
   }
 
   import omnibus.commons.util.ThreadLocal

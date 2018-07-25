@@ -8,9 +8,16 @@ import org.scalatest.prop._
 import org.scalacheck._
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.concurrent.Futures
+import scribe.Level
 
 class ConversionSpec extends FlatSpec with Matchers with PropertyChecks with Futures {
   import Arbitrary._
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

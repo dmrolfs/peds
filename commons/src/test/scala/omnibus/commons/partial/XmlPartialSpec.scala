@@ -4,9 +4,16 @@ import scala.xml._
 import org.scalatest._
 import org.scalatest.Matchers
 import org.scalatest.StreamlinedXml
+import scribe.Level
 
 class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml {
   import XmlPartialSpec._
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   "An elided XML API" should "filter simple list" in {
     (

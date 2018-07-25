@@ -1,13 +1,15 @@
 package omnibus.akka
 
-import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Props, ActorRef, Actor, ActorSystem}
-import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Matchers}
 import omnibus.akka.AskRetry._
+
 import scala.concurrent.duration._
 import akka.pattern.pipe
 import akka.util.Timeout
 import akka.actor.Status.Failure
+import scribe.Level
 
 
 class AskRetryTestActor(target: ActorRef) extends Actor {
@@ -26,6 +28,12 @@ with BeforeAndAfterAll
 with ImplicitSender
 {
   def this() = this(ActorSystem("AskRetrySuite"))
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   implicit val t = Timeout(500.millis)
   implicit val ec = system.dispatcher

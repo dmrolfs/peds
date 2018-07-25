@@ -26,6 +26,7 @@ package omnibus.commons.builder
 
 import org.scalatest._
 import org.scalatest.Matchers
+import scribe.Level
 import shapeless._
 
 object HasBuilderSpec {
@@ -104,6 +105,12 @@ object HasBuilderSpec {
 }
 
 class HasBuilderSpec extends FlatSpec with Matchers {
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
+
   import HasBuilderSpec._
   "When method chaining is not used, a builder for a case class with a single required parameter" should "generate the expected case class" in {
     val expected = TestInt( 42 )

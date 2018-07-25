@@ -1,12 +1,14 @@
 package omnibus.akka.envelope
 
 import scala.concurrent.Await
-import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Actor, Props, ActorRef, ActorSystem, ActorLogging}
-import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Matchers}
+
 import scala.concurrent.duration._
 import akka.util.Timeout
 import omnibus.akka.envelope.pattern.ask
+import scribe.Level
 
 
 object EnvelopeAskingSpec {
@@ -44,6 +46,12 @@ with ImplicitSender
   def this() = this( ActorSystem( "EnvelopeAskingSpec" ) )
 
   import EnvelopeAskingSpec._
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   val d = 500.millis
   implicit val t = Timeout( d )

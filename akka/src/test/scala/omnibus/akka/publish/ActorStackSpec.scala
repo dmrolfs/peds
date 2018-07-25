@@ -1,11 +1,13 @@
 package omnibus.akka.publish
 
-import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Props, ActorRef, Actor, ActorSystem}
-import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Matchers}
+
 import scala.concurrent.duration._
 import akka.util.Timeout
 import omnibus.akka.ActorStack
+import scribe.Level
 
 
 object TestActorStack {
@@ -30,6 +32,12 @@ with BeforeAndAfterAll
 with ImplicitSender
 {
   def this() = this( ActorSystem( "ActorStackSpec" ) )
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   implicit val t = Timeout( 500.millis )
   implicit val ec = system.dispatcher

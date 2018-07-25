@@ -122,21 +122,30 @@ object Dependencies {
   object log {
 //    val persistLogging = "com.persist" %% "persist-logging" % "1.3.2"
 //    val typesafe = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
-    val journal = "io.verizon.journal" %% "core" % "3.0.19"
+//    val journal = "io.verizon.journal" %% "core" % "3.0.19"
 
-    object logback extends SimpleModule {
-      override val groupId = "ch.qos.logback"
-      override val artifactIdRoot = "logback"
-      override val version = "1.2.3"
-      override val isScala = false
-      val core = module( "core" )
-      val classic = module( "classic" )
+//    object logback extends SimpleModule {
+//      override val groupId = "ch.qos.logback"
+//      override val artifactIdRoot = "logback"
+//      override val version = "1.2.3"
+//      override val isScala = false
+//      val core = module( "core" )
+//      val classic = module( "classic" )
+//    }
+
+//    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.25" intransitive
+//    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.25"
+
+    object scribe extends SimpleModule {
+      override val groupId: String = "com.outr"
+      override def artifactIdRoot: String = "scribe"
+      override def version: String = "2.5.3"
+      def all = Seq( core, slf4j )
+      val core = module( "" )
+      val slf4j = module( "slf4j" )
     }
 
-    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.25" intransitive
-    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.25"
-
-    def all = Seq( journal )
+    def all = scribe.all
 //    def all = Seq( journal, logback.core, logback.classic, slf4j, log4jOverSlf4j )
   }
 
@@ -174,7 +183,8 @@ object Dependencies {
 
   object facility {
     val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
-    val guava = "com.google.guava" % "guava" % "21.0"
+    val eidos = "org.systemfw" %% "eidos" % "0.1.1"
+//    val guava = "com.google.guava" % "guava" % "21.0"
     // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
     val fastutil = "it.unimi.dsi" % "fastutil" % "7.2.0" withSources() withJavadoc()
     val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
@@ -237,29 +247,12 @@ object Dependencies {
   }
 
 
-  val commonDependencies = {
+  val commonDependencies: Seq[ModuleID] = {
     silencer.all ++
     log.all ++
-//    time.all ++
     cats.all ++
-//    monix.all ++
     Seq(
-//      akka.actor,
-//      akka.cluster,
-//      akka.clusterSharding,
-//      akka.clusterMetrics,
-//      metrics.kamon.sigarLoader,
-//      akka.remote,
-//      akka.stream,
-//      akka.slf4j,
-//      akka.kryo,
-//      akka.kryoSerializers,
-//      akka.persistence,
-//      akka.persistenceQuery,
-//      persistence.cassandra,
-//persistence.leveldb,
-//persistence.leveldbjni,
-      log.logback.classic,
+      facility.eidos,
       facility.enumeratum,
       facility.bloomFilter,
       facility.uuid,
@@ -273,7 +266,6 @@ object Dependencies {
       akka.testkit,
       quality.scalatest,
       quality.scalacheck,
-//      quality.cats,
       quality.mockito.core
     )
   }

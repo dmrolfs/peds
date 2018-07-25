@@ -3,10 +3,17 @@ package omnibus.commons.partial
 import org.scalatest._
 import org.scalatest.Matchers
 import org.json4s.jackson.JsonMethods._
+import scribe.Level
 
 class JsonPartialSpec extends FlatSpec with Matchers {
   import JsonElisionSpec._
   import JsonReducable._
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   "An elided JSON API" should "filter simple list" in {
     elide( myers, "inquiryId, orderId" ) shouldBe parse(

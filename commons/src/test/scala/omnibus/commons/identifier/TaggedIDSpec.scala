@@ -1,8 +1,14 @@
 package omnibus.commons.identifier
 
 import org.scalatest._
+import scribe.Level
 
 class TaggedIDSpec extends FlatSpec with Matchers {
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   "A TaggedID" should "match equality if underlying id matches" in {
     val id = ShortUUID()

@@ -1,10 +1,12 @@
 package omnibus.akka.envelope
 
-import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Actor, Props, ActorRef, ActorSystem, ActorLogging}
-import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Matchers}
+
 import scala.concurrent.duration._
 import akka.util.Timeout
+import scribe.Level
 
 
 object EnvelopingActorSpec {
@@ -38,6 +40,12 @@ with BeforeAndAfterAll
 with ImplicitSender
 {
   def this() = this( ActorSystem( "EnvelopeSendingSpec" ) )
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   import EnvelopingActorSpec._
 

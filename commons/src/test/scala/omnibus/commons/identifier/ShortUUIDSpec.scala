@@ -3,8 +3,14 @@ package omnibus.commons.identifier
 import com.eaio.uuid.UUID
 import org.scalatest._
 import org.scalatest.Matchers
+import scribe.Level
 
 class ShortUUIDSpec extends FlatSpec with Matchers {
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   "A ShortUUID" should "create a nil" in {
     ShortUUID.toUUID( ShortUUID.zero ) shouldBe UUID.nilUUID

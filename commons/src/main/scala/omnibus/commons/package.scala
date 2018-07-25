@@ -4,11 +4,8 @@ import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success, Try }
 import cats.data.{ Kleisli, NonEmptyList, ValidatedNel }
 import cats.syntax.either._
-import journal._
 
 package object commons {
-  private val log = Logger[this.type]
-
   type EC[_] = ExecutionContext
 
   type AllIssuesOr[A] = ValidatedNel[Throwable, A]
@@ -17,7 +14,7 @@ package object commons {
     def unsafeGet: A = {
       underlying valueOr { exs =>
         exs map { ex =>
-          log.error( s"issue identified extracting validated value:[${underlying}]", ex )
+          scribe.error( s"issue identified extracting validated value:[${underlying}]", ex )
         }
         throw exs.head
       }
@@ -27,7 +24,7 @@ package object commons {
       underlying.toEither
         .leftMap { exs =>
           exs map { ex =>
-            log.error( s"error raised extracting value:[${underlying}]", ex )
+            scribe.error( s"error raised extracting value:[${underlying}]", ex )
           }
           exs.head
         }
@@ -40,7 +37,7 @@ package object commons {
     def unsafeGet: A = {
       underlying valueOr { exs =>
         exs map { ex =>
-          log.error( s"error raised extracting V value:[${underlying}]", ex )
+          scribe.error( s"error raised extracting V value:[${underlying}]", ex )
         }
         throw exs.head
       }
@@ -49,7 +46,7 @@ package object commons {
     def unsafeToErrorOr: ErrorOr[A] = {
       underlying leftMap { exs =>
         exs map { ex =>
-          log.error( s"error raised extracting value:[${underlying}]", ex )
+          scribe.error( s"error raised extracting value:[${underlying}]", ex )
         }
         exs.head
       }
@@ -61,7 +58,7 @@ package object commons {
 
     def unsafeGet: A = {
       underlying valueOr { ex =>
-        log.error( s"error raised extracting TryV value:[${underlying}]", ex )
+        scribe.error( s"error raised extracting TryV value:[${underlying}]", ex )
         throw ex
       }
     }
