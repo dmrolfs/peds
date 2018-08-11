@@ -4,7 +4,7 @@ import org.joda.time.LocalDate
 import omnibus.archetype.domain.model.core.Entity
 import omnibus.archetype.{ Address, OrganizationName, PersonName }
 import relationship.PartyRole
-import omnibus.commons.util._
+import omnibus.core.syntax.clazz._
 
 //todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 trait Party extends Entity with Equals {

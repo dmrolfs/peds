@@ -1,7 +1,7 @@
 package omnibus.commons.log
 
 import scala.reflect.ClassTag
-import omnibus.commons.util._
+import omnibus.core._
 import scribe.Logger
 
 @deprecated( "use scribe.trace", "0.63" )

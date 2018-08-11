@@ -1,11 +1,9 @@
 package omnibus.akka.persistence.query
 
 import akka.NotUsed
-import akka.persistence.query.{EventEnvelope, NoOffset, Offset}
+import akka.persistence.query.{ EventEnvelope, NoOffset, Offset }
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import journal._
-
 
 /**
   * Created by rolfsd on 2/16/17.
@@ -18,21 +16,24 @@ class ProjectionSubscriber(
 )(
   implicit materializer: Materializer
 ) {
-  private val logger = Logger[ProjectionSubscriber]
 
   def run(): NotUsed = {
-    logger.info( "starting active projection subscriber...")
+    scribe.info( "starting active projection subscriber..." )
     queryJournal
-    .eventsByTag( tag, offset )
-    .map { e => logger.warn( s"#TEST processing new tagged event: [${e}]" ); e }
-    //      .via( filterKnownEventsFlow )
-    .to(
-      Sink foreach { envelope: EventEnvelope =>
-        logger.warn( s"#TEST applying lens @ snr:[${envelope.sequenceNr}] to event-envelope:[${envelope}]" )
-        applyLensFor( envelope.event )
+      .eventsByTag( tag, offset )
+      .map { e =>
+        scribe.warn( s"#TEST processing new tagged event: [${e}]" ); e
       }
-    )
-    .run()
+      //      .via( filterKnownEventsFlow )
+      .to(
+        Sink foreach { envelope: EventEnvelope =>
+          scribe.warn(
+            s"#TEST applying lens @ snr:[${envelope.sequenceNr}] to event-envelope:[${envelope}]"
+          )
+          applyLensFor( envelope.event )
+        }
+      )
+      .run()
   }
 
 //  private def filterKnownEventsFlow: Flow[EventEnvelope, Any, NotUsed] = {

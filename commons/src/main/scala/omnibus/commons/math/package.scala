@@ -2,6 +2,7 @@ package omnibus.commons
 
 import cats.syntax.validated._
 import org.apache.commons.math3.analysis.interpolation.{ LinearInterpolator, SplineInterpolator }
+import omnibus.core.AllIssuesOr
 
 package object math {
 

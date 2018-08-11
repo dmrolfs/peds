@@ -1,9 +1,7 @@
-package omnibus.commons.identifier
-
-import com.eaio.uuid.UUID
-import org.scalatest._
-import org.scalatest.Matchers
+package omnibus.identifier
+import org.scalatest.{ FlatSpec, Matchers }
 import scribe.Level
+import io.jvm.uuid._
 
 class ShortUUIDSpec extends FlatSpec with Matchers {
   scribe.Logger.root
@@ -13,25 +11,25 @@ class ShortUUIDSpec extends FlatSpec with Matchers {
     .replace()
 
   "A ShortUUID" should "create a nil" in {
-    ShortUUID.toUUID( ShortUUID.zero ) shouldBe UUID.nilUUID
+    ShortUUID.toUUID( ShortUUID.zero ) shouldBe UUID( 0L, 0L )
   }
 
   it should "represent uuid without loss" in {
-    val expectedUuid = new UUID
+    val expectedUuid = UUID.random
     val short = ShortUUID.fromUUID( expectedUuid )
     val replayedUuid = ShortUUID.toUUID( short )
     expectedUuid shouldBe replayedUuid
   }
 
   it should "convert from uuid implicitly" in {
-    val uuid = new UUID
+    val uuid = UUID.random
     val expected = ShortUUID.fromUUID( uuid )
     val actual: ShortUUID = uuid
     expected shouldBe actual
   }
 
   it should "convert to uuid implicitly" in {
-    val expected = new UUID
+    val expected = UUID.random
     val short = ShortUUID.fromUUID( expected )
     val actual: UUID = short
     expected shouldBe actual
