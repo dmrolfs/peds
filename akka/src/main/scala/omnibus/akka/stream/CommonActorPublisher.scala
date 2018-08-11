@@ -5,56 +5,70 @@ import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import akka.actor._
 import akka.event.LoggingReceive
-import akka.stream.actor.{ActorPublisher, ActorPublisherMessage, ActorSubscriberMessage}
+import akka.stream.actor.{ ActorPublisher, ActorPublisherMessage, ActorSubscriberMessage }
 import nl.grons.metrics.scala.MetricName
 import omnibus.akka.metrics.InstrumentedActor
-
+import com.github.ghik.silencer.silent
 
 /**
   * Created by rolfsd on 3/30/16.
   */
 object CommonActorPublisher {
-  def props[O: ClassTag]( subscriptionTimeout: Duration = Duration.Inf ): Props = Props( new Default[O]( subscriptionTimeout ) )
+
+  def props[O: ClassTag]( subscriptionTimeout: Duration = Duration.Inf ): Props =
+    Props( new Default[O]( subscriptionTimeout ) )
 
   private class Default[O: ClassTag]( override val subscriptionTimeoutDuration: Duration )
-  extends CommonActorPublisher[O] with ConfigurationProvider
-
+      extends CommonActorPublisher[O]
+      with ConfigurationProvider
 
   trait ConfigurationProvider {
     def subscriptionTimeoutDuration: Duration
   }
 }
 
-class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with InstrumentedActor with ActorLogging {
+@silent
+class CommonActorPublisher[O: ClassTag]
+    extends ActorPublisher[O]
+    with InstrumentedActor
+    with ActorLogging {
   outer: CommonActorPublisher.ConfigurationProvider =>
 
   override val subscriptionTimeout: Duration = outer.subscriptionTimeoutDuration
 
   override lazy val metricBaseName: MetricName = MetricName( classOf[CommonActorPublisher[O]] )
 
-
   val oTag = implicitly[ClassTag[O]]
   log.debug( "CommonActorPublisher oTag = {}", oTag )
   var buffer: Vector[O] = Vector.empty[O]
-
 
   override def receive: Receive = LoggingReceive { around( publish ) }
 
   val publish: Receive = {
     case oTag( message ) if isActive => {
-      log.debug( "CommonActorPublisher received message: [{}][{}]", oTag.runtimeClass.getName, message )
-      if ( buffer.isEmpty && totalDemand > 0 ) {
+      log.debug(
+        "CommonActorPublisher received message: [{}][{}]",
+        oTag.runtimeClass.getName,
+        message
+      )
+      if (buffer.isEmpty && totalDemand > 0) {
         log.debug(
           "CommonActorPublisher[{}]: there is demand [{}] so short-circuiting buffer[{}] to onNext message: [{}]",
-          (self.path, this##),
-          (totalDemand,isActive),
+          ( self.path, this.## ),
+          ( totalDemand, isActive ),
           buffer.size,
           message
         )
         onNext( message )
       } else {
         buffer :+= message
-        log.debug( "CommonActorPublisher[{}][{}]: buffered [new-size={}] result: [{}]", self.path, this.##, buffer.size, message )
+        log.debug(
+          "CommonActorPublisher[{}][{}]: buffered [new-size={}] result: [{}]",
+          self.path,
+          this.##,
+          buffer.size,
+          message
+        )
         deliverBuffer()
       }
     }
@@ -70,18 +84,34 @@ class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with Instrumen
     }
 
     case ActorSubscriberMessage.OnComplete => {
-      log.info( "CommonActorPublisher[{}][{}] received OnComplete from [{}]", self.path, this.##, sender().path )
+      log.info(
+        "CommonActorPublisher[{}][{}] received OnComplete from [{}]",
+        self.path,
+        this.##,
+        sender().path
+      )
       deliverBuffer()
       onComplete()
     }
 
     case ActorSubscriberMessage.OnError( cause ) => {
-      log.error( cause, "CommonActorPublisher[{}][{}] received OnError from [{}]", self.path, this.##, sender().path )
+      log.error(
+        cause,
+        "CommonActorPublisher[{}][{}] received OnError from [{}]",
+        self.path,
+        this.##,
+        sender().path
+      )
       onError( cause )
     }
 
     case _: ActorPublisherMessage.Request => {
-      log.debug( "CommonActorPublisher[{}][{}]: downstream request received: totalDemand=[{}]", self.path, this.##, totalDemand )
+      log.debug(
+        "CommonActorPublisher[{}][{}]: downstream request received: totalDemand=[{}]",
+        self.path,
+        this.##,
+        totalDemand
+      )
       deliverBuffer()
     }
 
@@ -102,14 +132,19 @@ class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with Instrumen
     }
 
     case m => {
-      log.error( "CommonActorPublisher[{}][{}] received not tag[{}] but UNKNOWN message: [{}]", self.path, this.##, oTag, m )
+      log.error(
+        "CommonActorPublisher[{}][{}] received not tag[{}] but UNKNOWN message: [{}]",
+        self.path,
+        this.##,
+        oTag,
+        m
+      )
     }
   }
 
-
   @tailrec final def deliverBuffer(): Unit = {
-    if ( isActive && totalDemand > 0 ) {
-      if ( totalDemand <= Int.MaxValue ) {
+    if (isActive && totalDemand > 0) {
+      if (totalDemand <= Int.MaxValue) {
         log.debug(
           "CommonActorPublisher[{}][{}]: delivering {} of {} demand",
           self.path,
@@ -117,7 +152,7 @@ class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with Instrumen
           totalDemand.toInt,
           totalDemand.toInt
         )
-        val (use, keep) = buffer splitAt totalDemand.toInt
+        val ( use, keep ) = buffer splitAt totalDemand.toInt
         use foreach onNext
         buffer = keep
       } else {
@@ -128,7 +163,7 @@ class CommonActorPublisher[O: ClassTag] extends ActorPublisher[O] with Instrumen
           Int.MaxValue,
           totalDemand.toInt
         )
-        val (use, keep) = buffer splitAt Int.MaxValue
+        val ( use, keep ) = buffer splitAt Int.MaxValue
         use foreach onNext
         buffer = keep
         deliverBuffer()

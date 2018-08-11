@@ -1,7 +1,6 @@
 package omnibus.akka.supervision
 
-import akka.actor.{ Actor, ActorRef, Props, ActorLogging, Terminated, DeathPactException }
-
+import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
 
 object IsolatedLifeCycleSupervisor {
   sealed trait Command
@@ -24,9 +23,8 @@ trait IsolatedLifeCycleSupervisor extends Actor with ActorLogging {
   def childStarter(): Unit
 
   final override def preStart(): Unit = childStarter()
-  final override def preRestart( reason: Throwable, message: Option[Any] ): Unit = { }
-  final override def postRestart( reason: Throwable ): Unit = { }
-
+  final override def preRestart( reason: Throwable, message: Option[Any] ): Unit = {}
+  final override def postRestart( reason: Throwable ): Unit = {}
 
   override def receive: Receive = {
     case WaitForStart => sender() ! Started // signify that we've started
@@ -40,5 +38,6 @@ trait IsolatedLifeCycleSupervisor extends Actor with ActorLogging {
     }
   }
 
-  override def unhandled( m: Any ): Unit = throw new IllegalStateException( s"Don't call ${self.path.name} directly ($m)" )
+  override def unhandled( m: Any ): Unit =
+    throw new IllegalStateException( s"Don't call ${self.path.name} directly ($m)" )
 }

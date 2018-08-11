@@ -1,13 +1,11 @@
 package omnibus.akka.supervision
 
 import scala.concurrent.duration.Duration
-import akka.actor.{ SupervisorStrategy, ActorInitializationException, ActorKilledException }
-import akka.actor.SupervisorStrategy.{ Stop, Escalate }
+import akka.actor.SupervisorStrategy
 
-
-abstract class IsolatedDefaultSupervisor( 
-  maxNrRetries: Int = -1, 
-  withinTimeRange: Duration = Duration.Inf 
+abstract class IsolatedDefaultSupervisor(
+  maxNrRetries: Int = -1,
+  withinTimeRange: Duration = Duration.Inf
 ) extends IsolatedLifeCycleSupervisor {
   self: SupervisionStrategyFactory =>
 

@@ -1,13 +1,15 @@
 package omnibus.akka.envelope
 
-import akka.testkit.{TestProbe, TestKit, ImplicitSender}
-import akka.actor.{Actor, Props, ActorRef, ActorSystem, ActorLogging}
-import org.scalatest.{FunSuiteLike, Matchers, BeforeAndAfterAll}
 import scala.concurrent.duration._
 import akka.util.Timeout
-
+import akka.testkit.{ ImplicitSender, TestKit, TestProbe }
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props }
+import scribe.Level
+import org.scalatest.{ BeforeAndAfterAll, FunSuiteLike, Matchers }
+import omnibus.core.syntax.clazz._
 
 object EnvelopingActorSpec {
+
   object TestActor {
     case class Unhandled( message: Any )
   }
@@ -15,29 +17,33 @@ object EnvelopingActorSpec {
   class TestActor( target: ActorRef ) extends Actor with EnvelopingActor with ActorLogging {
     override def receive: Receive = bare orElse around( wrapped )
 
-    def bare: Receive = { 
-      case Envelope( "INITIAL", h ) => target ! Envelope( "REPLY", h ) 
+    def bare: Receive = {
+      case Envelope( "INITIAL", h ) => target ! Envelope( "REPLY", h )
     }
 
-    def wrapped: Receive = { 
-      case "ACTOR" => target sendEnvelope "REPLY"
+    def wrapped: Receive = {
+      case "ACTOR"   => target sendEnvelope "REPLY"
       case "FORWARD" => target forwardEnvelope "REPLY"
-      case "PLAIN" => target ! "PLAIN REPLY"
+      case "PLAIN"   => target ! "PLAIN REPLY"
     }
 
     override def unhandled( message: Any ): Unit = target ! TestActor.Unhandled( message )
   }
 }
 
-
-class EnvelopingActorSpec( _system: ActorSystem ) 
-extends TestKit( _system ) 
-with FunSuiteLike 
-with Matchers 
-with BeforeAndAfterAll 
-with ImplicitSender
-{
+class EnvelopingActorSpec( _system: ActorSystem )
+    extends TestKit( _system )
+    with FunSuiteLike
+    with Matchers
+    with BeforeAndAfterAll
+    with ImplicitSender {
   def this() = this( ActorSystem( "EnvelopeSendingSpec" ) )
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   import EnvelopingActorSpec._
 

@@ -1,20 +1,26 @@
 package omnibus.akka.stream
 
 import scala.concurrent.duration.FiniteDuration
-import akka.actor.{ActorContext, ActorLogging, ActorPath, ActorRef, Props, Terminated}
+import akka.actor.{ ActorContext, ActorLogging, ActorPath, ActorRef, Props, Terminated }
 import akka.contrib.pattern.ReliableProxy
 import akka.event.LoggingReceive
-import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, RequestStrategy, WatermarkRequestStrategy}
-import nl.grons.metrics.scala.{Meter, MetricName}
+import akka.stream.actor.{
+  ActorSubscriber,
+  ActorSubscriberMessage,
+  RequestStrategy,
+  WatermarkRequestStrategy
+}
+import nl.grons.metrics.scala.{ Meter, MetricName }
 import omnibus.akka.metrics.InstrumentedActor
-
+import com.github.ghik.silencer.silent
 
 /**
   * Created by rolfsd on 4/19/16.
   */
 object StreamEgress {
-  def props( subscriberMagnet: SubscriberMagnet, high: Int, low: Option[Int] = None ): Props = {
-    Props( new Default(subscriberMagnet, high) )
+
+  def props( subscriberMagnet: SubscriberMagnet, high: Int ): Props = {
+    Props( new Default( subscriberMagnet, high ) )
   }
 
   sealed trait SubscriberMagnet {
@@ -22,12 +28,14 @@ object StreamEgress {
   }
 
   object SubscriberMagnet {
+    import scala.language.implicitConversions
+
     implicit def fromRef( ref: ActorRef ): SubscriberMagnet = new SubscriberMagnet {
       override def apply(): ActorRef = ref
     }
 
-    implicit def fromPathForReliableFullOptions(
-      tuple: ( ActorPath, FiniteDuration, Option[FiniteDuration], Option[Int])
+    @silent implicit def fromPathForReliableFullOptions(
+      tuple: ( ActorPath, FiniteDuration, Option[FiniteDuration], Option[Int] )
     )(
       implicit context: ActorContext
     ): SubscriberMagnet = {
@@ -39,33 +47,37 @@ object StreamEgress {
           maxConnectAttempts: Option[Int]
         ) = tuple
 
-        lazy val subscriber: ActorRef = context.actorOf( ReliableProxy.props(path, retryAfter, reconnectAfter, maxConnectAttempts ) )
+        lazy val subscriber: ActorRef = context.actorOf(
+          ReliableProxy.props( path, retryAfter, reconnectAfter, maxConnectAttempts )
+        )
 
         override def apply(): ActorRef = subscriber
       }
     }
 
-    implicit def fromPathForReliableNoReconnectionLimit(
-      tuple: ( ActorPath, FiniteDuration, FiniteDuration)
+    @silent implicit def fromPathForReliableNoReconnectionLimit(
+      tuple: ( ActorPath, FiniteDuration, FiniteDuration )
     )(
       implicit context: ActorContext
     ): SubscriberMagnet = {
       new SubscriberMagnet {
-        val ( path: ActorPath,  retryAfter: FiniteDuration, reconnectAfter: FiniteDuration ) = tuple
-        lazy val subscriber: ActorRef = context.actorOf( ReliableProxy.props(path, retryAfter, Option(reconnectAfter), None ) )
+        val ( path: ActorPath, retryAfter: FiniteDuration, reconnectAfter: FiniteDuration ) = tuple
+        lazy val subscriber: ActorRef =
+          context.actorOf( ReliableProxy.props( path, retryAfter, Option( reconnectAfter ), None ) )
 
         override def apply(): ActorRef = subscriber
       }
     }
 
-    implicit def fromPathForReliableNoReconnections(
+    @silent implicit def fromPathForReliableNoReconnections(
       tuple: ( ActorPath, FiniteDuration )
     )(
       implicit context: ActorContext
     ): SubscriberMagnet = {
       new SubscriberMagnet {
-        val ( path: ActorPath, retryAfter: FiniteDuration) = tuple
-        lazy val subscriber: ActorRef = context.actorOf( ReliableProxy.props(path, retryAfter, None, None ) )
+        val ( path: ActorPath, retryAfter: FiniteDuration ) = tuple
+        lazy val subscriber: ActorRef =
+          context.actorOf( ReliableProxy.props( path, retryAfter, None, None ) )
 
         override def apply(): ActorRef = subscriber
       }
@@ -75,8 +87,8 @@ object StreamEgress {
   private class Default(
     subscriberMagnet: SubscriberMagnet,
     override val highWatermark: Int
-  ) extends StreamEgress( subscriberMagnet ) with WatermarkProvider
-
+  ) extends StreamEgress( subscriberMagnet )
+      with WatermarkProvider
 
   trait WatermarkProvider {
     def highWatermark: Int
@@ -86,7 +98,11 @@ object StreamEgress {
 
 import StreamEgress.SubscriberMagnet
 
-class StreamEgress( subscriberMagnet: SubscriberMagnet ) extends ActorSubscriber with InstrumentedActor with ActorLogging {
+@silent
+class StreamEgress( subscriberMagnet: SubscriberMagnet )
+    extends ActorSubscriber
+    with InstrumentedActor
+    with ActorLogging {
   outer: StreamEgress.WatermarkProvider =>
 
   val subscriber = subscriberMagnet()
@@ -96,13 +112,16 @@ class StreamEgress( subscriberMagnet: SubscriberMagnet ) extends ActorSubscriber
   val egressMeter: Meter = metrics meter "egress"
 
   override protected def requestStrategy: RequestStrategy = {
-    new WatermarkRequestStrategy( highWatermark = outer.highWatermark, lowWatermark = outer.lowWatermark )
+    new WatermarkRequestStrategy(
+      highWatermark = outer.highWatermark,
+      lowWatermark = outer.lowWatermark
+    )
   }
 
   override def receive: Receive = LoggingReceive { around( egress orElse maintenance ) }
 
   val egress: Receive = {
-    case next @ ActorSubscriberMessage.OnNext( message ) => {
+    case ActorSubscriberMessage.OnNext( message ) => {
       egressMeter.mark()
       log.debug( "StreamEgress[{}]: Sending [{}] message:[{}]", this.##, subscriber, message )
       subscriber ! message
@@ -116,6 +135,7 @@ class StreamEgress( subscriberMagnet: SubscriberMagnet ) extends ActorSubscriber
         sender().path,
         subscriber.path
       )
+
       subscriber ! ActorSubscriberMessage.OnComplete
     }
     case onError @ ActorSubscriberMessage.OnError( cause ) => {
@@ -127,13 +147,20 @@ class StreamEgress( subscriberMagnet: SubscriberMagnet ) extends ActorSubscriber
         sender().path,
         subscriber.path
       )
+
       subscriber ! onError
     }
   }
 
   val maintenance: Receive = {
-    case Terminated( deadActor ) => {
-      log.warning( "StreamEgress[{}][{}] notified of death of subscriber:[{}] -- stopping", self.path, this.##, subscriber.path )
+    case _: Terminated => {
+      log.warning(
+        "StreamEgress[{}][{}] notified of death of subscriber:[{}] -- stopping",
+        self.path,
+        this.##,
+        subscriber.path
+      )
+
       context stop self
     }
   }

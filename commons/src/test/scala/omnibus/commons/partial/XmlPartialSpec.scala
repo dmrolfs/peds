@@ -4,11 +4,16 @@ import scala.xml._
 import org.scalatest._
 import org.scalatest.Matchers
 import org.scalatest.StreamlinedXml
-import com.typesafe.scalalogging.LazyLogging
+import scribe.Level
 
-
-class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with LazyLogging {
+class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml {
   import XmlPartialSpec._
+
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .replace()
 
   "An elided XML API" should "filter simple list" in {
     (
@@ -18,7 +23,7 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with L
           <orderId>564eaf86-11ae-4d22-b4e8-26bc00484b8c</orderId>
         </reply>
       )
-    ) (after being streamlined[Elem])
+    )( after being streamlined[Elem] )
   }
 
   it should "filter simple composite list" in {
@@ -26,7 +31,7 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with L
       elide( myers, "person:name:(given,family)" ) === (
         <reply><person><name><family>Myers</family><given>Michael</given></name></person></reply>
       )
-    ) (after being streamlined[Elem])
+    )( after being streamlined[Elem] )
   }
 
   it should "filter simple mix of prime and composite list" in {
@@ -38,12 +43,15 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with L
           <person><name><family>Myers</family><given>Michael</given></name></person>
         </reply>
       )
-    ) (after being streamlined[Elem])
+    )( after being streamlined[Elem] )
   }
 
   it should "filter simple mix of prime and two simple composite list" in {
     (
-      elide( myers, "inquiryId,orderId,person:(name:(given,family)),report:offender:address:addressLine" ) === (
+      elide(
+        myers,
+        "inquiryId,orderId,person:(name:(given,family)),report:offender:address:addressLine"
+      ) === (
         <reply>
           <inquiryId>381e07f0-453d-11e2-b04c-22000a91952c</inquiryId>
           <orderId>564eaf86-11ae-4d22-b4e8-26bc00484b8c</orderId>
@@ -56,81 +64,83 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with L
           </report>
         </reply>
       )
-    ) (after being streamlined[Elem])
+    )( after being streamlined[Elem] )
   }
 
   it should "simple filter and sort" in {
-    val data = <top><bar><alpha>c</alpha><foo>3</foo></bar><bar><foo>2</foo><alpha>b</alpha></bar><bar><alpha>a</alpha><foo>1</foo></bar><zed>do not include</zed></top>
+    val data =
+      <top><bar><alpha>c</alpha><foo>3</foo></bar><bar><foo>2</foo><alpha>b</alpha></bar><bar><alpha>a</alpha><foo>1</foo></bar><zed>do not include</zed></top>
     (
-      elide( data, "bar" ) === ( 
+      elide( data, "bar" ) === (
         <top>
           <bar><alpha>c</alpha><foo>3</foo></bar>
           <bar><foo>2</foo><alpha>b</alpha></bar>
           <bar><alpha>a</alpha><foo>1</foo></bar>
-        </top> 
-      ) 
-    ) (after being streamlined[Elem])
+        </top>
+      )
+    )( after being streamlined[Elem] )
 
     (
-      ( elide( data, "bar+sort=foo" ) \ "bar" ) === (
+      (elide( data, "bar+sort=foo" ) \ "bar") === (
         (
           <top>
             <bar><alpha>a</alpha><foo>1</foo></bar>
             <bar><foo>2</foo><alpha>b</alpha></bar>
             <bar><alpha>c</alpha><foo>3</foo></bar>
-          </top> 
-        ) \ "bar" 
+          </top>
+        ) \ "bar"
       )
-    ) (after being streamlined[NodeSeq])
+    )( after being streamlined[NodeSeq] )
 
     (
-      ( elide( data, "bar+sort=foo:alpha" ) \ "bar" ) === ( 
+      (elide( data, "bar+sort=foo:alpha" ) \ "bar") === (
         (
           <top>
             <bar><alpha>a</alpha></bar>
             <bar><alpha>b</alpha></bar>
             <bar><alpha>c</alpha></bar>
-          </top> 
-        ) \ "bar" 
+          </top>
+        ) \ "bar"
       )
-    ) (after being streamlined[NodeSeq])
+    )( after being streamlined[NodeSeq] )
   }
 
   it should "simple filter and sort-desc" in {
-    val data = <top><bar><alpha>c</alpha><foo>3</foo></bar><bar><foo>2</foo><alpha>b</alpha></bar><bar><alpha>a</alpha><foo>1</foo></bar><zed>do not include</zed></top>
+    val data =
+      <top><bar><alpha>c</alpha><foo>3</foo></bar><bar><foo>2</foo><alpha>b</alpha></bar><bar><alpha>a</alpha><foo>1</foo></bar><zed>do not include</zed></top>
     (
-      elide( data, "bar" ) === ( 
+      elide( data, "bar" ) === (
         <top>
           <bar><alpha>c</alpha><foo>3</foo></bar>
           <bar><foo>2</foo><alpha>b</alpha></bar>
           <bar><alpha>a</alpha><foo>1</foo></bar>
-        </top> 
+        </top>
       )
-    ) (after being streamlined[Elem])
+    )( after being streamlined[Elem] )
 
     (
-      ( elide( data, "bar+sort-desc=foo" ) \ "bar" ) === ( 
+      (elide( data, "bar+sort-desc=foo" ) \ "bar") === (
         (
           <top>
             <bar><alpha>c</alpha><foo>3</foo></bar>
             <bar><foo>2</foo><alpha>b</alpha></bar>
             <bar><alpha>a</alpha><foo>1</foo></bar>
-          </top> 
-        ) \ "bar" 
+          </top>
+        ) \ "bar"
       )
-    ) (after being streamlined[NodeSeq])
+    )( after being streamlined[NodeSeq] )
 
     (
-      ( elide( data, "bar+sort-desc=foo:alpha" ) \ "bar" ) === ( 
+      (elide( data, "bar+sort-desc=foo:alpha" ) \ "bar") === (
         Utility.trim(
           <top>
             <bar><alpha>c</alpha></bar>
             <bar><alpha>b</alpha></bar>
             <bar><alpha>a</alpha></bar>
-          </top> 
-        ) \ "bar" 
+          </top>
+        ) \ "bar"
       )
-    ) (after being streamlined[NodeSeq])
+    )( after being streamlined[NodeSeq] )
   }
 
   it should "filter and sort" in {
@@ -146,7 +156,7 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with L
       </reply>
     ) \\ "offender"
 
-    ( actual === expected )(after being streamlined[NodeSeq])
+    (actual === expected)( after being streamlined[NodeSeq] )
   }
 
   it should "filter and sort-desc" in {
@@ -162,11 +172,14 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with L
       </reply>
     ) \\ "offender"
 
-    ( actual === expected )( after being streamlined[NodeSeq] )
+    (actual === expected)( after being streamlined[NodeSeq] )
   }
 
-  it should "filter nested" in { 
-    val actual = elide( myers, "person:(name:(given,family)),report:offender:offensesByDegree:Other:(description,date)" )
+  it should "filter nested" in {
+    val actual = elide(
+      myers,
+      "person:(name:(given,family)),report:offender:offensesByDegree:Other:(description,date)"
+    )
     val expected = Utility.trim(
       <reply>
         <person><name><family>Myers</family><given>Michael</given></name></person>
@@ -182,11 +195,12 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml with L
       </reply>
     )
 
-    ( actual === expected )( after being streamlined[Elem])
+    (actual === expected)( after being streamlined[Elem] )
   }
 }
 
 object XmlPartialSpec {
+
   val myers = (
     <reply>
       <inquiryId>381e07f0-453d-11e2-b04c-22000a91952c</inquiryId>
