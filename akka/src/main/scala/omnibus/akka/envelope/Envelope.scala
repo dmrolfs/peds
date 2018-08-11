@@ -1,7 +1,6 @@
 package omnibus.akka.envelope
 
-import omnibus.commons.util._
-
+import omnibus.core._
 
 case class EnvelopeHeader(
   fromComponentType: ComponentType,
@@ -14,7 +13,6 @@ case class EnvelopeHeader(
   properties: Map[Symbol, Any] = Map(),
   createdTimeStamp: Long = System.currentTimeMillis
 )
-
 
 // This is the ultimate class in which we're interested.  It contains all of
 // the meta-information we need in order to see what's what

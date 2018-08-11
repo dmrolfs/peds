@@ -1,10 +1,9 @@
 package omnibus.akka.envelope.pattern
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
-import akka.actor.{Actor, ActorRef, ActorSelection, Status}
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success }
+import akka.actor.{ Actor, ActorRef, ActorSelection, Status }
 import omnibus.akka.envelope._
-
 
 /**
   * Created by rolfsd on 6/9/16.
@@ -29,17 +28,23 @@ trait PipeToSupport {
     * The successful result of the future is sent as a message to the recipient, or
     * the failure is sent in a [[akka.actor.Status.Failure]] to the recipient.
     */
-  implicit def pipe[T]( future: Future[T] )( implicit ec: ExecutionContext ): PipeableFutureEnvelope[T] = {
+  implicit def pipe[T](
+    future: Future[T]
+  )( implicit ec: ExecutionContext ): PipeableFutureEnvelope[T] = {
     new PipeableFutureEnvelope( future )
   }
 }
 
+final class PipeableFutureEnvelope[T]( val underlying: Future[T] )(
+  implicit ec: ExecutionContext
+) {
 
-final class PipeableFutureEnvelope[T](val underlying: Future[T] )(implicit ec: ExecutionContext ) {
-  def pipeEnvelopeTo( recipient: ActorRef )( implicit sender: ActorRef = Actor.noSender ): Future[T] = {
+  def pipeEnvelopeTo(
+    recipient: ActorRef
+  )( implicit sender: ActorRef = Actor.noSender ): Future[T] = {
     underlying andThen {
-      case Success(r) => recipient !+ r
-      case Failure(f) => recipient !+ Status.Failure(f)
+      case Success( r ) => recipient !+ r
+      case Failure( f ) => recipient !+ Status.Failure( f )
     }
   }
 
@@ -50,10 +55,12 @@ final class PipeableFutureEnvelope[T](val underlying: Future[T] )(implicit ec: E
     this
   }
 
-  def pipeEnvelopeToSelection( recipient: ActorSelection )( implicit sender: ActorRef = Actor.noSender ): Future[T] = {
+  def pipeEnvelopeToSelection(
+    recipient: ActorSelection
+  )( implicit sender: ActorRef = Actor.noSender ): Future[T] = {
     underlying andThen {
-      case Success(r) => recipient !+ r
-      case Failure(f) => recipient !+ Status.Failure(f)
+      case Success( r ) => recipient !+ r
+      case Failure( f ) => recipient !+ Status.Failure( f )
     }
   }
 
@@ -64,4 +71,3 @@ final class PipeableFutureEnvelope[T](val underlying: Future[T] )(implicit ec: E
     this
   }
 }
-

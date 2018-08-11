@@ -26,8 +26,6 @@ addSbtPlugin("io.get-coursier"                   % "sbt-coursier"           % "1
 addSbtPlugin("org.scoverage"                     % "sbt-scoverage"          % "1.5.1")
 //addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
 
-addSbtPlugin("se.marcuslonnberg"                 % "sbt-docker"             % "1.5.0")
-addSbtPlugin("com.tapad"                         % "sbt-docker-compose"     % "1.0.32")
-
 // addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.11")
 
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)

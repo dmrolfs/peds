@@ -5,7 +5,7 @@ import cats.syntax.validated._
 import org.apache.commons.math3.linear.{ LUDecomposition, MatrixUtils, RealMatrix }
 import org.apache.commons.math3.ml.distance.DistanceMeasure
 import org.apache.commons.math3.stat.correlation.Covariance
-import omnibus.commons.AllIssuesOr
+import omnibus.core.AllIssuesOr
 
 /**
   * Created by rolfsd on 11/25/15.

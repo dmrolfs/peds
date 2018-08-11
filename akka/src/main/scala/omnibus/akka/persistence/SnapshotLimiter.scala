@@ -3,7 +3,6 @@ package omnibus.akka.persistence
 import akka.actor.ActorLogging
 import akka.persistence.PersistentActor
 
-
 trait SnapshotLimiter extends PersistentActor { outer: ActorLogging =>
   private var _lastSnapshotNr: Long = 0L
 
@@ -14,11 +13,16 @@ trait SnapshotLimiter extends PersistentActor { outer: ActorLogging =>
   protected def journaledEventsSinceSnapshot(): Long = lastSequenceNr - _lastSnapshotNr
 
   override def saveSnapshot( snapshot: Any ): Unit = {
-    if ( !isRedundantSnapshot ) {
+    if (!isRedundantSnapshot) {
       super.saveSnapshot( snapshot )
       resetSnapshotMonitor()
     } else {
-      log.debug( "[{}] ignoring snapshot request last-snapshot:[{}] last-journaled:[{}]", self.path.name, _lastSnapshotNr, lastSequenceNr )
+      log.debug(
+        "[{}] ignoring snapshot request last-snapshot:[{}] last-journaled:[{}]",
+        self.path.name,
+        _lastSnapshotNr,
+        lastSequenceNr
+      )
     }
   }
 }

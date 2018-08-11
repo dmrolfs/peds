@@ -227,3 +227,4 @@ deploy.conf
 .sync.db*
 icon?
 
+.DS_Store

@@ -1,17 +1,17 @@
 package omnibus.akka.envelope
 
 import scala.concurrent.Await
-import akka.testkit.{ImplicitSender, TestKit, TestProbe}
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Matchers}
-
 import scala.concurrent.duration._
+import akka.testkit.{ ImplicitSender, TestKit, TestProbe }
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props }
 import akka.util.Timeout
-import omnibus.akka.envelope.pattern.ask
 import scribe.Level
-
+import org.scalatest.{ BeforeAndAfterAll, FunSuiteLike, Matchers }
+import omnibus.core.syntax.clazz._
+import omnibus.akka.envelope.pattern.ask
 
 object EnvelopeAskingSpec {
+
   object TestActor {
     case class Unhandled( message: Any )
   }
@@ -19,30 +19,28 @@ object EnvelopeAskingSpec {
   class TestActor( target: ActorRef ) extends Actor with EnvelopingActor with ActorLogging {
     override def receive: Receive = bare orElse around( wrapped )
 
-    def bare: Receive = { 
-      case "A" => sender() ! "REPLY FROM A" 
-      case "B" => sender() sendEnvelope "REPLY FROM B"
+    def bare: Receive = {
+      case "A"                => sender() ! "REPLY FROM A"
+      case "B"                => sender() sendEnvelope "REPLY FROM B"
       case Envelope( "C", _ ) => sender() ! "REPLY FROM C"
       case Envelope( "D", _ ) => sender() sendEnvelope "REPLY FROM D"
     }
 
-    def wrapped: Receive = { 
+    def wrapped: Receive = {
       case "E" => sender() sendEnvelope "REPLY FROM E"
-      case "F" => sender() ! "REPLY FROM F" 
+      case "F" => sender() ! "REPLY FROM F"
     }
 
     override def unhandled( message: Any ): Unit = target ! TestActor.Unhandled( message )
   }
 }
 
-
-class EnvelopeAskingSpec( _system: ActorSystem ) 
-extends TestKit( _system ) 
-with FunSuiteLike 
-with Matchers 
-with BeforeAndAfterAll 
-with ImplicitSender
-{
+class EnvelopeAskingSpec( _system: ActorSystem )
+    extends TestKit( _system )
+    with FunSuiteLike
+    with Matchers
+    with BeforeAndAfterAll
+    with ImplicitSender {
   def this() = this( ActorSystem( "EnvelopeAskingSpec" ) )
 
   import EnvelopeAskingSpec._
@@ -78,7 +76,7 @@ with ImplicitSender
     val Envelope( r, hd ) = Await.result( f, t.duration ).asInstanceOf[Envelope]
     assert( r == "REPLY FROM B" )
     assert( hd.fromComponentType == ComponentType( classOf[TestActor].safeSimpleName ) )
-    assert( hd.fromComponentPath == ComponentPath( source.path) )
+    assert( hd.fromComponentPath == ComponentPath( source.path ) )
     assert( hd.toComponentPath.path.contains( "/temp/" ) )
     assert( hd.messageType == MessageType( classOf[String].safeSimpleName ) )
     assert( hd.workId == WorkId.unknown )
@@ -98,7 +96,7 @@ with ImplicitSender
     val Envelope( rd, hd ) = Await.result( fd, t.duration ).asInstanceOf[Envelope]
     assert( rd == "REPLY FROM D" )
     assert( hd.fromComponentType == ComponentType( classOf[TestActor].safeSimpleName ) )
-    assert( hd.fromComponentPath == ComponentPath( source.path) )
+    assert( hd.fromComponentPath == ComponentPath( source.path ) )
     assert( hd.toComponentPath.path.contains( "/temp/" ) )
     assert( hd.messageType == MessageType( classOf[String].safeSimpleName ) )
     assert( hd.workId == WorkId.unknown )
@@ -121,7 +119,9 @@ with ImplicitSender
     assert( h.properties == Map.empty )
   }
 
-  test( "EnvelopeAsking should handle around processing wrapped message without envelope is not send" ) {
+  test(
+    "EnvelopeAsking should handle around processing wrapped message without envelope is not send"
+  ) {
     val future = source ?+ "F"
     val result = Await.result( future, t.duration ).asInstanceOf[String]
     assert( result == "REPLY FROM F" )

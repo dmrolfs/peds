@@ -1,5 +1,3 @@
 package omnibus.akka.publish.publisher
 
-class scala {
-
-}
+class scala {}

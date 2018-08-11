@@ -183,14 +183,16 @@ object Dependencies {
 
   object facility {
     val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
-    val eidos = "org.systemfw" %% "eidos" % "0.1.1"
+//    val eidos = "org.systemfw" %% "eidos" % "0.1.1"
+    val newtype = "io.estatico" %% "newtype" % "0.4.2"
 //    val guava = "com.google.guava" % "guava" % "21.0"
     // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
     val fastutil = "it.unimi.dsi" % "fastutil" % "7.2.0" withSources() withJavadoc()
     val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
     val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.5.4"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
-    val uuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
+    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
+    val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
     val config = "com.typesafe" % "config" % "1.3.3"
     val ficus = "com.iheart" %% "ficus" % "1.4.3"
     val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
@@ -198,6 +200,7 @@ object Dependencies {
     val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
     val squants = "org.typelevel"  %% "squants"  % "1.3.0"
     val lang = "org.apache.commons" % "commons-lang3" % "3.5"
+    val codec = "commons-codec" % "commons-codec" % "1.11"
     val math3 = "org.apache.commons" % "commons-math3" % "3.6.1" withSources() withJavadoc()
 //    val suanshu = "com.numericalmethod" % "suanshu" % "3.4.0" intransitive()  // don't want to use due to $$$
     val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
@@ -247,27 +250,28 @@ object Dependencies {
   }
 
 
+  val commonTestDependencies: Seq[ModuleID] = Scope.test(
+    akka.testkit,
+    quality.scalatest,
+    quality.scalacheck,
+    quality.mockito.core
+  )
+
   val commonDependencies: Seq[ModuleID] = {
     silencer.all ++
     log.all ++
     cats.all ++
     Seq(
-      facility.eidos,
       facility.enumeratum,
-      facility.bloomFilter,
-      facility.uuid,
       facility.config,
       facility.ficus,
       facility.shapeless,
       facility.prettyprint,
       parserCombinators
     ) ++
-    Scope.test(
-      akka.testkit,
-      quality.scalatest,
-      quality.scalacheck,
-      quality.mockito.core
-    )
+    commonTestDependencies
+
+
   }
 
   val defaultDependencyOverrides: Seq[sbt.librarymanagement.ModuleID] = Seq.empty[sbt.librarymanagement.ModuleID]

@@ -1,6 +1,8 @@
 package omnibus.archetype.domain.model.core
 
-import omnibus.commons.util._
+import scala.collection.immutable
+import enumeratum._
+import omnibus.core.syntax.clazz._
 
 sealed trait EntityRef extends (( Symbol ) => Any ) with Ordered[EntityRef] {
   type Source <: Entity
@@ -19,8 +21,17 @@ sealed trait EntityRef extends (( Symbol ) => Any ) with Ordered[EntityRef] {
 object EntityRef {
   type Aux[E <: Entity] = EntityRef { type Source = E }
 
-  val ID: Symbol = 'id
-  val NAME: Symbol = 'name
+  sealed abstract class StandardProperty extends EnumEntry {
+    def unapply( key: Symbol ): Boolean = this.key == key
+    def key: Symbol = Symbol( entryName.toLowerCase )
+  }
+
+  object StandardProperty extends Enum[StandardProperty] {
+    override def values: immutable.IndexedSeq[StandardProperty] = findValues
+
+    case object Id extends StandardProperty
+    case object Name extends StandardProperty
+  }
 
   // def apply[T <: Entity : ClassTag]( entity: T ): EntityRef = {
   //   EntityRefImpl[T]( id = entity.id, name = entity.name, clazz = implicitly[ClassTag[T]].runtimeClass )
@@ -38,7 +49,7 @@ object EntityRef {
   //   EntityRefImpl( id = id, name = name, clazz = clazz, meta = Map( meta:_* ) )
   // }
 
-  def unapply( ref: EntityRef ): Option[( ref.ID, String )] = Some( ( ref.id, ref.name ) )
+  def unapply( ref: EntityRef ): Option[( ref.TID, String )] = Some( ( ref.id, ref.name ) )
 
   trait EntityRefLike extends EntityRef with Equals {
     def meta: Map[Symbol, Any]
@@ -52,9 +63,9 @@ object EntityRef {
     }
 
     override def get( property: Symbol ): Option[Any] = property match {
-      case ID   => Some( id )
-      case NAME => Some( name )
-      case p    => meta get p
+      case StandardProperty.Id()   => Some( id )
+      case StandardProperty.Name() => Some( name )
+      case p                       => meta get p
     }
 
     override def compare( rhs: EntityRef ): Int = this.## compare rhs.##

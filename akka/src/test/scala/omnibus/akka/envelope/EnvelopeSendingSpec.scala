@@ -1,15 +1,15 @@
 package omnibus.akka.envelope
 
-import akka.testkit.{ImplicitSender, TestKit, TestProbe}
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Matchers}
-
 import scala.concurrent.duration._
 import akka.util.Timeout
+import akka.testkit.{ ImplicitSender, TestKit, TestProbe }
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props }
 import scribe.Level
-
+import org.scalatest.{ BeforeAndAfterAll, FunSuiteLike, Matchers }
+import omnibus.core.syntax.clazz._
 
 object EnvelopeSendingSpec {
+
   object TestActor {
     case class Unhandled( message: Any )
   }
@@ -18,23 +18,22 @@ object EnvelopeSendingSpec {
     override def receive: Receive = bare orElse around( wrapped )
 
     def bare: Receive = { case Envelope( "INITIAL", h ) => target ! Envelope( "REPLY", h ) }
-    def wrapped: Receive = { 
-      case "ACTOR" => target sendEnvelope  "REPLY"
-      case "FORWARD" => target forwardEnvelope  "REPLY"
+
+    def wrapped: Receive = {
+      case "ACTOR"   => target sendEnvelope "REPLY"
+      case "FORWARD" => target forwardEnvelope "REPLY"
     }
 
     override def unhandled( message: Any ): Unit = target ! TestActor.Unhandled( message )
   }
 }
 
-
-class EnvelopeSendingSpec( _system: ActorSystem ) 
-extends TestKit( _system ) 
-with FunSuiteLike 
-with Matchers 
-with BeforeAndAfterAll 
-with ImplicitSender
-{
+class EnvelopeSendingSpec( _system: ActorSystem )
+    extends TestKit( _system )
+    with FunSuiteLike
+    with Matchers
+    with BeforeAndAfterAll
+    with ImplicitSender {
   def this() = this( ActorSystem( "EnvelopeSendingSpec" ) )
 
   import EnvelopeSendingSpec._

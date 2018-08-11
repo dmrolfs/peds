@@ -5,15 +5,14 @@ import sbt._
 
 object BuildSettings {
 
-  val VERSION = "0.62-SNAPSHOT"
-
   val scalacBuildOptions = Seq(
     // "-encoding",
     // "utf8",
     "-target:jvm-1.8",
+    "-language:experimental.macros",
     "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
     "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
-    "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
+//    "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
     "-encoding", "utf-8",                // Specify character encoding used by source files.
     "-explaintypes",                     // Explain type errors in more detail.
@@ -45,7 +44,7 @@ object BuildSettings {
     "-Ywarn-nullary-unit",               // Warn when nullary methods return Unit.
     "-Ywarn-numeric-widen",              // Warn when numerics are widened.
     "-Ywarn-unused:implicits",           // Warn if an implicit parameter is unused.
-    "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
+//    "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
     "-Ywarn-unused:locals",              // Warn if a local definition is unused.
     "-Ywarn-unused:params",              // Warn if a value parameter is unused.
     "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
@@ -67,7 +66,6 @@ object BuildSettings {
 
   lazy val defaultSettings = Defaults.coreDefaultSettings ++ /*Format.settings ++*/ Seq(
     organization := "com.github.dmrolfs",
-    version := VERSION,
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     crossScalaVersions := Seq( "2.12.6" ),
     scalaVersion := crossScalaVersions{ (vs: Seq[String]) => vs.head }.value,
@@ -118,43 +116,9 @@ object BuildSettings {
     parallelExecution in Test := false,
     testOptions in Test += Tests.Argument( TestFrameworks.ScalaTest, "-oDFT" ),
     triggeredMessage in ThisBuild := Watched.clearWhenTriggered,
-    cancelable in Global := true
+    cancelable in Global := true,
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
-
-  def doNotPublishSettings = Seq( publish := {} )
-
-  def publishSettings = {
-    if ( VERSION.endsWith("-SNAPSHOT") ) {
-      println( "PUBLISH_MODULE -- SNAPSHOT: " + VERSION + " :: " + Credentials(Path.userHome / ".bintray" / ".jfrog-oss").toString  )
-//    if ( VERSION.toString.endsWith("-SNAPSHOT") ) {
-      Seq(
-        publishTo := Some("Artifactory Realm" at "http://oss.jfrog.org/artifactory/oss-snapshot-local"),
-        publishMavenStyle := true,
-        // Only setting the credentials file if it exists (#52)
-        credentials := List(Path.userHome / ".bintray" / ".jfrog-oss").filter(_.exists).map(Credentials(_))
-      )
-    } else {
-      println( "PUBLISH_MODULE: " + VERSION )
-      Seq(
-        pomExtra := {
-          <scm>
-            <url>https://github.com</url>
-            <connection>https://github.com/dmrolfs/omnibus.git</connection>
-          </scm>
-          <developers>
-            <developer>
-              <id>dmrolfs</id>
-              <name>Damon Rolfs</name>
-              <url>http://dmrolfs.github.io/</url>
-            </developer>
-          </developers>
-        },
-        publishMavenStyle := true,
-        resolvers += Resolver.url("omen bintray resolver", url("http://dl.bintray.com/omen/maven"))(Resolver.ivyStylePatterns),
-        licenses := ("MIT", url("http://opensource.org/licenses/MIT")) :: Nil // this is required! otherwise Bintray will reject the code
-      )
-    }
-  }
 
 //  def publishModule( v: String ) = {
 //    println( "version = " + v )

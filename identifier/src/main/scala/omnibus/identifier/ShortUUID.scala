@@ -1,17 +1,13 @@
-package omnibus.commons.identifier
+package omnibus.identifier
 
+import io.jvm.uuid._
 import java.nio.ByteBuffer
-import cats.syntax.either._
 import org.apache.commons.codec.binary.Base64
-import com.eaio.uuid.UUID
-// import org.hashids._
-// import org.hashids.syntax._
-import omnibus.commons.ErrorOr
 
 object ShortUUID {
   // implicit val hashids: Hashids = Hashids.reference( "omnibus comprises several items" )
 
-  def apply(): ShortUUID = fromUUID( new UUID )
+  def apply(): ShortUUID = fromUUID( UUID.random )
   def fromString( rep: String ): ShortUUID = new ShortUUID( rep )
   // def fromString( rep: String ): ShortUUID = new ShortUUID( rep.unhashid )
 
@@ -24,8 +20,8 @@ object ShortUUID {
     // val isTimeNegative: Long = if ( time < 0L ) 1L else 0L
     // new ShortUUID( List(isClockNegative, math.abs(clock), isTimeNegative, math.abs(time)) )
     val bb = ByteBuffer allocate 16
-    bb putLong uuid.getClockSeqAndNode
-    bb putLong uuid.getTime
+    bb putLong uuid.getMostSignificantBits
+    bb putLong uuid.getLeastSignificantBits
     bb.flip
     val result = new ShortUUID( Base64 encodeBase64URLSafeString bb.array )
     bb.clear
@@ -34,13 +30,7 @@ object ShortUUID {
 
   implicit def toUUID( short: ShortUUID ): UUID = short.toUUID
 
-  val zero: ShortUUID = fromUUID( UUID.nilUUID )
-
-  trait ShortUuidIdentifying[T] { self: Identifying[T] =>
-    override type ID = ShortUUID
-    override def nextTID: ErrorOr[TID] = tag( ShortUUID() ).asRight
-    override def idFromString( idRep: String ): ID = ShortUUID fromString idRep
-  }
+  val zero: ShortUUID = fromUUID( UUID( 0L, 0L ) )
 }
 
 class ShortUUID private[identifier] ( val repr: String ) extends Serializable with Equals {
@@ -62,9 +52,9 @@ class ShortUUID private[identifier] ( val repr: String ) extends Serializable wi
     val bb = ByteBuffer allocate 16
     bb put bytes
     bb.flip
-    val clock = bb.getLong
-    val time = bb.getLong
-    new UUID( time, clock )
+    val most = bb.getLong
+    val least = bb.getLong
+    UUID( most, least )
   }
 
   override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[ShortUUID]

@@ -21,8 +21,7 @@ libraryDependencies ++=
     akka.actor,
     facility.json4sJackson,
     facility.math3,
-    facility.squants,
-    facility.uuid
+    facility.squants
   )
 
 //addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
