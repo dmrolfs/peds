@@ -3,7 +3,7 @@ package omnibus.akka.stream
 import akka.NotUsed
 import akka.agent.Agent
 import akka.stream.scaladsl.Flow
-import nl.grons.metrics.scala.{ Meter, MetricName }
+import nl.grons.metrics4.scala.{ Meter, MetricName }
 import omnibus.akka.metrics.Instrumented
 import omnibus.core.syntax.clazz._
 import scribe._

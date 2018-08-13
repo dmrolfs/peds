@@ -1,7 +1,7 @@
 package omnibus.akka.metrics
 
 import com.codahale.metrics.MetricRegistry
-import nl.grons.metrics.scala.{ HdrMetricBuilder, InstrumentedBuilder, MetricName }
+import nl.grons.metrics4.scala.{ HdrMetricBuilder, InstrumentedBuilder, MetricName }
 
 /**
   * Created by rolfsd on 12/15/15.

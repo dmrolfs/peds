@@ -6,7 +6,7 @@ import scala.reflect.ClassTag
 import akka.actor._
 import akka.event.LoggingReceive
 import akka.stream.actor.{ ActorPublisher, ActorPublisherMessage, ActorSubscriberMessage }
-import nl.grons.metrics.scala.MetricName
+import nl.grons.metrics4.scala.MetricName
 import omnibus.akka.metrics.InstrumentedActor
 import com.github.ghik.silencer.silent
 
