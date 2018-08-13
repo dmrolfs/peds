@@ -10,7 +10,7 @@ case class EnvelopeHeader(
   workId: WorkId,
   messageNumber: MessageNumber,
   version: EnvelopeVersion,
-  properties: Map[Symbol, Any] = Map(),
+  properties: EnvelopeProperties,
   createdTimeStamp: Long = System.currentTimeMillis
 )
 
@@ -26,12 +26,12 @@ object Envelope {
   implicit def message2Envelope(
     message: Any
   )(
-    implicit fromComponentType: ComponentType = ComponentType.unknown,
+    implicit version: EnvelopeVersion,
+    properties: EnvelopeProperties,
+    fromComponentType: ComponentType = ComponentType.unknown,
     fromComponentPath: ComponentPath = ComponentPath.unknown,
     workId: WorkId = WorkId(), //todo auto create new WorkId if not provided // WorkId.unknown,
-    messageNumber: MessageNumber = MessageNumber( -1 ),
-    version: EnvelopeVersion = EnvelopeVersion(),
-    properties: Map[Symbol, Any] = Map()
+    messageNumber: MessageNumber = MessageNumber( -1 )
   ): Envelope = {
     message match {
       case e: Envelope => e //DMR: update w implicit values?
