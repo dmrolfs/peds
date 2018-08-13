@@ -84,7 +84,7 @@ object Dependencies {
   }
 
   object persistence {
-    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.52"
+    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.88"
     val leveldb = "org.iq80.leveldb" % "leveldb" % "0.9" // "org.iq80.leveldb" % "leveldb" % "0.9"
     val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
   }
@@ -92,7 +92,7 @@ object Dependencies {
   object cats extends SimpleModule {
     override val groupId = "org.typelevel"
     override val artifactIdRoot = "cats"
-    override val version = "1.1.0"
+    override val version = "1.2.0"
 
     val core = module( "core" )
     val kernel = module( "kernel" )
@@ -152,18 +152,27 @@ object Dependencies {
   object metrics extends SimpleModule {
     override val groupId = "io.dropwizard.metrics"
     override val artifactIdRoot = "metrics"
-    override val version = "3.2.2"
+    override val version = "4.0.3"
     override val isScala = false
 
-    def all = Seq( core, graphite, metricsScala ) // ++ kamon.all
+    def all = Seq( core, graphite ) ++ scala.all // ++ kamon.all
 
     val core = module( "core" )
     val graphite = module( "graphite" )
-    val metricsScala = "nl.grons" %% "metrics-scala" % "3.5.6_a2.4"
 
     val hdrhistogramReservoir = "org.mpierce.metrics.reservoir" % "hdrhistogram-metrics-reservoir" % "1.1.2"
     val hdrhistogram = "org.hdrhistogram" % "HdrHistogram" % "2.1.9"
 
+    object scala extends SimpleModule {
+      override val groupId: String = "nl.grons"
+      override val artifactIdRoot: String = "metrics4"
+      override def version: String = "4.0.1"
+
+      def all = Seq( core, akka, hdr )
+      val core = module( "scala" )
+      val akka = module( "akka_a25" )
+      val hdr = module( "scala-hdr" )
+    }
 //    object kamon {
 //      val version = "0.6.5"
 //      def module( id: String, v: String = version ) = "io.kamon" %% s"kamon-$id" % v
@@ -183,13 +192,12 @@ object Dependencies {
 
   object facility {
     val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
-//    val eidos = "org.systemfw" %% "eidos" % "0.1.1"
     val newtype = "io.estatico" %% "newtype" % "0.4.2"
 //    val guava = "com.google.guava" % "guava" % "21.0"
     // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
-    val fastutil = "it.unimi.dsi" % "fastutil" % "7.2.0" withSources() withJavadoc()
+    val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.1" withSources() withJavadoc()
     val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
-    val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.5.4"
+    val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.0"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
     val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
     val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
@@ -227,7 +235,7 @@ object Dependencies {
   object betterFiles extends SimpleModule {
     override val groupId = "com.github.pathikrit"
     override val artifactIdRoot = "better-files"
-    override val version = "3.4.0"
+    override val version = "3.6.0"
     val core = module( "" )
     val akka = module( "akka" )
     def all = Seq( core, akka )
@@ -243,7 +251,7 @@ object Dependencies {
     object mockito extends SimpleModule {
       override val groupId = "org.mockito"
       override val artifactIdRoot = "mockito"
-      override val version = "2.19.1"
+      override val version = "2.21.0"
       override val isScala = false
       val core = module( "core" ) withSources() withJavadoc()
     }
