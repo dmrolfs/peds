@@ -9,13 +9,16 @@ trait EnvelopeSyntax {
     new EnvelopeSyntax.RefSending( ref )
   }
 
-  implicit def actorSelectionEnvelopeSending( sel: ActorSelection ): EnvelopeSyntax.SelectionSending = {
+  implicit def actorSelectionEnvelopeSending(
+    sel: ActorSelection
+  ): EnvelopeSyntax.SelectionSending = {
     scribe.debug( s"actorSelectionEnvelopeSending: creating exposure for [${sel}]" )
     new EnvelopeSyntax.SelectionSending( sel )
   }
 }
 
 object EnvelopeSyntax {
+
   /**
     * This implementation is ported from <a href="http://derekwyatt.org/2014/01/01/using-scala-implicits-to-implement-a-messaging-protocol.html">Derek Wyatt's blog post</a>
     * Parts of this blog post are adapted here for documentation.
@@ -41,7 +44,8 @@ object EnvelopeSyntax {
       implicit sender: ActorRef = ActorRef.noSender
     ): Unit = {
       scribe.debug(
-        s"sendEnvelope: envelope:[${envelope}] to underlying:[${underlying.path}] sender:[${sender.path}]"
+        s"sendEnvelope: envelope:[${envelope}] to underlying:[${underlying.path}] sender:[${Option( sender )
+          .map { _.path }}]"
       )
       underlying.tell( update( envelope ), sender )
     }
@@ -49,14 +53,16 @@ object EnvelopeSyntax {
     /**
       * Send a message enclosed in a message envelope containing meta date about the message.
       */
-    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit =
+    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = {
       sendEnvelope( envelope )( sender )
+    }
 
     /**
       * Forward a message enclosed in a message envelope containg meta data about the message.
       */
-    def forwardEnvelope( envelope: Envelope )( implicit context: ActorContext ): Unit =
+    def forwardEnvelope( envelope: Envelope )( implicit context: ActorContext ): Unit = {
       underlying.forward( update( envelope ) )
+    }
 
     private def update( incoming: Envelope ): Envelope = {
       // val messageNumber = messageNumberLens.get( incoming )
@@ -67,7 +73,6 @@ object EnvelopeSyntax {
 
       val header = incoming.header.copy(
         toComponentPath = ComponentPath( underlying.path ),
-        // workId = workId,
         messageNumber = messageNumber.increment
       )
 
@@ -91,25 +96,22 @@ object EnvelopeSyntax {
     /**
       * Send a message enclosed in a message envelope containing meta date about the message.
       */
-    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit =
+    def !+( envelope: Envelope )( implicit sender: ActorRef = ActorRef.noSender ): Unit = {
       sendEnvelope( envelope )( sender )
+    }
 
     /**
       * Forward a message enclosed in a message envelope containg meta data about the message.
       */
-    def forwardEnvelope( envelope: Envelope )( implicit context: ActorContext ): Unit =
+    def forwardEnvelope( envelope: Envelope )( implicit context: ActorContext ): Unit = {
       underlying.forward( update( envelope ) )
+    }
 
     private def update( incoming: Envelope ): Envelope = {
-      // val messageNumber = messageNumberLens.get( incoming )
-      // emitLens.set( incoming )( (ComponentPath( underlying.path ), messageNumber.increment) )
-      // val workId = if ( incoming.header.workId == WorkId.unknown ) WorkId() else incoming.header.workId
-
       val messageNumber = incoming.header.messageNumber
 
       val header = incoming.header.copy(
         toComponentPath = ComponentPath( underlying.anchorPath ),
-        // workId = workId,
         messageNumber = messageNumber.increment
       )
 

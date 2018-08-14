@@ -1,15 +1,15 @@
 package omnibus.akka
 
-import akka.testkit.{ ImplicitSender, TestKit, TestProbe }
-import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
-import org.scalatest.{ BeforeAndAfterAll, FunSuiteLike, Matchers }
+import akka.testkit.TestProbe
+import akka.actor.{ Actor, ActorRef, ActorSystem, PoisonPill, Props }
+import org.scalatest.{ Matchers, Tag }
 import omnibus.akka.AskRetry._
 
 import scala.concurrent.duration._
 import akka.pattern.pipe
 import akka.util.Timeout
 import akka.actor.Status.Failure
-import scribe.Level
+import omnibus.akka.testkit.ParallelAkkaSpec
 
 class AskRetryTestActor( target: ActorRef ) extends Actor {
   implicit val ec = context.system.dispatcher
@@ -19,64 +19,70 @@ class AskRetryTestActor( target: ActorRef ) extends Actor {
   }
 }
 
-class AskRetrySuite( _system: ActorSystem )
-    extends TestKit( _system )
-    with FunSuiteLike
-    with Matchers
-    with BeforeAndAfterAll
-    with ImplicitSender {
-  def this() = this( ActorSystem( "AskRetrySuite" ) )
+class AskRetrySuite extends ParallelAkkaSpec with Matchers {
 
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
+  class Fixture( override val slug: String, _system: ActorSystem )
+      extends AkkaFixture( slug, _system ) {
+    implicit val t = Timeout( 500.millis )
+    implicit val ec = system.dispatcher
 
-  implicit val t = Timeout( 500.millis )
-  implicit val ec = system.dispatcher
+    val target = TestProbe( "target" )
+    val source = system.actorOf( Props( classOf[AskRetryTestActor], target.ref ), "source" )
+    val probe = TestProbe( "probe" )
 
-  val target = TestProbe()
-  val source = system.actorOf( Props( classOf[AskRetryTestActor], target.ref ) )
-  val probe = TestProbe()
-
-  override def afterAll: Unit = system.terminate()
-
-  test(
-    "An ask-retry request should be served correctly if the messages are delivered at the first attempt"
-  ) {
-    probe.send( source, "ASK" )
-    target.expectMsg( "MSG" )
-    target.reply( "OK" )
-    probe.expectMsg( 100.millis, "OK" )
-    probe.expectNoMessage( 500.millis )
+    override def after( test: OneArgTest ): Unit = {
+      scribe.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
+      source ! PoisonPill
+    }
   }
 
-  test( "An ask-retry request should retry the specified number of times before failing" ) {
-    probe.send( source, "ASK" )
-    probe.expectNoMessage( 800.millis )
-    target.expectMsg( "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    target.reply( "OK" )
-    probe.expectMsg( "OK" )
-    probe.expectNoMessage( 500.millis )
+  override def createAkkaFixture( test: OneArgTest, system: ActorSystem, slug: String ): Fixture = {
+    new Fixture( slug, system )
   }
 
-  test( "An ask-retry request should retry the specified number of times and then fail" ) {
-    probe.send( source, "ASK" )
-    probe.expectNoMessage( 1000.millis )
-    target.expectMsg( "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    target.expectMsg( 200.millis, "MSG" )
-    probe.expectMsgClass( 200.millis, classOf[Failure] ).cause.getClass should equal(
-      classOf[RetryException]
-    )
-    target.reply( "OK" )
-    probe.expectNoMessage( 500.millis )
+  object WIP extends Tag( "wip" )
+
+  "Ask-Retry Request" should {
+    "An ask-retry request should be served correctly if the messages are delivered at the first attempt" in {
+      f: Fixture =>
+        import f._
+        probe.send( source, "ASK" )
+        target.expectMsg( "MSG" )
+        target.reply( "OK" )
+        probe.expectMsg( 100.millis, "OK" )
+        probe.expectNoMessage( 500.millis )
+    }
+
+    "An ask-retry request should retry the specified number of times before failing" in {
+      f: Fixture =>
+        import f._
+        probe.send( source, "ASK" )
+        probe.expectNoMessage( 800.millis )
+        target.expectMsg( "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        target.reply( "OK" )
+        probe.expectMsg( "OK" )
+        probe.expectNoMessage( 500.millis )
+    }
+
+    "An ask-retry request should retry the specified number of times and then fail" in {
+      f: Fixture =>
+        import f._
+        probe.send( source, "ASK" )
+        probe.expectNoMessage( 1000.millis )
+        target.expectMsg( "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        target.expectMsg( 200.millis, "MSG" )
+        probe.expectMsgClass( 200.millis, classOf[Failure] ).cause.getClass should equal(
+          classOf[RetryException]
+        )
+        target.reply( "OK" )
+        probe.expectNoMessage( 500.millis )
+    }
   }
 }

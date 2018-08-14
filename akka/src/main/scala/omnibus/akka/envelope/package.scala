@@ -1,6 +1,6 @@
 package omnibus.akka
 
-import akka.actor.{ActorContext, ActorPath, ActorRef, ActorSelection}
+import akka.actor.{ ActorContext, ActorPath, ActorRef, ActorSelection }
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
 import omnibus.identifier.ShortUUID
@@ -22,7 +22,7 @@ import omnibus.identifier.ShortUUID
   * the regular Akka `tell` and `!` operations, programmers must use the `send` operation to wrap the message in a envelope.
   * {{{someActor send SomeMessage( "Hello there, Mr. Actor" )}}}
   */
-package object envelope extends EnvelopeSyntax  {
+package object envelope extends EnvelopeSyntax {
 
   /** The version of the envelope protocol */
   @newtype class EnvelopeVersion( val version: Int )
@@ -35,14 +35,14 @@ package object envelope extends EnvelopeSyntax  {
   @newtype case class ComponentType( componentType: String )
 
   object ComponentType {
-    val unknown = ComponentType( "UnknownComponentType" )
+    val noSender = ComponentType( "no-sender" )
   }
 
   /** Defines the identity of the given component (e.g. /path/to/MessageForwarder) */
   @newtype case class ComponentPath( path: String )
 
   object ComponentPath {
-    val unknown = ComponentPath( "UnknownComponentPath" )
+    val noSender = ComponentPath( "no-sender" )
 
     def apply( path: ActorPath ): ComponentPath = ComponentPath( path.toString )
   }
@@ -77,8 +77,13 @@ package object envelope extends EnvelopeSyntax  {
   @newtype class EnvelopeProperties( val properties: Map[Symbol, Any] )
 
   object EnvelopeProperties {
+
     def apply( properties: Map[Symbol, Any] = Map.empty[Symbol, Any] ): EnvelopeProperties = {
       properties.coerce[EnvelopeProperties]
+    }
+
+    def apply( properties: ( Symbol, Any )* ): EnvelopeProperties = {
+      Map( properties: _* ).coerce[EnvelopeProperties]
     }
   }
 
@@ -86,7 +91,7 @@ package object envelope extends EnvelopeSyntax  {
     * Defines the envelope schema version number. We shouldn't have to supply this, generally, just pull it in from the implicit
     * scope
     */
-  implicit val envelopeVersion = EnvelopeVersion()
+  val currentEnvelopeVersion: EnvelopeVersion = EnvelopeVersion()
 
-  implicit val defaultEnvelopeProperties = EnvelopeProperties()
+  val emptyEnvelopeProperties: EnvelopeProperties = EnvelopeProperties()
 }
