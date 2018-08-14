@@ -116,8 +116,7 @@ object BuildSettings {
     parallelExecution in Test := false,
     testOptions in Test += Tests.Argument( TestFrameworks.ScalaTest, "-oDFT" ),
     triggeredMessage in ThisBuild := Watched.clearWhenTriggered,
-    cancelable in Global := true,
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+    cancelable in Global := true
   )
 
 //  def publishModule( v: String ) = {
