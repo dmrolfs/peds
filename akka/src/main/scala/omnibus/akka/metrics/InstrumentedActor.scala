@@ -1,7 +1,7 @@
 package omnibus.akka.metrics
 
 import akka.actor.Actor
-import nl.grons.metrics.scala._
+import nl.grons.metrics4.scala._
 import omnibus.akka.ActorStack
 
 /**

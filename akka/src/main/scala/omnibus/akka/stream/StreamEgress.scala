@@ -10,7 +10,7 @@ import akka.stream.actor.{
   RequestStrategy,
   WatermarkRequestStrategy
 }
-import nl.grons.metrics.scala.{ Meter, MetricName }
+import nl.grons.metrics4.scala.{ Meter, MetricName }
 import omnibus.akka.metrics.InstrumentedActor
 import com.github.ghik.silencer.silent
 

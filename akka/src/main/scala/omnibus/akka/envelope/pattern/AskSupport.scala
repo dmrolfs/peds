@@ -7,8 +7,10 @@ import omnibus.akka.envelope.{ ComponentPath, Envelope }
 
 trait AskSupport {
   import scala.language.implicitConversions
-  implicit def ask( actorRef: ActorRef ): AskableEnvelopingActorRef =
+
+  implicit def ask( actorRef: ActorRef ): AskableEnvelopingActorRef = {
     new AskableEnvelopingActorRef( actorRef )
+  }
 }
 
 final class AskableEnvelopingActorRef( val underlying: ActorRef ) extends AnyVal {
@@ -17,13 +19,14 @@ final class AskableEnvelopingActorRef( val underlying: ActorRef ) extends AnyVal
     akka.pattern.ask( underlying, askUpdate( message ) )
   }
 
-  def ?+( message: Envelope )( implicit timeout: Timeout ): Future[Any] =
+  def ?+( message: Envelope )( implicit timeout: Timeout ): Future[Any] = {
     askEnvelope( message )( timeout )
+  }
 
   private def askUpdate( incoming: Envelope ): Envelope = {
     val messageNumber = incoming.header.messageNumber
     val header = incoming.header.copy(
-      toComponentPath = ComponentPath.unknown, // we don't have a way to determine the sender from underlying
+      toComponentPath = ComponentPath.noSender, // we don't have a way to determine the sender from underlying
       messageNumber = messageNumber.increment
     )
 

@@ -8,7 +8,7 @@ import akka.actor.{ Actor, ActorLogging, ActorRef, Cancellable, Props }
 import akka.event.LoggingReceive
 import akka.stream.scaladsl.Flow
 import com.codahale.metrics.{ Metric, MetricFilter }
-import nl.grons.metrics.scala.MetricName
+import nl.grons.metrics4.scala.MetricName
 import omnibus.akka.metrics.InstrumentedActor
 
 /**

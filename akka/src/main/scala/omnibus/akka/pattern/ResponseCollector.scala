@@ -15,7 +15,7 @@ import akka.event.LoggingReceive
 import akka.util.Timeout
 import cats.syntax.validated._
 import cats.syntax.either._
-import nl.grons.metrics.scala.{ Meter, MetricName, Timer }
+import nl.grons.metrics4.scala.{ Meter, MetricName, Timer }
 import omnibus.akka.metrics.InstrumentedActor
 import omnibus.core.{ AllErrorsOr, AllIssuesOr }
 import omnibus.identifier.ShortUUID

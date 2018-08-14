@@ -7,7 +7,7 @@ import scala.reflect.ClassTag
 import akka.actor.{ ActorLogging, Props }
 import akka.event.LoggingReceive
 import akka.stream.actor._
-import nl.grons.metrics.scala.{ Meter, MetricName }
+import nl.grons.metrics4.scala.{ Meter, MetricName }
 import omnibus.akka.envelope.EnvelopingActor
 import omnibus.akka.metrics.InstrumentedActor
 import com.github.ghik.silencer.silent

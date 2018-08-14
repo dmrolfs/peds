@@ -22,6 +22,15 @@ trait Enveloping {
   }
   @transient private[this] var currentMessageNumberVar: MessageNumber = MessageNumber.unknown
 
+  implicit def envelopeProperties: EnvelopeProperties = currentEnvelopeProperties
+  protected def envelopeProperties_=( properties: EnvelopeProperties ): Unit = {
+    currentEnvelopeProperties = properties
+  }
+
+  @transient private[this] var currentEnvelopeProperties: EnvelopeProperties = {
+    emptyEnvelopeProperties
+  }
+
   def envelopeHeader: Option[EnvelopeHeader] = currentHeaderVar
   protected def envelopeHeader_=( header: Option[EnvelopeHeader] ): Unit = {
     currentHeaderVar = header
@@ -36,10 +45,14 @@ trait EnvelopingActor extends ActorStack with Enveloping { outer: Actor =>
   override def pathname: String = self.path.toString
 
   override def around( r: Receive ): Receive = {
-    case Envelope( msg, header @ EnvelopeHeader( _, _, _, _, workId, messageNumber, _, _, _ ) ) => {
+    case Envelope(
+        msg,
+        header @ EnvelopeHeader( _, _, _, _, workId, messageNumber, _, properties, _ )
+        ) => {
       this.envelopeHeader = Some( header )
       this.workId = workId
       this.messageNumber = messageNumber
+      this.envelopeProperties = properties
       super.around( r )( msg )
     }
 
@@ -47,6 +60,7 @@ trait EnvelopingActor extends ActorStack with Enveloping { outer: Actor =>
       this.envelopeHeader = None
       this.workId = WorkId()
       this.messageNumber = MessageNumber( -1 )
+      this.envelopeProperties = emptyEnvelopeProperties
       super.around( r )( msg )
     }
   }
