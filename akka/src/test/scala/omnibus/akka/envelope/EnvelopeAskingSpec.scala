@@ -1,22 +1,25 @@
 package omnibus.akka.envelope
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
-import akka.testkit.{ ImplicitSender, TestKit, TestProbe }
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props }
+import akka.testkit.TestProbe
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props }
 import akka.util.Timeout
-import scribe.Level
-import org.scalatest.{ BeforeAndAfterAll, FunSuiteLike, Matchers }
+import omnibus.akka.envelope.EnvelopeAskingSpec.AskingTestActor
+import org.scalatest.{ Matchers, Tag }
 import omnibus.core.syntax.clazz._
 import omnibus.akka.envelope.pattern.ask
+import omnibus.akka.testkit.ParallelAkkaSpec
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{ Seconds, Span }
 
 object EnvelopeAskingSpec {
 
-  object TestActor {
+  object AskingTestActor {
+    def props( target: ActorRef ): Props = Props( new AskingTestActor( target ) )
     case class Unhandled( message: Any )
   }
 
-  class TestActor( target: ActorRef ) extends Actor with EnvelopingActor with ActorLogging {
+  class AskingTestActor( target: ActorRef ) extends Actor with EnvelopingActor with ActorLogging {
     override def receive: Receive = bare orElse around( wrapped )
 
     def bare: Receive = {
@@ -35,95 +38,111 @@ object EnvelopeAskingSpec {
   }
 }
 
-class EnvelopeAskingSpec( _system: ActorSystem )
-    extends TestKit( _system )
-    with FunSuiteLike
-    with Matchers
-    with BeforeAndAfterAll
-    with ImplicitSender {
-  def this() = this( ActorSystem( "EnvelopeAskingSpec" ) )
+class EnvelopeAskingSpec extends ParallelAkkaSpec with Matchers with ScalaFutures {
 
-  import EnvelopeAskingSpec._
+  class Fixture( override val slug: String, _system: ActorSystem )
+      extends AkkaFixture( slug, _system ) {
+    val d = 500.millis
+    implicit val t = Timeout( d )
+    val ec = system.dispatcher
 
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
+    val target = TestProbe( "target" )
+    val source = system.actorOf( Props( classOf[AskingTestActor], target.ref ), "source" )
+    val probe = TestProbe( "probe" )
+    // val real = TestActorRef[TestActor].underlyingActor
 
-  val d = 500.millis
-  implicit val t = Timeout( d )
-  implicit val ec = system.dispatcher
-
-  val target = TestProbe()
-  val source = system.actorOf( Props( classOf[TestActor], target.ref ) )
-  implicit val probe = TestProbe()
-  // val real = TestActorRef[TestActor].underlyingActor
-
-  override def afterAll: Unit = system.terminate()
-
-  // import omnibus.akka.envelope._
-  import omnibus.commons.util._
-
-  test( "EnvelopeAsking should handle a regular message on ask" ) {
-    val f = akka.pattern.ask( source, "A" )
-    val r = Await.result( f, t.duration ).asInstanceOf[String]
-    assert( r == "REPLY FROM A" )
+    override def after( test: OneArgTest ): Unit = {
+      scribe.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
+      source ! PoisonPill
+    }
   }
 
-  test( "EnvelopeAsking should handle a regular ask message with wrapped if send with envelope" ) {
-    val f = akka.pattern.ask( source, "B" )
-    val Envelope( r, hd ) = Await.result( f, t.duration ).asInstanceOf[Envelope]
-    assert( r == "REPLY FROM B" )
-    assert( hd.fromComponentType == ComponentType( classOf[TestActor].safeSimpleName ) )
-    assert( hd.fromComponentPath == ComponentPath( source.path ) )
-    assert( hd.toComponentPath.path.contains( "/temp/" ) )
-    assert( hd.messageType == MessageType( classOf[String].safeSimpleName ) )
-    assert( hd.workId == WorkId.unknown )
-    assert( hd.messageNumber == MessageNumber( 0 ) )
-    assert( hd.version == EnvelopeVersion( 1 ) )
-    assert( hd.properties == Map.empty )
+  override def createAkkaFixture( test: OneArgTest, system: ActorSystem, slug: String ): Fixture = {
+    new Fixture( slug, system )
   }
 
-  test( "EnvelopeAsking should wrap a message with an envelope on ask" ) {
-    val fc = source ?+ "C"
-    val rc = Await.result( fc, t.duration ).asInstanceOf[String]
-    assert( rc == "REPLY FROM C" )
-  }
+  object WIP extends Tag( "wip" )
 
-  test( "EnvelopeAsking should reply with a wrapped message on ask if using send" ) {
-    val fd = source ?+ "D"
-    val Envelope( rd, hd ) = Await.result( fd, t.duration ).asInstanceOf[Envelope]
-    assert( rd == "REPLY FROM D" )
-    assert( hd.fromComponentType == ComponentType( classOf[TestActor].safeSimpleName ) )
-    assert( hd.fromComponentPath == ComponentPath( source.path ) )
-    assert( hd.toComponentPath.path.contains( "/temp/" ) )
-    assert( hd.messageType == MessageType( classOf[String].safeSimpleName ) )
-    assert( hd.workId == WorkId.unknown )
-    assert( hd.messageNumber == MessageNumber( 0 ) )
-    assert( hd.version == EnvelopeVersion( 1 ) )
-    assert( hd.properties == Map.empty )
-  }
+  "EnvelopingAskingActor" should {
+    "handle a regular message on ask" in { f: Fixture =>
+      import f._
+      val answer = akka.pattern.ask( source, "A" )
+      whenReady( answer, timeout( Span( 3, Seconds ) ) ) {
+        case a: String =>
+          a shouldBe "REPLY FROM A"
+      }
+    }
 
-  test( "EnvelopeAsking should handle around processing wrapped message " ) {
-    val future = source ?+ "E"
-    val Envelope( result, h ) = Await.result( future, t.duration ).asInstanceOf[Envelope]
-    assert( result == "REPLY FROM E" )
-    assert( h.fromComponentType == ComponentType( classOf[TestActor].safeSimpleName ) )
-    assert( h.fromComponentPath == ComponentPath( source.path ) )
-    assert( h.toComponentPath.path.contains( "/temp/" ) )
-    assert( h.messageType == MessageType( classOf[String].safeSimpleName ) )
-    assert( h.workId != WorkId.unknown )
-    assert( h.messageNumber == MessageNumber( 1 ) )
-    assert( h.version == EnvelopeVersion( 1 ) )
-    assert( h.properties == Map.empty )
-  }
+    "handle a regular ask message with wrapped if send with envelope" in { f: Fixture =>
+      import f._
 
-  test(
-    "EnvelopeAsking should handle around processing wrapped message without envelope is not send"
-  ) {
-    val future = source ?+ "F"
-    val result = Await.result( future, t.duration ).asInstanceOf[String]
-    assert( result == "REPLY FROM F" )
+      val answer = akka.pattern.ask( source, "B" )
+      whenReady( answer, timeout( Span( 3, Seconds ) ) ) {
+        case Envelope( r, hd ) =>
+          r shouldBe "REPLY FROM B"
+          hd.fromComponentType shouldBe ComponentType( classOf[AskingTestActor].safeSimpleName )
+          hd.fromComponentPath shouldBe ComponentPath( source.path )
+          hd.toComponentPath.path should include( "/temp/" )
+          hd.messageType shouldBe MessageType( classOf[String].safeSimpleName )
+          hd.workId shouldBe WorkId.unknown
+          hd.messageNumber shouldBe MessageNumber( 0 )
+          hd.version shouldBe EnvelopeVersion( 1 )
+          hd.properties shouldBe Map.empty[Symbol, Any]
+      }
+    }
+
+    "wrap a message with an envelope on ask" in { f: Fixture =>
+      import f._
+      val answer = source ?+ "C"
+      whenReady( answer, timeout( Span( 3, Seconds ) ) ) {
+        case a: String =>
+          a shouldBe "REPLY FROM C"
+      }
+    }
+
+    "reply with a wrapped message on ask if using send" in { f: Fixture =>
+      import f._
+      val answer = source ?+ "D"
+      whenReady( answer, timeout( Span( 3, Seconds ) ) ) {
+        case Envelope( rd, hd ) =>
+          rd shouldBe "REPLY FROM D"
+          hd.fromComponentType shouldBe ComponentType( classOf[AskingTestActor].safeSimpleName )
+          hd.fromComponentPath shouldBe ComponentPath( source.path )
+          hd.toComponentPath.path should include( "/temp/" )
+          hd.messageType shouldBe MessageType( classOf[String].safeSimpleName )
+          hd.workId shouldBe WorkId.unknown
+          hd.messageNumber shouldBe MessageNumber( 0 )
+          hd.version shouldBe EnvelopeVersion( 1 )
+          hd.properties shouldBe Map.empty[Symbol, Any]
+      }
+    }
+
+    "handle around processing wrapped message " in { f: Fixture =>
+      import f._
+
+      val answer = source ?+ "E"
+      whenReady( answer, timeout( Span( 3, Seconds ) ) ) {
+        case Envelope( result, h ) =>
+          result shouldBe "REPLY FROM E"
+          h.fromComponentType shouldBe ComponentType( classOf[AskingTestActor].safeSimpleName )
+          h.fromComponentPath shouldBe ComponentPath( source.path )
+          h.toComponentPath.path should include( "/temp/" )
+          h.messageType shouldBe MessageType( classOf[String].safeSimpleName )
+          h.workId should not be (WorkId.unknown)
+          h.messageNumber shouldBe MessageNumber( 1 )
+          h.version shouldBe EnvelopeVersion( 1 )
+          h.properties shouldBe Map.empty[Symbol, Any]
+      }
+    }
+
+    "handle around processing wrapped message without envelope is not send" in { f: Fixture =>
+      import f._
+
+      val answer = source ?+ "F"
+      whenReady( answer, timeout( Span( 3, Seconds ) ) ) {
+        case a: String =>
+          a shouldBe "REPLY FROM F"
+      }
+    }
   }
 }

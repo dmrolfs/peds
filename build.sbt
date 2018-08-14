@@ -3,7 +3,7 @@ import BuildSettings._
 
 name := "omnibus"
 
-version in ThisBuild := "0.70"
+version in ThisBuild := "0.71"
 
 organization in ThisBuild := "com.github.dmrolfs"
 
