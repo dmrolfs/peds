@@ -44,7 +44,10 @@ object Id {
     val id = implicitly[Identifying[E]].valueFromRep( idRep )
     unsafeCreate( id )
   }
-  //  @annotation.implicitNotFound(
+}
+
+
+//  @annotation.implicitNotFound(
 //    "Descriptor is not a valid identifying Tag. Declare it to be a case object to fix this error"
 //  )
 //  private sealed trait IsCaseObject[D]
@@ -59,4 +62,3 @@ object Id {
 //  private object IsSerializable {
 //    implicit def ev[I <: Serializable]: IsSerializable[I] = null
 //  }
-}
