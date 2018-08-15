@@ -27,17 +27,3 @@ abstract class Identifying[E: ClassTag] {
 object Identifying {
   type Aux[E, I] = Identifying[E] { type ID = I }
 }
-
-//case class Foo( id: Id[Foo], bar: String )
-//
-//object Foo {
-//  def nextId: Id[Foo] = identifying.next
-//
-//  implicit val identifying = new Identifying[Foo] {
-//    override type ID = ShortUUID
-//
-//    override val zeroValue: ID = ShortUUID.zero
-//    override def nextValue: ID = ShortUUID()
-//    override def valueFromRep( rep: String ): ID = ShortUUID.fromString( rep )
-//  }
-//}
