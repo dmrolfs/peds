@@ -4,6 +4,7 @@ import sbt._
 // import spray.revolver.RevolverPlugin._
 
 object BuildSettings {
+  val VERSION = "0.73-SNAPSHOT"
 
   val scalacBuildOptions = Seq(
     // "-encoding",
@@ -65,7 +66,7 @@ object BuildSettings {
 //  }
 
   lazy val defaultSettings = Defaults.coreDefaultSettings ++ /*Format.settings ++*/ Seq(
-    organization := "com.github.dmrolfs",
+    version := VERSION,
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     crossScalaVersions := Seq( "2.12.6" ),
     scalaVersion := crossScalaVersions{ (vs: Seq[String]) => vs.head }.value,
@@ -119,33 +120,39 @@ object BuildSettings {
     cancelable in Global := true
   )
 
-//  def publishModule( v: String ) = {
-//    println( "version = " + v )
-//    if ( (version in ThisBuild).toString().endsWith("-SNAPSHOT") ) {
-//      println( "PUBLISH_MODULE -- SNAPSHOT" )
-//      publishTo := Some("Artifactory Realm" at "http://oss.jfrog.org/artifactory/oss-snapshot-local")
+
+  def publishSettings: Seq[Setting[_]] = {
+    if ( VERSION.endsWith("-SNAPSHOT") ) {
+      println( "PUBLISH_MODULE -- SNAPSHOT" )
+      Seq(
+        publishTo := Some("Artifactory Realm" at "http://oss.jfrog.org/artifactory/oss-snapshot-local"),
+        credentials := List(Path.userHome / ".bintray" / ".jfrog-oss").filter(_.exists).map(Credentials(_))
+      )
 //      publishMavenStyle := true
-//      // Only setting the credentials file if it exists (#52)
-//      credentials := List(Path.userHome / ".bintray" / ".artifactory").filter(_.exists).map(Credentials(_))
-//    } else {
-//      println( "PUBLISH_MODULE" )
-//      pomExtra := {
-//        <scm>
-//          <url>https://github.com</url>
-//          <connection>https://github.com/dmrolfs/omnibus.git</connection>
-//        </scm>
-//          <developers>
-//            <developer>
-//              <id>dmrolfs</id>
-//              <name>Damon Rolfs</name>
-//              <url>http://dmrolfs.github.io/</url>
-//            </developer>
-//          </developers>
-//      }
+      // Only setting the credentials file if it exists (#52)
+    } else {
+      println( "PUBLISH_MODULE" )
+      Seq(
+        publishTo := Some("Bintray API Realm" at "http://api.bintray.com"),
+        credentials := List(Path.userHome / ".bintray" / ".credentials").filter(_.exists).map(Credentials(_)),
+        pomExtra := {
+          <scm>
+            <url>https://github.com</url>
+            <connection>https://github.com/dmrolfs/omnibus.git</connection>
+          </scm>
+          <developers>
+            <developer>
+              <id>dmrolfs</id>
+              <name>Damon Rolfs</name>
+              <url>http://dmrolfs.github.io/</url>
+            </developer>
+          </developers>
+        }
+      )
 //      publishMavenStyle := true
 //      resolvers += Resolver.url("omen bintray resolver", url("http://dl.bintray.com/omen/maven"))(Resolver.ivyStylePatterns)
 //      licenses := ("MIT", url("http://opensource.org/licenses/MIT")) :: Nil // this is required! otherwise Bintray will reject the code
-//    }
-//  }
+    }
+  }
 
 }

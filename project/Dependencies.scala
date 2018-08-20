@@ -41,7 +41,7 @@ object Dependencies {
   object omnibus extends SimpleModule {
     override val groupId = "com.github.dmrolfs"
     override val artifactIdRoot = "omnibus"
-    override val version = "0.60"
+    override val version = "0.73-SNAPSHOT"
     def all = Seq( commons, akka, archetype )
 
     val commons = module( "commons" )
@@ -119,7 +119,7 @@ object Dependencies {
     def all = Seq( joda, jodaConvert, scalaTime )
   }
 
-  object log {
+  object logging {
 //    val persistLogging = "com.persist" %% "persist-logging" % "1.3.2"
 //    val typesafe = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
 //    val journal = "io.verizon.journal" %% "core" % "3.0.19"
@@ -267,7 +267,7 @@ object Dependencies {
 
   val commonDependencies: Seq[ModuleID] = {
     silencer.all ++
-    log.all ++
+    logging.all ++
     cats.all ++
     Seq(
       facility.enumeratum,

@@ -6,6 +6,8 @@ import cats.data.{ Kleisli, NonEmptyList, ValidatedNel }
 import omnibus.core.syntax.AllSyntax
 
 package object core extends AllSyntax {
+  type EC[_] = ExecutionContext
+
   type AllIssuesOr[A] = ValidatedNel[Throwable, A]
 
   type AllErrorsOr[T] = Either[NonEmptyList[Throwable], T]
@@ -20,8 +22,6 @@ package object core extends AllSyntax {
     override def apply( x: A ): B =
       throw new UnsupportedOperationException( "Empty behavior apply()" )
   }
-
-  type EC[_] = ExecutionContext
 
   type KOp[I, O] = Kleisli[ErrorOr, I, O]
 

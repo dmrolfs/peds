@@ -6,7 +6,7 @@ import omnibus.core.syntax.clazz._
 
 sealed trait EntityRef extends (( Symbol ) => Any ) with Ordered[EntityRef] {
   type Source <: Entity
-  type ID = Source#ID
+//  type ID = Source#ID
   type TID = Source#TID
 
   def get( property: Symbol ): Option[Any]

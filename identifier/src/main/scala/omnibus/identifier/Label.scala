@@ -1,28 +1,27 @@
 package omnibus.identifier
 import scala.reflect.ClassTag
 
-sealed trait Label extends Serializable {
+sealed trait Labeling[E] {
   def label: String
 }
 
-object Label {
-  def unapply( l: Label ): Option[String] = Option( l.label )
+object Labeling {
+  implicit def default[T: ClassTag]: Labeling[T] = new MakeLabeling[T]
 }
 
-final class MakeLabel[D: ClassTag] extends Label {
-  type Descriptor = D
-
+final class MakeLabeling[E: ClassTag] extends Labeling[E] {
   override val label: String = {
     import omnibus.core._
-    implicitly[ClassTag[D]].runtimeClass.safeSimpleName + "Id"
+    implicitly[ClassTag[E]].runtimeClass.safeSimpleName + "Id"
   }
 }
 
-abstract class CustomLabel extends Label
+abstract class CustomLabeling[E] extends Labeling[E]
 
-case object EmptyLabel extends Label {
+final class EmptyLabel[E] extends Labeling[E] {
   override val label: String = ""
 }
+
 //  private[identifier] sealed trait LabelDefinitionConflict
 //
 //  trait MakeLabel { self =>

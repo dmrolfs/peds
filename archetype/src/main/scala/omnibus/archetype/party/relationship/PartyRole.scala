@@ -1,5 +1,6 @@
 package omnibus.archetype.party.relationship
 
+import scala.language.existentials
 import omnibus.archetype.party.Party
 
 //todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
@@ -7,7 +8,7 @@ import omnibus.archetype.party.Party
 trait PartyRole
 
 trait PartyRoleLike[P <: Party] extends PartyRole {
-  type PartyId = P#ID
+  type PartyId = P#TID
   type RoleType <: PartyRoleType#Value
 
   def partyId: PartyId
@@ -15,7 +16,7 @@ trait PartyRoleLike[P <: Party] extends PartyRole {
 }
 
 case class PartyRoleSpecification[P <: Party, R <: PartyRoleType#Value](
-  override val partyId: P#ID,
+  override val partyId: P#TID,
   override val roleType: R
 ) extends PartyRoleLike[P] {
   override type RoleType = R

@@ -10,7 +10,7 @@ scalacOptions := scalacBuildOptions
 resolvers += "omen-bintray" at "http://dl.bintray.com/omen/maven"
 
 libraryDependencies ++=
-  log.all ++
+  logging.all ++
   Seq(
     facility.codec,
     facility.scalaUuid,
