@@ -1,8 +1,10 @@
 package omnibus.identifier
 
 import java.util.UUID
-import scala.reflect._
+
 import omnibus.core._
+
+import scala.util.Try
 
 abstract class Identifying[E: Labeling] {
   type ID
@@ -58,5 +60,62 @@ object Identifying {
     override val zeroValue: ID = 0L
     override def nextValue: ID = latestId.incrementAndGet()
     override def valueFromRep( rep: String ): ID = rep.toLong
+  }
+
+  import scala.language.implicitConversions
+
+  implicit def optionalIdentifying[E: Identifying]: Identifying[Option[E]] = {
+    val identifying = implicitly[Identifying[E]]
+
+    new Identifying[Option[E]] {
+      override type ID = identifying.ID
+      override def zeroValue: ID = identifying.zeroValue
+      override def nextValue: ID = identifying.nextValue
+      override def valueFromRep( rep: String ): ID = identifying valueFromRep rep
+    }
+  }
+
+  implicit def tryIdentifying[E: Identifying]: Identifying[Try[E]] = {
+    val identifying = implicitly[Identifying[E]]
+
+    new Identifying[Try[E]] {
+      override type ID = identifying.ID
+      override def zeroValue: ID = identifying.zeroValue
+      override def nextValue: ID = identifying.nextValue
+      override def valueFromRep( rep: String ): ID = identifying valueFromRep rep
+    }
+  }
+
+  implicit def errorOrIdentifying[E: Identifying]: Identifying[ErrorOr[E]] = {
+    val identifying = implicitly[Identifying[E]]
+
+    new Identifying[ErrorOr[E]] {
+      override type ID = identifying.ID
+      override def zeroValue: ID = identifying.zeroValue
+      override def nextValue: ID = identifying.nextValue
+      override def valueFromRep( rep: String ): ID = identifying valueFromRep rep
+    }
+  }
+
+  implicit def allErrorOrIdentifying[E: Identifying]: Identifying[AllErrorsOr[E]] = {
+    val identifying = implicitly[Identifying[E]]
+
+    new Identifying[AllErrorsOr[E]] {
+      override type ID = identifying.ID
+      override def zeroValue: ID = identifying.zeroValue
+      override def nextValue: ID = identifying.nextValue
+      override def valueFromRep( rep: String ): ID = identifying valueFromRep rep
+    }
+  }
+
+  implicit def allIssuesOrIdentifying[E: Identifying]: Identifying[AllIssuesOr[E]] = {
+    val identifying = implicitly[Identifying[E]]
+
+    new Identifying[AllIssuesOr[E]] {
+      override type ID = identifying.ID
+      override def zeroValue: ID = identifying.zeroValue
+      override def nextValue: ID = identifying.nextValue
+      override def valueFromRep( rep: String ): ID = identifying valueFromRep rep
+    }
   }
 }

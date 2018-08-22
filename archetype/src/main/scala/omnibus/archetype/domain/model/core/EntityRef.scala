@@ -5,7 +5,7 @@ import enumeratum._
 import omnibus.core.syntax.clazz._
 
 sealed trait EntityRef extends (( Symbol ) => Any ) with Ordered[EntityRef] {
-  type Source <: Entity
+  type Source <: EntityLike
 //  type ID = Source#ID
   type TID = Source#TID
 
@@ -19,7 +19,7 @@ sealed trait EntityRef extends (( Symbol ) => Any ) with Ordered[EntityRef] {
 }
 
 object EntityRef {
-  type Aux[E <: Entity] = EntityRef { type Source = E }
+  type Aux[E <: EntityLike] = EntityRef { type Source = E }
 
   sealed abstract class StandardProperty extends EnumEntry {
     def unapply( key: Symbol ): Boolean = this.key == key

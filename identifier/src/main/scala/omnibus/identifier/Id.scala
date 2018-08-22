@@ -1,6 +1,6 @@
 package omnibus.identifier
 
-sealed abstract class Id[E: Identifying: Labeling] extends Equals with Serializable {
+sealed abstract class Id[E: Labeling] extends Equals with Serializable {
   type IdType
 
   def value: IdType
@@ -36,6 +36,8 @@ object Id {
 
   type Aux[E, I] = Id[E] { type IdType = I }
 
+  def unsafeOf[E: Labeling, I]( id: I ): Id[E] = unsafeCreate( id )
+
   // Due to the use of dependent types, `of` requires explicit type application,
   // merely adding a type signature to the returned value is not enough:
   // one should instead always use Id.of[TypeOfTheTag]
@@ -50,16 +52,17 @@ object Id {
 
   def unapply[E]( id: Id[E] ): Option[Id[E]#IdType] = Some( id.value )
 
-  private[identifier] def unsafeCreate[E: Identifying: Labeling, I]( id: I ): Id[E] = {
+  private[identifier] def unsafeCreate[E: Labeling, I]( id: I ): Id[E] = {
     Simple( value = id )
   }
 
-  private final case class Simple[E: Identifying: Labeling, I](
+  private final case class Simple[E: Labeling, I](
     override val value: I
   ) extends Id[E] {
     override type IdType = I
   }
 }
+
 //  @annotation.implicitNotFound(
 //    "Descriptor is not a valid identifying Tag. Declare it to be a case object to fix this error"
 //  )

@@ -1,13 +1,13 @@
 package omnibus.archetype.party
 
 import org.joda.time.LocalDate
-import omnibus.archetype.domain.model.core.Entity
+import omnibus.archetype.domain.model.core.EntityLike
 import omnibus.archetype.{ Address, OrganizationName, PersonName }
 import relationship.PartyRole
 import omnibus.core.syntax.clazz._
 
 //todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
-trait Party extends Entity with Equals {
+trait Party extends EntityLike with Equals {
   def addresses: Seq[Address]
   // def roles: Seq[PartyRoleLike[ID]]
   def roles: Seq[PartyRole]
