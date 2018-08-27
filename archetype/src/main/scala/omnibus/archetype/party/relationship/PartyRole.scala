@@ -7,7 +7,7 @@ import omnibus.archetype.party.Party
 
 trait PartyRole
 
-trait PartyRoleLike[P <: Party] extends PartyRole {
+abstract class PartyRoleLike[P <: Party[P, ID], ID] extends PartyRole {
   type PartyId = P#TID
   type RoleType <: PartyRoleType#Value
 
@@ -15,9 +15,9 @@ trait PartyRoleLike[P <: Party] extends PartyRole {
   def roleType: RoleType
 }
 
-case class PartyRoleSpecification[P <: Party, R <: PartyRoleType#Value](
+case class PartyRoleSpecification[P <: Party[P, ID], ID, R <: PartyRoleType#Value](
   override val partyId: P#TID,
   override val roleType: R
-) extends PartyRoleLike[P] {
+) extends PartyRoleLike[P, ID] {
   override type RoleType = R
 }

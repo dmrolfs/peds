@@ -2,8 +2,11 @@ package omnibus.archetype.domain.model.core
 
 import org.joda.{ time => joda }
 import omnibus.commons.util.Clock
+import omnibus.identifier.Identifying
 
-trait AuditedEntity extends EntityLike {
+abstract class AuditedEntity[E <: AuditedEntity[E, ID], ID](
+  implicit override protected val identifying: Identifying.Aux[E, ID]
+) extends Entity[E, ID] {
   def audit: Option[AuditRecord]
 }
 
@@ -13,10 +16,6 @@ trait AuditRecord {
   def createdOn: joda.DateTime
   def modifiedBy: ATID
   def modifiedOn: joda.DateTime
-}
-
-object AuditRecord {
-  type Aux[ATID0] = AuditRecord { type ATID = ATID0 }
 }
 
 case class SimpleAuditRecord[ATID0](
