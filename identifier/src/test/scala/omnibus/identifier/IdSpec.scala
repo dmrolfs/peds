@@ -10,21 +10,33 @@ class IdSpec extends WordSpec with Matchers {
     .withHandler( minimumLevel = Some( Level.Trace ) )
     .replace()
 
-  case class Foo( id: Id[Foo], f: String )
+  case class Foo( id: Foo#TID, f: String ) {
+    type TID = Foo.identifying.TID
+  }
 
   object Foo {
-    def nextId: Id[Foo] = identifying.next
+    def nextId: Foo#TID = identifying.next
     implicit val identifying = new Identifying.ByShortUuid[Foo]
   }
 
   case class Bar( id: Id[Bar], b: Double )
 
   object Bar {
-    def nextId: Id[Bar] = identifying.next
+    def nextId: Id.Aux[Bar, Long] = identifying.next
     implicit val identifying = new Identifying.ByLong[Bar]
   }
 
   "An Id" should {
+    "summons Aux" in {
+      implicit val fid = Foo.identifying.next
+      val fa: Id.Aux[Foo, ShortUUID] = Id[Foo]
+      ShortUUID.zero shouldBe a[fa.IdType]
+
+      implicit val bid = Bar.nextId
+      val ba: Id.Aux[Bar, Long] = Id[Bar]
+      bid.value.getClass shouldBe classOf[Long] //todo: better handle primitive boxing
+    }
+
     "create Id of varying types" in {
 //      import Foo._
 
@@ -71,7 +83,7 @@ class IdSpec extends WordSpec with Matchers {
     "invalid id rep type should fail" in {
       val fid = 17L
       val frep = fid.toString
-      an[IllegalArgumentException] should be thrownBy Id.fromString[Foo]( frep )
+      an[IllegalArgumentException] should be thrownBy Id.fromString[Foo, ShortUUID]( frep )
     }
 
     "custom labeling can override class label" in {

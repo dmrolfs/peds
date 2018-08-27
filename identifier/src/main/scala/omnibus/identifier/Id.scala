@@ -1,6 +1,7 @@
 package omnibus.identifier
 
 sealed abstract class Id[E: Labeling] extends Equals with Serializable {
+  //todo: better handle primitive boxing
   type IdType
 
   def value: IdType
@@ -36,23 +37,30 @@ object Id {
 
   type Aux[E, I] = Id[E] { type IdType = I }
 
-  def unsafeOf[E: Labeling, I]( id: I ): Id[E] = unsafeCreate( id )
+  def apply[E]( implicit i: Id[E] ): Aux[E, i.IdType] = i
+
+  def unapply[E]( id: Id[E] ): Option[Id[E]#IdType] = Some( id.value )
+
+  def unsafeOf[E: Labeling, I]( id: I ): Id.Aux[E, I] = unsafeCreate( id )
 
   // Due to the use of dependent types, `of` requires explicit type application,
   // merely adding a type signature to the returned value is not enough:
   // one should instead always use Id.of[TypeOfTheTag]
-  def of[E, I]( id: I )( implicit i: Identifying.Aux[E, I], l: Labeling[E] ): Id[E] = {
+  def of[E, I]( id: I )( implicit i: Identifying.Aux[E, I], l: Labeling[E] ): Id.Aux[E, I] = {
     unsafeCreate( id )
   }
 
-  def fromString[E: Identifying: Labeling]( idRep: String ): Id[E] = {
-    val id = implicitly[Identifying[E]].valueFromRep( idRep )
+  def fromString[E, I](
+    idRep: String
+  )(
+    implicit i: Identifying.Aux[E, I],
+    l: Labeling[E]
+  ): Id.Aux[E, I] = {
+    val id: I = implicitly[Identifying[E]].valueFromRep( idRep ).asInstanceOf[I]
     unsafeCreate( id )
   }
 
-  def unapply[E]( id: Id[E] ): Option[Id[E]#IdType] = Some( id.value )
-
-  private[identifier] def unsafeCreate[E: Labeling, I]( id: I ): Id[E] = {
+  private[identifier] def unsafeCreate[E: Labeling, I]( id: I ): Id.Aux[E, I] = {
     Simple( value = id )
   }
 

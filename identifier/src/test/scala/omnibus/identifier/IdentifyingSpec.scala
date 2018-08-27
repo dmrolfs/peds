@@ -28,6 +28,11 @@ class IdentifyingSpec extends WordSpec with Matchers {
   }
 
   "An Identifying" should {
+    "summons Aux" in {
+      val fa: Identifying.Aux[Foo, ShortUUID] = Identifying[Foo]
+      ShortUUID.zero shouldBe a[fa.ID]
+    }
+
     "option identifying is derived from underlying type" in {
       val fooIdentifying = implicitly[Identifying[Foo]]
       val oFooIdentifying = implicitly[Identifying[Option[Foo]]]

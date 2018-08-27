@@ -1,12 +1,49 @@
 package omnibus.identifier
+import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
+
 import scala.reflect.ClassTag
+import scala.util.Try
 
 sealed trait Labeling[E] {
   def label: String
 }
 
 object Labeling {
+  def apply[E]( implicit l: Labeling[E] ): Labeling[E] = l
+
   implicit def default[T: ClassTag]: Labeling[T] = new MakeLabeling[T]
+
+  implicit def optionalLabeling[T]( implicit labeling: Labeling[T] ): Labeling[Option[T]] = {
+    new Labeling[Option[T]] {
+      override def label: String = labeling.label
+    }
+  }
+
+  implicit def tryLabeling[T]( implicit labeling: Labeling[T] ): Labeling[Try[T]] = {
+    new Labeling[Try[T]] {
+      override def label: String = labeling.label
+    }
+  }
+
+  implicit def errorOrLabeling[T]( implicit labeling: Labeling[T] ): Labeling[ErrorOr[T]] = {
+    new Labeling[ErrorOr[T]] {
+      override def label: String = labeling.label
+    }
+  }
+
+  implicit def allErrorOrLabeling[T]( implicit labeling: Labeling[T] ): Labeling[AllErrorsOr[T]] = {
+    new Labeling[AllErrorsOr[T]] {
+      override def label: String = labeling.label
+    }
+  }
+
+  implicit def allIssuesOrLabeling[T](
+    implicit labeling: Labeling[T]
+  ): Labeling[AllIssuesOr[T]] = {
+    new Labeling[AllIssuesOr[T]] {
+      override def label: String = labeling.label
+    }
+  }
 }
 
 final class MakeLabeling[E: ClassTag] extends Labeling[E] {
