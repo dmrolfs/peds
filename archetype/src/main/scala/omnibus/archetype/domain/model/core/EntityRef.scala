@@ -46,7 +46,7 @@ object EntityRef {
   def apply[ID, E <: Entity[E, ID]](
     entity: E
   )(
-    implicit identifying: Identifying.Aux[E, ID],
+    implicit /* identifying: Identifying.Aux[E, ID],*/
     entityType: ClassTag[E]
   ): EntityRef.Aux[E, entity.TID] = {
     val eid = entity.id

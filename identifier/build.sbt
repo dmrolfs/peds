@@ -12,6 +12,8 @@ resolvers += "omen-bintray" at "http://dl.bintray.com/omen/maven"
 libraryDependencies ++=
   logging.all ++
   Seq(
+    facility.scalaUuid,
+    cats.core,
     facility.codec,
     facility.scalaUuid,
     facility.newtype

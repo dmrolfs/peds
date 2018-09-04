@@ -4,7 +4,7 @@ import shapeless.Lens
 import omnibus.identifier.{ Id, Identifying, ShortUUID }
 
 abstract class Identifiable[E <: Identifiable[E, ID], ID](
-  implicit protected val identifying: Identifying.Aux[E, ID]
+  implicit protected val identifying: Identifying.EntityAux[E, ID]
 ) {
   type TID = Id.Aux[E, ID]
   def id: TID
@@ -46,9 +46,9 @@ object Identifiable {
 }
 
 abstract class IdentifiableLensProvider[E <: Identifiable[E, ID], ID] {
-  implicit val identifying: Identifying.Aux[E, ID]
+  implicit val identifying: Identifying.EntityAux[E, ID]
 //  type TID = identifying.TID
-  def nextId: E#TID = identifying.next
+  def nextId: Id.Aux[E, ID] = identifying.next
   def idLens: Lens[E, E#TID]
 }
 

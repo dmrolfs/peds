@@ -1,10 +1,10 @@
 package omnibus.identifier
 
-import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
-import org.scalatest.{ Matchers, WordSpec }
-import scribe.Level
-
 import scala.util.Try
+import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
+import org.scalatest.{ Matchers, Tag, WordSpec }
+import scribe.Level
+import io.jvm.uuid.UUID
 
 class IdentifyingSpec extends WordSpec with Matchers {
   scribe.Logger.root
@@ -16,8 +16,9 @@ class IdentifyingSpec extends WordSpec with Matchers {
   case class Foo( id: Id[Foo], f: String )
 
   object Foo {
-    def nextId: Id[Foo] = identifying.next
-    implicit val identifying = new Identifying.ByShortUuid[Foo]
+    type TID = identifying.TID
+    def nextId: TID = identifying.next
+    implicit val identifying = Identifying.byShortUuid[Foo]
   }
 
   case class Bar( id: Id[Bar], b: Double )
@@ -27,14 +28,66 @@ class IdentifyingSpec extends WordSpec with Matchers {
     implicit val identifying = new Identifying.ByLong[Bar]
   }
 
+  case class Zed( id: Zed.TID, score: Double )
+
+  object Zed {
+    type TID = identifying.TID
+    implicit val identifying = Identifying.byUuid[Zed]
+  }
+
+  object WIP extends Tag( "wip" )
+
   "An Identifying" should {
     "summons Aux" in {
       val fa: Identifying.Aux[Foo, ShortUUID] = Identifying[Foo]
       ShortUUID.zero shouldBe a[fa.ID]
     }
 
+    "identifying should work with optional state entity types" taggedAs WIP in {
+      def makeOptionZedId()( implicit i: Identifying[Option[Zed]] ): i.TID = i.next
+      def makeOptionZedIdAux()( implicit i: Identifying.Aux[Option[Zed], UUID] ): i.TID = i.next
+      def makeOptionZedIdEntityAux()(
+        implicit i: Identifying.EntityAux[Zed, UUID]
+      ): i.TID = i.next
+      def makeOptionZedIdFullAux()(
+        implicit i: Identifying.FullAux[Option[Zed], Zed, UUID]
+      ): i.TID = i.next
+
+      val o1 = Identifying[Option[Zed]]
+      val oid1 = o1.next
+//      val zid: Id[Zed] = oid1
+//      val zida: Id.Aux[Zed, UUID] = oid1
+
+//      import scala.language.existentials
+      val ozid = makeOptionZedId()
+      scribe.info( s"ozid = ${ozid}" )
+//      val z: Id[Zed] = ozid
+      "val z: Id.Aux[Zed, UUID] = ozid" should compile
+      "Zed( id = makeOptionZedId(), score = 3.14 )" should compile
+
+      val ozidAux = makeOptionZedIdAux()
+      scribe.info( s"ozidAux = ${ozidAux}" )
+      //      val z: Id[Zed] = ozidAux
+      "val z: Id.Aux[Zed, UUID] = ozidAux" should compile
+      "Zed( id = makeOptionZedIdAux(), score = 3.14 )" should compile
+
+      val foo: Identifying.EntityAux[Zed, UUID] = Zed.identifying
+
+      val ozidEntityAux = makeOptionZedIdEntityAux()
+      scribe.info( s"ozidEntityAux = ${ozidEntityAux}" )
+//      val z: Id[Zed] = ozidEntityAux
+      "val z: Id.Aux[Zed, UUID] = ozidEntityAux" should compile
+      "Zed( id = makeOptionZedIdEntityAux(), score = 3.14 )" should compile
+
+      val ozidFullAux = makeOptionZedIdFullAux()
+      scribe.info( s"ozidFullAux = ${ozidFullAux}" )
+      //      val z: Id[Zed] = ozidFullAux
+      "val z: Id.Aux[Zed, UUID] = ozidFullAux" should compile
+      "Zed( id = makeOptionZedIdFullAux(), score = 3.14 )" should compile
+    }
+
     "option identifying is derived from underlying type" in {
-      val fooIdentifying = implicitly[Identifying[Foo]]
+      val fooIdentifying = Identifying[Foo]
       val oFooIdentifying = implicitly[Identifying[Option[Foo]]]
       val oFooId = oFooIdentifying.next
       oFooId should not be (ShortUUID.zero)

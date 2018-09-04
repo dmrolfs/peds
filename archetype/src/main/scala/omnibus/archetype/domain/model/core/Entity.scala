@@ -5,7 +5,7 @@ import omnibus.core.syntax.clazz._
 import omnibus.identifier.Identifying
 
 abstract class Entity[E <: Entity[E, ID], ID](
-  implicit override protected val identifying: Identifying.Aux[E, ID]
+  implicit override protected val identifying: Identifying.EntityAux[E, ID]
 ) extends Identifiable[E, ID] {
   def name: String
   def slug: String = id.value.toString
