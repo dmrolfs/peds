@@ -20,9 +20,7 @@ class LabelingSpec extends WordSpec with Matchers {
   case class Bar( id: Id[Bar], b: Double )
 
   object Bar {
-    implicit val labeling: Labeling[Bar] = new CustomLabeling[Bar] {
-      override val label: String = "SUPER-BAR"
-    }
+    implicit val labeling: Labeling[Bar] = Labeling.custom[Bar]( "SUPER-BAR" )
   }
 
   case class Zed( id: Id[Zed], z: Long )
@@ -44,37 +42,37 @@ class LabelingSpec extends WordSpec with Matchers {
     }
 
     "labeling should work" in {
-      Labeling[Foo].label shouldBe "FooId"
+      Labeling[Foo].label shouldBe "Foo"
       Labeling[Bar].label shouldBe "SUPER-BAR"
       Labeling[Zed].label shouldBe empty
     }
 
     "option labeling is derived from underlying type" in {
-      Labeling[Option[Foo]].label shouldBe "FooId"
+      Labeling[Option[Foo]].label shouldBe "Foo"
       Labeling[Option[Bar]].label shouldBe "SUPER-BAR"
       Labeling[Option[Zed]].label shouldBe empty
     }
 
     "try labeling is derived from underlying type" in {
-      Labeling[Try[Foo]].label shouldBe "FooId"
+      Labeling[Try[Foo]].label shouldBe "Foo"
       Labeling[Try[Bar]].label shouldBe "SUPER-BAR"
       Labeling[Try[Zed]].label shouldBe empty
     }
 
     "ErrorOr labeling is derived from underlying type" in {
-      Labeling[ErrorOr[Foo]].label shouldBe "FooId"
+      Labeling[ErrorOr[Foo]].label shouldBe "Foo"
       Labeling[ErrorOr[Bar]].label shouldBe "SUPER-BAR"
       Labeling[ErrorOr[Zed]].label shouldBe empty
     }
 
     "AllErrorsOr labeling is derived from underlying type" in {
-      Labeling[AllErrorsOr[Foo]].label shouldBe "FooId"
+      Labeling[AllErrorsOr[Foo]].label shouldBe "Foo"
       Labeling[AllErrorsOr[Bar]].label shouldBe "SUPER-BAR"
       Labeling[AllErrorsOr[Zed]].label shouldBe empty
     }
 
     "AllIssuesOr labeling is derived from underlying type" in {
-      Labeling[AllIssuesOr[Foo]].label shouldBe "FooId"
+      Labeling[AllIssuesOr[Foo]].label shouldBe "Foo"
       Labeling[AllIssuesOr[Bar]].label shouldBe "SUPER-BAR"
       Labeling[AllIssuesOr[Zed]].label shouldBe empty
     }

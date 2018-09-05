@@ -1,17 +1,18 @@
 package omnibus.identifier
 
 import java.util.UUID
-import scala.util.Try
+
+//import scala.reflect.ClassTag
 import scala.language.{ higherKinds, implicitConversions }
 import omnibus.core._
 
-abstract class Identifying[S: Labeling] {
-  type Entity
+abstract class Identifying[E] {
+//  type Entity
   type ID
-  type TID = Id.Aux[Entity, ID]
+  type TID = Id.Aux[E, ID]
   protected def tag( value: ID ): TID
 
-//  def label: String
+  def label: String
 
   final def zero: TID = tag( zeroValue )
   final def next: TID = tag( nextValue )
@@ -25,37 +26,34 @@ abstract class Identifying[S: Labeling] {
   override def toString: String = {
     val identifying = this.getClass.safeSimpleName
     val idType = zeroValue.getClass.safeSimpleName
-    s"""${identifying}(label:"${Labeling[S].label}" id:${idType})"""
+    s"""${identifying}(label:"${label}" id:${idType})"""
   }
 }
 
-object Identifying extends LowPriorityCompositeIdentifying {
+object Identifying {
 
   type Aux[S, ID0] = Identifying[S] {
     type ID = ID0
   }
 
-  type EntityAux[E, ID0] = Identifying[_] {
-    type Entity = E
-    type ID = ID0
-  }
-
-  type FullAux[S, E, ID0] = Identifying[S] {
-    type Entity = E
-    type ID = ID0
-  }
-
-  def apply[S]( implicit i: Identifying[S] ): FullAux[S, i.Entity, i.ID] = i
+  def apply[E]( implicit i: Identifying[E] ): Aux[E, i.ID] = i
 
   def pure[E: Labeling, I](
     zeroValueFn: => I,
     nextValueFn: () => I,
     valueFromRepFn: String => I
-  ): FullAux[E, E, I] = {
+  ): Aux[E, I] = {
     new Simple[E, I]( zeroValueFn, nextValueFn, valueFromRepFn )
   }
 
-  def byShortUuid[E: Labeling]: FullAux[E, E, ShortUUID] = {
+  implicit def wrap[C[_], E, I](
+    implicit underlying: Aux[E, I],
+    le: Labeling[C[E]]
+  ): Aux[C[E], I] = {
+    new HigherKinded[C, E, I]()( underlying, le )
+  }
+
+  def byShortUuid[E: Labeling]: Aux[E, ShortUUID] = {
     pure[E, ShortUUID](
       zeroValueFn = ShortUUID.zero,
       nextValueFn = () => ShortUUID(),
@@ -68,7 +66,7 @@ object Identifying extends LowPriorityCompositeIdentifying {
     )
   }
 
-  def byUuid[E: Labeling]: FullAux[E, E, UUID] = {
+  def byUuid[E: Labeling]: Aux[E, UUID] = {
     val zero = new UUID( 0L, 0L )
 
     pure[E, UUID](
@@ -78,15 +76,16 @@ object Identifying extends LowPriorityCompositeIdentifying {
     )
   }
 
-  def byLong[E: Labeling]: FullAux[E, E, Long] = new ByLong[E]
+  def byLong[E: Labeling]: Aux[E, Long] = new ByLong[E]
 
   final class ByLong[E: Labeling] extends Identifying[E] {
     import java.util.concurrent.atomic.AtomicLong
     private[this] val latestId: AtomicLong = new AtomicLong( 0L )
 
-    override type Entity = E
+//    override type Entity = E
     override type ID = Long
     override protected def tag( value: ID ): TID = Id.of[E, ID]( value )( this, Labeling[E] )
+    override val label: String = Labeling[E].label
     override val zeroValue: ID = 0L
     override def nextValue: ID = latestId.incrementAndGet()
     override def valueFromRep( rep: String ): ID = rep.toLong
@@ -97,71 +96,25 @@ object Identifying extends LowPriorityCompositeIdentifying {
     nextValueFn: () => I,
     valueFromRepFn: String => I
   ) extends Identifying[E] {
-    override type Entity = E
+//    override type Entity = E
     override type ID = I
     override protected def tag( value: ID ): TID = Id.of[E, I]( value )( this, Labeling[E] )
+    override val label: String = Labeling[E].label
     override val zeroValue: ID = zeroValueFn
     override def nextValue: ID = nextValueFn()
     override def valueFromRep( rep: String ): ID = valueFromRepFn( rep )
   }
-}
 
-trait LowPriorityCompositeIdentifying {
-  self: Identifying.type =>
-
-  def compositePure[C[_], E, I](
-    implicit underlying: Aux[E, I],
-    cl: Labeling[C[E]],
-    l: Labeling[E]
-  ): FullAux[C[E], E, I] = {
-    new Composite[C, E, I]
-  }
-
-  implicit def optionalIdentifying[E, I](
-    implicit identifying: Aux[E, I],
-    l: Labeling[E]
-  ): FullAux[Option[E], E, I] = {
-    compositePure[Option, E, I]
-  }
-
-  implicit def tryIdentifying[E, I](
-    implicit identifying: Aux[E, I],
-    l: Labeling[E]
-  ): FullAux[Try[E], E, I] = {
-    compositePure[Try, E, I]
-  }
-
-  implicit def errorOrIdentifying[E, I](
-    implicit identifying: Aux[E, I],
-    l: Labeling[E]
-  ): FullAux[ErrorOr[E], E, I] = {
-    compositePure[ErrorOr, E, I]
-  }
-
-  implicit def allErrorOrIdentifying[E, I](
-    implicit identifying: Aux[E, I],
-    l: Labeling[E]
-  ): FullAux[AllErrorsOr[E], E, I] = {
-    compositePure[AllErrorsOr, E, I]
-  }
-
-  implicit def allIssuesOrIdentifying[E, I](
-    implicit identifying: Aux[E, I],
-    l: Labeling[E]
-  ): FullAux[AllIssuesOr[E], E, I] = {
-    compositePure[AllIssuesOr, E, I]
-  }
-
-  class Composite[C[_], E, I](
+  class HigherKinded[C[_], E, I](
     implicit val underlying: Aux[E, I],
-    cl: Labeling[C[E]],
-    l: Labeling[E]
+    le: Labeling[C[E]]
   ) extends Identifying[C[E]] {
-    override type Entity = E
     override type ID = I
-    override protected def tag( value: ID ): TID = Id.of[E, I]( value )
+    override protected def tag( value: ID ): TID = Id.of[C[E], I]( value )( this, le )
+    override val label: String = underlying.label
     override val zeroValue: ID = underlying.zeroValue
     override def nextValue: ID = underlying.nextValue
     override def valueFromRep( rep: String ): ID = underlying valueFromRep rep
   }
+
 }

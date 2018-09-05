@@ -1,7 +1,9 @@
 package omnibus.identifier
 
-sealed abstract class Id[E] extends Equals with Serializable {
-//  type Entity
+import scala.language.{ higherKinds, implicitConversions }
+import scala.reflect.{ classTag, ClassTag }
+
+sealed abstract class Id[E] extends Equals with Product with Serializable {
   //todo: better handle primitive boxing
   type IdType
 
@@ -9,7 +11,19 @@ sealed abstract class Id[E] extends Equals with Serializable {
 
   protected def label: String
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Id[E]]
+  override val productPrefix: String = "Id"
+  override val productArity: Int = 1
+
+  @throws( classOf[IndexOutOfBoundsException] )
+  override def productElement( n: Int ): Any = n match {
+    case 0 => value
+    case _ => throw new IndexOutOfBoundsException( n.toString() )
+  }
+
+  private val IdClassType: ClassTag[Id[E]] = classTag[Id[E]]
+  override def canEqual( rhs: Any ): Boolean = IdClassType.unapply( rhs ).isDefined
+//    rhs.isInstanceOf[Id[E]]
+//  }
 
   override def hashCode(): Int = 41 * (41 + value.##)
 
@@ -30,14 +44,13 @@ sealed abstract class Id[E] extends Equals with Serializable {
   override def toString: String = {
     val l = label
     if (l.isEmpty) value.toString
-    else s"${l}(${value})"
+    else s"${l}${productPrefix}(${value})"
   }
 }
 
 object Id {
 
   type Aux[E, I] = Id[E] {
-//    type Entity = E
     type IdType = I
   }
 
@@ -52,12 +65,6 @@ object Id {
     unsafeCreate( id )
   }
 
-//  def compositeOf[C[_], E, I](
-//    id: I
-//  )( implicit i: Identifying.Aux[E, I], l: Labeling[E] ): Id.Aux[E, I] = {
-//    unsafeCreate( id )
-//  }
-
   def fromString[E, I](
     idRep: String
   )(
@@ -67,29 +74,21 @@ object Id {
     unsafeCreate( i valueFromRep idRep )
   }
 
-//  def compositeFromString[C[_], E, I](
-//    idRep: String
-//  )(
-//    implicit i: Identifying.Aux[E, I],
-//    l: Labeling[E]
-//  ): Id.Aux[E, I] = {
-//    val id: I = implicitly[Identifying[E]].valueFromRep( idRep ).asInstanceOf[I]
-//    unsafeCreate( id )
-//  }
-
-  private[identifier] def unsafeCreate[E: Labeling, I]( id: I ): Id.Aux[E, I] = {
-//    Composite( value = id )
-    Simple( value = id )
+  implicit def unwrap[C[_], E: Labeling, I](
+    composite: Id.Aux[C[E], I]
+  ): Id.Aux[E, I] = {
+    unsafeCreate[E, I]( composite.value )
   }
 
-//  private final case class Composite[C[_], E: Labeling, I]( override val value: I ) extends Id[E] {
-//    override type Entity = E
-//    override type IdType = I
-//    override protected val label: String = implicitly[Labeling[E]].label
-//  }
+  implicit def wrap[C[_], E: Labeling, I](
+    id: Id.Aux[E, I]
+  ): Id.Aux[C[E], I] = {
+    unsafeCreate( id.value )
+  }
+
+  private[identifier] def unsafeCreate[E: Labeling, I]( id: I ): Id.Aux[E, I] = Simple( value = id )
 
   private final case class Simple[E: Labeling, I]( override val value: I ) extends Id[E] {
-//    override type Entity = E
     override type IdType = I
     override protected val label: String = Labeling[E].label
   }

@@ -5,6 +5,7 @@ import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
 import org.scalatest.{ Matchers, Tag, WordSpec }
 import scribe.Level
 import io.jvm.uuid.UUID
+import scala.language.existentials
 
 class IdentifyingSpec extends WordSpec with Matchers {
   scribe.Logger.root
@@ -25,6 +26,7 @@ class IdentifyingSpec extends WordSpec with Matchers {
 
   object Bar {
     def nextId: Id[Bar] = identifying.next
+    implicit val labeling = Labeling.custom[Bar]( "SuperBar" )
     implicit val identifying = new Identifying.ByLong[Bar]
   }
 
@@ -32,8 +34,14 @@ class IdentifyingSpec extends WordSpec with Matchers {
 
   object Zed {
     type TID = identifying.TID
+    implicit val labeling = Labeling.empty[Zed]
     implicit val identifying = Identifying.byUuid[Zed]
   }
+
+  type OZed = Option[Zed]
+//  object OZed {
+//    implicit val identifying = Identifying[OZed]
+//  }
 
   object WIP extends Tag( "wip" )
 
@@ -44,51 +52,28 @@ class IdentifyingSpec extends WordSpec with Matchers {
     }
 
     "identifying should work with optional state entity types" taggedAs WIP in {
-      def makeOptionZedId()( implicit i: Identifying[Option[Zed]] ): i.TID = i.next
+      def makeOptionZedId()( implicit i: Identifying[OZed] ): i.TID = i.next
       def makeOptionZedIdAux()( implicit i: Identifying.Aux[Option[Zed], UUID] ): i.TID = i.next
-//      def makeOptionZedIdEntityAux()(
-//        implicit i: Identifying.Full[Zed, UUID]
-//      ): i.TID = i.next
-      def makeOptionZedIdFullAux()(
-        implicit i: Identifying.FullAux[Option[Zed], Zed, UUID]
-      ): i.TID = i.next
 
-//      val o1 = Identifying[Option[Zed]]
-//      val oid1 = o1.next
-//      val zid: Id[Zed] = oid1
-//      val zida: Id.Aux[Zed, UUID] = oid1
-
-//      import scala.language.existentials
       val ozid = makeOptionZedId()
       scribe.info( s"ozid = ${ozid}" )
-//      val z: Id[Zed] = ozid
-      "val z: Id.Aux[Zed, UUID] = ozid" should compile
       "Zed( id = makeOptionZedId(), score = 3.14 )" should compile
 
       val ozidAux = makeOptionZedIdAux()
       scribe.info( s"ozidAux = ${ozidAux}" )
-      //      val z: Id[Zed] = ozidAux
       "val z: Id.Aux[Zed, UUID] = ozidAux" should compile
       "Zed( id = makeOptionZedIdAux(), score = 3.14 )" should compile
+    }
 
-//      val foo: Identifying.EntityAux[Zed, UUID] = Zed.identifying
-
-//      val ozidEntityAux = makeOptionZedIdEntityAux()
-//      scribe.info( s"ozidEntityAux = ${ozidEntityAux}" )
-////      val z: Id[Zed] = ozidEntityAux
-//      "val z: Id.Aux[Zed, UUID] = ozidEntityAux" should compile
-//      "Zed( id = makeOptionZedIdEntityAux(), score = 3.14 )" should compile
-
-      val ozidFullAux = makeOptionZedIdFullAux()
-      scribe.info( s"ozidFullAux = ${ozidFullAux}" )
-      //      val z: Id[Zed] = ozidFullAux
-      "val z: Id.Aux[Zed, UUID] = ozidFullAux" should compile
-      "Zed( id = makeOptionZedIdFullAux(), score = 3.14 )" should compile
+    "provide label" in {
+      Foo.identifying.label shouldBe "Foo"
+      Bar.identifying.label shouldBe "SuperBar"
+      Zed.identifying.label shouldBe empty
     }
 
     "option identifying is derived from underlying type" in {
       val fooIdentifying = Identifying[Foo]
-      val oFooIdentifying = implicitly[Identifying[Option[Foo]]]
+      val oFooIdentifying = Identifying[Option[Foo]]
       val oFooId = oFooIdentifying.next
       oFooId should not be (ShortUUID.zero)
 
@@ -99,8 +84,8 @@ class IdentifyingSpec extends WordSpec with Matchers {
     }
 
     "try identifying is derived from underlying type" in {
-      val fooIdentifying = implicitly[Identifying[Foo]]
-      val oFooIdentifying = implicitly[Identifying[Try[Foo]]]
+      val fooIdentifying = Identifying[Foo]
+      val oFooIdentifying = Identifying[Try[Foo]]
       val oFooId = oFooIdentifying.next
       oFooId should not be (ShortUUID.zero)
 
@@ -111,8 +96,8 @@ class IdentifyingSpec extends WordSpec with Matchers {
     }
 
     "ErrorOr identifying is derived from underlying type" in {
-      val fooIdentifying = implicitly[Identifying[Foo]]
-      val oFooIdentifying = implicitly[Identifying[ErrorOr[Foo]]]
+      val fooIdentifying = Identifying[Foo]
+      val oFooIdentifying = Identifying[ErrorOr[Foo]]
       val oFooId = oFooIdentifying.next
       oFooId should not be (ShortUUID.zero)
 
@@ -123,8 +108,8 @@ class IdentifyingSpec extends WordSpec with Matchers {
     }
 
     "AllErrorsOr identifying is derived from underlying type" in {
-      val fooIdentifying = implicitly[Identifying[Foo]]
-      val oFooIdentifying = implicitly[Identifying[AllErrorsOr[Foo]]]
+      val fooIdentifying = Identifying[Foo]
+      val oFooIdentifying = Identifying[AllErrorsOr[Foo]]
       val oFooId = oFooIdentifying.next
       oFooId should not be (ShortUUID.zero)
 
@@ -135,8 +120,8 @@ class IdentifyingSpec extends WordSpec with Matchers {
     }
 
     "AllIssuesOr identifying is derived from underlying type" in {
-      val fooIdentifying = implicitly[Identifying[Foo]]
-      val oFooIdentifying = implicitly[Identifying[AllIssuesOr[Foo]]]
+      val fooIdentifying = Identifying[Foo]
+      val oFooIdentifying = Identifying[AllIssuesOr[Foo]]
       val oFooId = oFooIdentifying.next
       oFooId should not be (ShortUUID.zero)
 
@@ -147,11 +132,8 @@ class IdentifyingSpec extends WordSpec with Matchers {
     }
 
     "create Id of varying types" in {
-//      import Foo._
-
       val suid = ShortUUID()
       val fid: Id[Foo] = Id of suid
-//      fid shouldBe a[Id[Foo]]
       fid.toString shouldBe s"FooId(${suid})"
       fid.value shouldBe a[ShortUUID]
       fid.value shouldBe suid
@@ -160,10 +142,15 @@ class IdentifyingSpec extends WordSpec with Matchers {
       suid shouldBe fid.value
 
       val bid: Id[Bar] = Id of 13L
-//      bid shouldBe a[Id[Bar]]
-      bid.toString shouldBe "BarId(13)"
+      bid.toString shouldBe "SuperBarId(13)"
       bid.value.getClass shouldBe classOf[java.lang.Long]
       bid.value shouldBe 13L
+
+      val uuid = UUID.random
+      val zid: Id[OZed] = Id of uuid
+      zid.toString shouldBe uuid.toString
+      zid.value.getClass shouldBe classOf[UUID]
+      zid.value shouldBe uuid
     }
 
     "invalid id type should fail" in {
@@ -175,7 +162,6 @@ class IdentifyingSpec extends WordSpec with Matchers {
       val frep = fid.toString
 
       val f: Id[Foo] = Id fromString frep
-//      f shouldBe a[Id[Foo]]
       f.toString shouldBe s"FooId(${fid})"
       f.value shouldBe a[ShortUUID]
       f.value shouldBe fid
@@ -183,10 +169,16 @@ class IdentifyingSpec extends WordSpec with Matchers {
       val bid = 17L
       val brep = bid.toString
       val b: Id[Bar] = Id fromString brep
-//      b shouldBe a[Id[Bar]]
-      b.toString shouldBe s"BarId(${bid})"
+      b.toString shouldBe s"SuperBarId(${bid})"
       b.value.getClass shouldBe classOf[java.lang.Long]
       b.value shouldBe bid
+
+      val zid = UUID.random
+      val zrep = zid.toString
+      val z: Id[Zed] = Id fromString zrep
+      z.toString shouldBe zrep
+      z.value.getClass shouldBe classOf[UUID]
+      z.value shouldBe zid
     }
 
     "invalid id rep type should fail" in {
@@ -197,15 +189,13 @@ class IdentifyingSpec extends WordSpec with Matchers {
     }
 
     "custom labeling can override class label" in {
-      implicit val fooLabeling = new CustomLabeling[Foo] {
-        override def label: String = "SPECIAL_FOO"
-      }
+      implicit val fooLabeling = Labeling.custom[Foo]( "SPECIAL_FOO_" )
 
       val suid = ShortUUID()
       val fid = Id.of[Foo, ShortUUID]( suid )
-      fid.toString shouldBe s"SPECIAL_FOO(${suid})"
+      fid.toString shouldBe s"SPECIAL_FOO_Id(${suid})"
 
-      implicit val barLabeling = new EmptyLabel[Bar]
+      implicit val barLabeling = new EmptyLabeling[Bar]
       val bid = Id.of[Bar, Long]( 17L )
       bid.toString shouldBe "17"
     }
