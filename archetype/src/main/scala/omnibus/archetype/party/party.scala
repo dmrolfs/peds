@@ -9,7 +9,7 @@ import omnibus.identifier.Identifying
 
 //todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
 abstract class Party[P <: Party[P, ID], ID](
-  implicit override protected val identifying: Identifying.EntityAux[P, ID]
+  implicit override protected val identifying: Identifying.Aux[P, ID]
 ) extends Entity[P, ID]
     with Equals {
   def addresses: Seq[Address]
@@ -38,7 +38,7 @@ abstract class Party[P <: Party[P, ID], ID](
 }
 
 abstract class Person[P <: Person[P, ID], ID](
-  implicit override protected val identifying: Identifying.EntityAux[P, ID]
+  implicit override protected val identifying: Identifying.Aux[P, ID]
 ) extends Party[P, ID] {
   def personName: PersonName
 
@@ -52,7 +52,7 @@ abstract class Person[P <: Person[P, ID], ID](
 }
 
 abstract class Organization[O <: Organization[O, ID], ID](
-  implicit override protected val identifying: Identifying.EntityAux[O, ID]
+  implicit override protected val identifying: Identifying.Aux[O, ID]
 ) extends Party[O, ID] {
   def organizationName: OrganizationName
 
@@ -64,5 +64,5 @@ abstract class Organization[O <: Organization[O, ID], ID](
 }
 
 abstract class Company[C <: Company[C, ID], ID](
-  implicit override protected val identifying: Identifying.EntityAux[C, ID]
+  implicit override protected val identifying: Identifying.Aux[C, ID]
 ) extends Organization[C, ID]

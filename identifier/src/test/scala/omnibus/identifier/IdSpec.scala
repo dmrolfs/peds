@@ -28,19 +28,16 @@ class IdSpec extends WordSpec with Matchers {
   }
 
   "An Id" should {
-//    "summons Aux" in {
-//      implicit val fid = Foo.identifying.next
-//      val fa: Id.Aux[Foo, ShortUUID] = Id[Foo]
-//      ShortUUID.zero shouldBe a[fa.IdType]
-//
-//      implicit val bid = Bar.nextId
-//      val ba: Id.Aux[Bar, Long] = Id[Bar]
-//      bid.value.getClass shouldBe classOf[Long] //todo: better handle primitive boxing
-//    }
+    "summons Aux" in {
+      implicit val fid = Foo.identifying.next
+      val Id( shortFid ) = fid
+      shortFid shouldBe a[ShortUUID]
+
+      implicit val bid = Bar.nextId
+      bid.value.getClass shouldBe classOf[Long] //todo: better handle primitive boxing
+    }
 
     "create Id of varying types" in {
-//      import Foo._
-
       val suid = ShortUUID()
       val fid: Id[Foo] = Id of suid
       fid shouldBe a[Id[_]]
@@ -51,17 +48,23 @@ class IdSpec extends WordSpec with Matchers {
       fid.value shouldBe suid
       suid shouldBe fid.value
 
-      val ofid: Id[Option[Foo]] = Id of suid
-      ofid shouldBe a[Id[_]]
-      ofid.toString shouldBe s"FooId(${suid})"
-      ofid.value shouldBe a[ShortUUID]
-      ofid.value shouldBe suid
-
       val bid: Id[Bar] = Id of 13L
       bid shouldBe a[Id[_]]
       bid.toString shouldBe "BarId(13)"
       bid.value.getClass shouldBe classOf[java.lang.Long]
       bid.value shouldBe 13L
+    }
+
+    "collapse composites to simple" in {
+      val suid = ShortUUID()
+      val ofid = Id.of[Option[Foo], ShortUUID]( suid )
+      "val id: Id[Foo] = ofid" should compile
+      ofid.toString shouldBe s"FooId(${suid})"
+      val id: Id[Foo] = ofid
+      id shouldBe a[Id[_]]
+      id.toString shouldBe s"FooId(${suid})"
+      id.value shouldBe a[ShortUUID]
+      id.value shouldBe suid
     }
 
     "invalid id type should fail" in {
@@ -94,15 +97,13 @@ class IdSpec extends WordSpec with Matchers {
     }
 
     "custom labeling can override class label" in {
-      implicit val fooLabeling = new CustomLabeling[Foo] {
-        override def label: String = "SPECIAL_FOO"
-      }
+      implicit val fooLabeling = Labeling.custom[Foo]( "SpecialFoo" )
 
       val suid = ShortUUID()
       val fid = Id.of[Foo, ShortUUID]( suid )
-      fid.toString shouldBe s"SPECIAL_FOO(${suid})"
+      fid.toString shouldBe s"SpecialFooId(${suid})"
 
-      implicit val barLabeling = new EmptyLabel[Bar]
+      implicit val barLabeling = new EmptyLabeling[Bar]
       val bid = Id.of[Bar, Long]( 17L )
       bid.toString shouldBe "17"
     }

@@ -5,7 +5,7 @@ import omnibus.commons.util.Clock
 import omnibus.identifier.Identifying
 
 abstract class AuditedEntity[E <: AuditedEntity[E, ID], ID](
-  implicit override protected val identifying: Identifying.EntityAux[E, ID]
+  implicit override protected val identifying: Identifying.Aux[E, ID]
 ) extends Entity[E, ID] {
   def audit: Option[AuditRecord]
 }
