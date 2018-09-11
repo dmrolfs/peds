@@ -1,6 +1,6 @@
 package omnibus.identifier
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, Tag, WordSpec }
 import scribe.Level
 
 class IdSpec extends WordSpec with Matchers {
@@ -26,6 +26,8 @@ class IdSpec extends WordSpec with Matchers {
     def nextId: TID = identifying.next
     implicit val identifying = Identifying.byLong[Bar]
   }
+
+  object WIP extends Tag( "wip" )
 
   "An Id" should {
     "summons Aux" in {
@@ -55,7 +57,7 @@ class IdSpec extends WordSpec with Matchers {
       bid.value shouldBe 13L
     }
 
-    "collapse composites to simple" in {
+    "unwrap composites to simple" in {
       val suid = ShortUUID()
       val ofid = Id.of[Option[Foo], ShortUUID]( suid )
       "val id: Id[Foo] = ofid" should compile
@@ -114,6 +116,30 @@ class IdSpec extends WordSpec with Matchers {
       val Id( actual ) = fid
       actual shouldBe expected
       actual shouldBe a[ShortUUID]
+    }
+
+    "be serializable" taggedAs WIP in {
+      import java.io._
+      val bytes = new ByteArrayOutputStream
+      val out = new ObjectOutputStream( bytes )
+
+      val fid = ShortUUID()
+      val expected: Id.Aux[Foo, ShortUUID] = Id of fid
+
+      out.writeObject( expected )
+      out.flush()
+
+      val in = new ObjectInputStream( new ByteArrayInputStream( bytes.toByteArray ) )
+      val actual = in.readObject().asInstanceOf[Id.Aux[Foo, Long]]
+      import scala.reflect.ClassTag
+      import scala.reflect.runtime.universe._
+
+      val actualClassTag: ClassTag[Id.Aux[Foo, Long]] = ClassTag( actual.getClass )
+      scribe.debug( s"actual[${actual}] type = ${actualClassTag}" )
+
+      actual shouldBe expected
+      actual.value shouldBe fid
+      actual.toString shouldBe s"FooId(${fid})"
     }
   }
 }

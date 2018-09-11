@@ -1,6 +1,7 @@
 package omnibus.identifier
 
 import scala.reflect.ClassTag
+import scala.language.implicitConversions
 import scala.language.higherKinds
 import omnibus.core._
 
@@ -9,12 +10,7 @@ sealed trait Labeling[E] {
 }
 
 trait LowPriorityLabeling {
-  implicit def default[T: ClassTag]: Labeling[T] = {
-    scribe.debug(
-      s"Using DEFAULT labeling for type:[${implicitly[ClassTag[T]].runtimeClass.safeSimpleName}]"
-    )
-    new MakeLabeling[T]
-  }
+  implicit def default[T: ClassTag]: Labeling[T] = new MakeLabeling[T]
 }
 
 object Labeling extends LowPriorityLabeling {
@@ -27,7 +23,7 @@ object Labeling extends LowPriorityLabeling {
     new CustomLabeling[T] { override def label: String = labelFn }
   }
 
-  implicit def wrap[C[_], T: ClassTag: Labeling]: Labeling[C[T]] = custom( Labeling[T].label )
+  implicit def wrap[C[_], T: Labeling]: Labeling[C[T]] = custom( Labeling[T].label )
 }
 
 final class MakeLabeling[E: ClassTag] extends Labeling[E] {

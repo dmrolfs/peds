@@ -2,6 +2,7 @@ package omnibus.identifier
 
 import scala.language.{ higherKinds, implicitConversions }
 import scala.reflect.{ classTag, ClassTag }
+import omnibus.core.syntax.clazz._
 
 sealed abstract class Id[E] extends Equals with Product with Serializable {
   //todo: better handle primitive boxing
@@ -11,8 +12,8 @@ sealed abstract class Id[E] extends Equals with Product with Serializable {
 
   protected def label: String
 
-  override val productPrefix: String = "Id"
-  override val productArity: Int = 1
+  override def productPrefix: String = "Id"
+  override def productArity: Int = 1
 
   @throws( classOf[IndexOutOfBoundsException] )
   override def productElement( n: Int ): Any = n match {
@@ -20,7 +21,7 @@ sealed abstract class Id[E] extends Equals with Product with Serializable {
     case _ => throw new IndexOutOfBoundsException( n.toString() )
   }
 
-  private val IdClassType: ClassTag[Id[E]] = classTag[Id[E]]
+  @transient lazy private val IdClassType: ClassTag[Id.Aux[E, IdType]] = classTag[Id.Aux[E, IdType]]
   override def canEqual( rhs: Any ): Boolean = IdClassType.unapply( rhs ).isDefined
 //    rhs.isInstanceOf[Id[E]]
 //  }
@@ -28,13 +29,13 @@ sealed abstract class Id[E] extends Equals with Product with Serializable {
   override def hashCode(): Int = 41 * (41 + value.##)
 
   override def equals( rhs: Any ): Boolean = rhs match {
-    case that @ Id( thatValue ) => {
+    case that: Id[_] => {
       scribe.debug( s"comparing Ids: ${this} == ${that}" )
       if (this eq that) true
       else {
         (that.## == this.##) &&
         (that canEqual this) &&
-        (thatValue == this.value)
+        (that.value == this.value)
       }
     }
 
@@ -56,13 +57,20 @@ object Id {
 
   def unapply[E]( id: Id[E] ): Option[id.IdType] = Some( id.value )
 
-  def unsafeOf[E: Labeling, I]( id: I ): Id.Aux[E, I] = unsafeCreate( id )
+  def unsafeOf[E: Labeling, I]( id: I ): Id.Aux[E, I] = {
+    unsafeCreate( id, label = Labeling[E].label )
+  }
 
   // Due to the use of dependent types, `of` requires explicit type application,
   // merely adding a type signature to the returned value is not enough:
   // one should instead always use Id.of[TypeOfTheTag]
-  def of[E, I]( id: I )( implicit i: Identifying.Aux[E, I], l: Labeling[E] ): Id.Aux[E, I] = {
-    unsafeCreate( id )
+  def of[E, I](
+    id: I
+  )(
+    implicit evIdentifying: Identifying.Aux[E, I],
+    l: Labeling[E]
+  ): Id.Aux[E, I] = {
+    unsafeCreate( id, l.label )
   }
 
   def fromString[E, I](
@@ -71,26 +79,26 @@ object Id {
     implicit i: Identifying.Aux[E, I],
     l: Labeling[E]
   ): Id.Aux[E, I] = {
-    unsafeCreate( i valueFromRep idRep )
+    unsafeCreate( i valueFromRep idRep, l.label )
   }
 
-  implicit def unwrap[C[_], E: Labeling, I](
-    composite: Id.Aux[C[E], I]
-  ): Id.Aux[E, I] = {
-    unsafeCreate[E, I]( composite.value )
+  implicit def unwrap[C[_], E: Labeling, I]( composite: Id.Aux[C[E], I] ): Id.Aux[E, I] = {
+    unsafeCreate( composite.value, Labeling[E].label )
   }
 
-  implicit def wrap[C[_], E: Labeling, I](
-    id: Id.Aux[E, I]
-  ): Id.Aux[C[E], I] = {
-    unsafeCreate( id.value )
+  implicit def wrap[C[_], E: Labeling, I]( id: Id.Aux[E, I] ): Id.Aux[C[E], I] = {
+    unsafeCreate( id.value, Labeling[E].label )
   }
 
-  private[identifier] def unsafeCreate[E: Labeling, I]( id: I ): Id.Aux[E, I] = Simple( value = id )
+  private[identifier] def unsafeCreate[E, I]( id: I, label: String ): Id.Aux[E, I] = {
+    Simple( value = id, label = label )
+  }
 
-  private final case class Simple[E: Labeling, I]( override val value: I ) extends Id[E] {
+  private[identifier] final case class Simple[E, I](
+    override val value: I,
+    override protected val label: String
+  ) extends Id[E] {
     override type IdType = I
-    override protected val label: String = Labeling[E].label
   }
 }
 

@@ -1,13 +1,10 @@
 package omnibus.identifier
 
 import java.util.UUID
-
-//import scala.reflect.ClassTag
 import scala.language.{ higherKinds, implicitConversions }
 import omnibus.core._
 
-abstract class Identifying[E] {
-//  type Entity
+abstract class Identifying[E] extends Serializable {
   type ID
   type TID = Id.Aux[E, ID]
   protected def tag( value: ID ): TID
@@ -30,11 +27,14 @@ abstract class Identifying[E] {
   }
 }
 
-object Identifying {
+sealed trait IdentifyingCompanion {
 
   type Aux[S, ID0] = Identifying[S] {
     type ID = ID0
   }
+}
+
+object Identifying extends IdentifyingCompanion with LowPriorityIdentifying {
 
   def apply[E]( implicit i: Identifying[E] ): Aux[E, i.ID] = i
 
@@ -43,14 +43,7 @@ object Identifying {
     nextValueFn: () => I,
     valueFromRepFn: String => I
   ): Aux[E, I] = {
-    new Simple[E, I]( zeroValueFn, nextValueFn, valueFromRepFn )
-  }
-
-  implicit def wrap[C[_], E, I](
-    implicit underlying: Aux[E, I],
-    le: Labeling[C[E]]
-  ): Aux[C[E], I] = {
-    new HigherKinded[C, E, I]()( underlying, le )
+    Simple[E, I]( zeroValueFn, nextValueFn, valueFromRepFn )
   }
 
   def byShortUuid[E: Labeling]: Aux[E, ShortUUID] = {
@@ -59,7 +52,7 @@ object Identifying {
       nextValueFn = () => ShortUUID(),
       valueFromRepFn = rep => {
         import cats.syntax.either._
-        ShortUUID.fromString( rep ).valueOr { ex =>
+        ShortUUID.fromString( rep ) valueOr { ex =>
           throw ex
         }
       }
@@ -82,7 +75,6 @@ object Identifying {
     import java.util.concurrent.atomic.AtomicLong
     private[this] val latestId: AtomicLong = new AtomicLong( 0L )
 
-//    override type Entity = E
     override type ID = Long
     override protected def tag( value: ID ): TID = Id.of[E, ID]( value )( this, Labeling[E] )
     override val label: String = Labeling[E].label
@@ -91,26 +83,34 @@ object Identifying {
     override def valueFromRep( rep: String ): ID = rep.toLong
   }
 
-  class Simple[E: Labeling, I](
-    zeroValueFn: => I,
+  private case class Simple[E: Labeling, I](
+    override val zeroValue: I,
     nextValueFn: () => I,
     valueFromRepFn: String => I
   ) extends Identifying[E] {
-//    override type Entity = E
     override type ID = I
     override protected def tag( value: ID ): TID = Id.of[E, I]( value )( this, Labeling[E] )
     override val label: String = Labeling[E].label
-    override val zeroValue: ID = zeroValueFn
     override def nextValue: ID = nextValueFn()
     override def valueFromRep( rep: String ): ID = valueFromRepFn( rep )
   }
+}
 
-  class HigherKinded[C[_], E, I](
-    implicit val underlying: Aux[E, I],
-    le: Labeling[C[E]]
+trait LowPriorityIdentifying { self: IdentifyingCompanion =>
+  implicit def wrap[C[_], E, I](
+    implicit underlying: Aux[E, I],
+    lce: Labeling[C[E]]
+  ): Aux[C[E], I] = {
+    HigherKinded[C, E, I]( underlying )
+  }
+
+  private case class HigherKinded[C[_], E, I](
+    val underlying: Aux[E, I]
+  )(
+    implicit lce: Labeling[C[E]]
   ) extends Identifying[C[E]] {
     override type ID = I
-    override protected def tag( value: ID ): TID = Id.of[C[E], I]( value )( this, le )
+    override protected def tag( value: ID ): TID = Id.of[C[E], I]( value )( this, Labeling[C[E]] )
     override val label: String = underlying.label
     override val zeroValue: ID = underlying.zeroValue
     override def nextValue: ID = underlying.nextValue
