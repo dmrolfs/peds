@@ -3,10 +3,11 @@ package omnibus.archetype.domain.model.core
 import shapeless.Lens
 import omnibus.identifier.{ Id, Identifying, ShortUUID }
 
-abstract class Identifiable[E <: Identifiable[E, ID], ID](
-  implicit protected val identifying: Identifying.Aux[E, ID]
+abstract class Identifiable[E <: Identifiable[E, ID0], ID0](
+  implicit protected val identifying: Identifying.Aux[E, ID0]
 ) {
-  type TID = Id.Aux[E, ID]
+  type ID = ID0
+  type TID = Id.Aux[E, ID0]
   def id: TID
 }
 //trait IdentifiableLike {
