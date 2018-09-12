@@ -10,6 +10,12 @@ sealed abstract class Id[E] extends Equals with Product with Serializable {
 
   def value: IdType
 
+  def as[T]( implicit evI: Identifying.Aux[T, IdType], evL: Labeling[T] ): Id.Aux[T, IdType] = {
+    Id.of[T, IdType]( this.value )
+  }
+
+  def unsafeAs[T: Labeling]: Id.Aux[T, IdType] = Id.unsafeOf[T, IdType]( this.value )
+
   protected def label: String
 
   override def productPrefix: String = "Id"
@@ -30,7 +36,6 @@ sealed abstract class Id[E] extends Equals with Product with Serializable {
 
   override def equals( rhs: Any ): Boolean = rhs match {
     case that: Id[_] => {
-      scribe.debug( s"comparing Ids: ${this} == ${that}" )
       if (this eq that) true
       else {
         (that.## == this.##) &&

@@ -7,6 +7,15 @@ import omnibus.core._
 abstract class Identifying[E] extends Serializable {
   type ID
   type TID = Id.Aux[E, ID]
+
+  def as[T: Labeling]: Identifying.Aux[T, ID] = {
+    Identifying.pure[T, ID](
+      zeroValueFn = this.zeroValue,
+      nextValueFn = () => this.nextValue,
+      valueFromRepFn = this.valueFromRep( _: String )
+    )
+  }
+
   protected def tag( value: ID ): TID
 
   def label: String

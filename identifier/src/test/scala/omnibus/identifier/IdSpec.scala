@@ -118,6 +118,16 @@ class IdSpec extends WordSpec with Matchers {
       actual shouldBe a[ShortUUID]
     }
 
+    "support conversion to another entity basis" in {
+      val fid: Id.Aux[Foo, ShortUUID] = Foo.nextId
+      "val bid = fid.as[Bar]" shouldNot compile
+      implicit val barShortIdentifying = Foo.identifying.as[Bar]
+      "val bid = fid.as[Bar]" should compile
+      val bid: Id.Aux[Bar, ShortUUID] = fid.as[Bar]
+      bid.value shouldBe fid.value
+      bid.toString shouldBe s"BarId(${fid.value})"
+    }
+
     "be serializable" taggedAs WIP in {
       import java.io._
       val bytes = new ByteArrayOutputStream

@@ -71,6 +71,13 @@ class IdentifyingSpec extends WordSpec with Matchers {
       Zed.identifying.label shouldBe empty
     }
 
+    "support conversion to another entity basis" in {
+      val fid: Identifying.Aux[Foo, ShortUUID] = Identifying[Foo]
+      val bid: Identifying.Aux[Bar, ShortUUID] = fid.as[Bar]
+      bid.zeroValue shouldBe ShortUUID.zero
+      bid.label shouldBe "SuperBar"
+    }
+
     "option identifying is derived from underlying type" in {
       val fooIdentifying = Identifying[Foo]
       val oFooIdentifying = Identifying[Option[Foo]]
