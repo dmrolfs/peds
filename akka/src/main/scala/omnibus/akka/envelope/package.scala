@@ -29,6 +29,7 @@ package object envelope extends EnvelopeSyntax {
 
   object EnvelopeVersion {
     def apply( version: Int = 1 ): EnvelopeVersion = version.coerce[EnvelopeVersion]
+    def unapply( v: EnvelopeVersion ): Option[Int] = Some( v.version )
   }
 
   /** Defines the "type" of component in a message (e.g. MessageForwarder) */
@@ -61,6 +62,7 @@ package object envelope extends EnvelopeSyntax {
 
   object WorkId {
     def apply( id: ShortUUID = ShortUUID() ): WorkId = id.coerce[WorkId]
+    def unapply( wid: WorkId ): Option[ShortUUID] = Some( wid.workId )
     val unknown = WorkId( ShortUUID.zero )
   }
 
