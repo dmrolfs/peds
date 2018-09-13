@@ -28,7 +28,7 @@ object Dependencies {
 
 
   object silencer {
-    private val version = "1.1"
+    private val version = "1.2"
 
     val all = Seq(
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % version),
@@ -38,30 +38,30 @@ object Dependencies {
 
   val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
 
-  object omnibus extends SimpleModule {
-    override val groupId = "com.github.dmrolfs"
-    override val artifactIdRoot = "omnibus"
-    override val version = "0.73-SNAPSHOT"
-    def all = Seq( commons, akka, archetype )
-
-    val commons = module( "commons" )
-    val archetype = module( "archetype" )
-    val akka = module( "akka" )
-    val builder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.0"
-  }
-
-  object demesne extends SimpleModule {
-    override val groupId = "com.github.dmrolfs"
-    override val artifactIdRoot = "demesne"
-    override val version = "2.3.0"
-    val core = module( "core" )
-    val testkit = module( "testkit" )
-  }
+//  object omnibus extends SimpleModule {
+//    override val groupId = "com.github.dmrolfs"
+//    override val artifactIdRoot = "omnibus"
+//    override val version = "0.73-SNAPSHOT"
+//    def all = Seq( commons, akka, archetype )
+//
+//    val commons = module( "commons" )
+//    val archetype = module( "archetype" )
+//    val akka = module( "akka" )
+//    val builder = "com.github.dmrolfs" %% "shapeless-builder" % "1.0.0"
+//  }
+//
+//  object demesne extends SimpleModule {
+//    override val groupId = "com.github.dmrolfs"
+//    override val artifactIdRoot = "demesne"
+//    override val version = "2.3.0"
+//    val core = module( "core" )
+//    val testkit = module( "testkit" )
+//  }
 
   object akka extends SimpleModule {
     override val groupId = "com.typesafe.akka"
     override val artifactIdRoot = "akka"
-    override val version = "2.5.14"
+    override val version = "2.5.16"
     def all: Seq[ModuleID] = Seq( actor, stream, agent, cluster, clusterSharding, contrib, persistence, remote, slf4j )
 
     val actor = module( "actor" ) withSources() withJavadoc()
@@ -84,7 +84,7 @@ object Dependencies {
   }
 
   object persistence {
-    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.88"
+    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.89"
     val leveldb = "org.iq80.leveldb" % "leveldb" % "0.9" // "org.iq80.leveldb" % "leveldb" % "0.9"
     val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
   }
@@ -92,7 +92,7 @@ object Dependencies {
   object cats extends SimpleModule {
     override val groupId = "org.typelevel"
     override val artifactIdRoot = "cats"
-    override val version = "1.2.0"
+    override val version = "1.4.0"
 
     val core = module( "core" )
     val kernel = module( "kernel" )
@@ -139,7 +139,7 @@ object Dependencies {
     object scribe extends SimpleModule {
       override val groupId: String = "com.outr"
       override def artifactIdRoot: String = "scribe"
-      override def version: String = "2.5.3"
+      override def version: String = "2.6.0"
       def all = Seq( core, slf4j )
       val core = module( "" )
       val slf4j = module( "slf4j" )
@@ -197,7 +197,7 @@ object Dependencies {
     // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
     val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.1" withSources() withJavadoc()
     val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
-    val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.0"
+    val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.1"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
 //    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
     val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
@@ -251,7 +251,7 @@ object Dependencies {
     object mockito extends SimpleModule {
       override val groupId = "org.mockito"
       override val artifactIdRoot = "mockito"
-      override val version = "2.21.0"
+      override val version = "2.22.0"
       override val isScala = false
       val core = module( "core" ) withSources() withJavadoc()
     }
