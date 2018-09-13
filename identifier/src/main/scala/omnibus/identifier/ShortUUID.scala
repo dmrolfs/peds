@@ -2,13 +2,31 @@ package omnibus.identifier
 
 import io.jvm.uuid._
 import java.nio.ByteBuffer
+
+import cats.syntax.either._
+import omnibus.core.ErrorOr
 import org.apache.commons.codec.binary.Base64
 
 object ShortUUID {
   // implicit val hashids: Hashids = Hashids.reference( "omnibus comprises several items" )
 
   def apply(): ShortUUID = fromUUID( UUID.random )
-  def fromString( rep: String ): ShortUUID = new ShortUUID( rep )
+
+  def fromString( rep: String ): ErrorOr[ShortUUID] = {
+    checkShortUuid( rep ) leftFlatMap { _ =>
+      checkUuid( rep ) map { fromUUID }
+    }
+  }
+
+  private def checkShortUuid( rep: String ): ErrorOr[ShortUUID] = {
+    if (rep.length == 22 && Base64.isBase64( rep )) new ShortUUID( rep ).asRight
+    else new IllegalArgumentException( s""" "${rep}" is not a valid ShortUID """ ).asLeft
+  }
+
+  private def checkUuid( rep: String ): ErrorOr[UUID] = {
+    Either catchNonFatal { UUID.fromString( rep ) }
+  }
+
   // def fromString( rep: String ): ShortUUID = new ShortUUID( rep.unhashid )
 
   import scala.language.implicitConversions

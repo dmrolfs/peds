@@ -13,14 +13,14 @@ trait XmlReducable {
           spec: PartialCriteria,
           partials: Vector[Node]
         ): Vector[Node] = /*trace.block("loop")*/ {
-          scribe.debug( "spec=" + spec )
-          scribe.debug( "nodes=" + nodes.map( _.label ).mkString( "[", ",", "]" ) )
+          scribe.trace( "spec=" + spec )
+          scribe.trace( "nodes=" + nodes.map( _.label ).mkString( "[", ",", "]" ) )
 
           nodes match {
             case (head: Elem) :: tail
                 if spec.contains( head.label ) && spec.get( head.label ).get.isComposite => {
-              scribe.debug( "head=" + head.label )
-              scribe.debug( "matched Elem with spec and composite" )
+              scribe.trace( "head=" + head.label )
+              scribe.trace( "matched Elem with spec and composite" )
               loop(
                 tail,
                 spec,
@@ -28,29 +28,29 @@ trait XmlReducable {
               )
             }
             case head :: tail if spec.contains( head.label ) => {
-              scribe.debug( "head=" + head.label )
-              scribe.debug( "matched Elem with spec and not composite" )
+              scribe.trace( "head=" + head.label )
+              scribe.trace( "matched Elem with spec and not composite" )
               loop( tail, spec, partials :+ head )
             }
             case head :: tail => {
-              scribe.debug( "head=" + head.label )
-              scribe.debug( "matched Elem but not in spec" )
+              scribe.trace( "head=" + head.label )
+              scribe.trace( "matched Elem but not in spec" )
               loop( tail, spec, partials )
             }
             case Nil => {
-              scribe.debug( "matched Nil" )
+              scribe.trace( "matched Nil" )
               partials
             }
           }
         }
 
-        scribe.debug( "spec=" + spec )
+        scribe.trace( "spec=" + spec )
         val partials = loop(
           xform.transform( data, spec ).child.toList,
           spec,
           Vector.empty
         )
-        scribe.debug( "partials=" + partials )
+        scribe.trace( "partials=" + partials )
         Elem(
           prefix = data.prefix,
           label = data.label,

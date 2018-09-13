@@ -1,12 +1,11 @@
 package omnibus.commons
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 import scala.util._
 import monix.eval.Task
 import monix.execution.Scheduler
 
 package object concurrent {
-  type EC[_] = ExecutionContext
   type S[_] = Scheduler
 
   def tryToFuture[T]( t: => Try[T] ): Future[T] = {

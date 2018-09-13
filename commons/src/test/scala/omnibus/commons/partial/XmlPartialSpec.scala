@@ -12,7 +12,7 @@ class XmlPartialSpec() extends FlatSpec with Matchers with StreamlinedXml {
   scribe.Logger.root
     .clearHandlers()
     .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
+    .withHandler( minimumLevel = Some( Level.Debug ) )
     .replace()
 
   "An elided XML API" should "filter simple list" in {

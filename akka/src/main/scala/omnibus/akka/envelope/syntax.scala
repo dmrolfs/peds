@@ -5,14 +5,12 @@ import akka.actor.{ ActorContext, ActorRef, ActorSelection }
 
 trait EnvelopeSyntax {
   implicit def actorRefEnvelopeSending( ref: ActorRef ): EnvelopeSyntax.RefSending = {
-    scribe.debug( s"actorRefEnvelopeSending: creating exposure for [${ref.path}]" )
     new EnvelopeSyntax.RefSending( ref )
   }
 
   implicit def actorSelectionEnvelopeSending(
     sel: ActorSelection
   ): EnvelopeSyntax.SelectionSending = {
-    scribe.debug( s"actorSelectionEnvelopeSending: creating exposure for [${sel}]" )
     new EnvelopeSyntax.SelectionSending( sel )
   }
 }

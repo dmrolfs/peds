@@ -5,18 +5,22 @@ import omnibus.archetype.domain.model.core.Entity
 import omnibus.archetype.{ Address, OrganizationName, PersonName }
 import relationship.PartyRole
 import omnibus.core.syntax.clazz._
+import omnibus.identifier.Identifying
 
 //todo: rethink all of archetype in terms of Aux pattern and functional free monads or Reader monad
-trait Party extends Entity with Equals {
+abstract class Party[P <: Party[P, ID], ID](
+  implicit override protected val identifying: Identifying.Aux[P, ID]
+) extends Entity[P, ID]
+    with Equals {
   def addresses: Seq[Address]
   // def roles: Seq[PartyRoleLike[ID]]
   def roles: Seq[PartyRole]
   // def preferences: Seq[Preference]
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Party]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Party[P, ID]]
 
   override def equals( rhs: Any ): Boolean = rhs match {
-    case that: Party => {
+    case that: Party[P, ID] => {
       if (this eq that) true
       else {
         (that.## == this.##) &&
@@ -33,7 +37,9 @@ trait Party extends Entity with Equals {
   override def toString: String = s"""${getClass.safeSimpleName}(id-${id}:${name})"""
 }
 
-trait Person extends Party {
+abstract class Person[P <: Person[P, ID], ID](
+  implicit override protected val identifying: Identifying.Aux[P, ID]
+) extends Party[P, ID] {
   def personName: PersonName
 
   def otherPersonNames: Seq[PersonName] = Seq()
@@ -42,17 +48,21 @@ trait Person extends Party {
 
   def dateOfBirth: Option[LocalDate] = None
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Person]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Person[P, ID]]
 }
 
-trait Organization extends Party {
+abstract class Organization[O <: Organization[O, ID], ID](
+  implicit override protected val identifying: Identifying.Aux[O, ID]
+) extends Party[O, ID] {
   def organizationName: OrganizationName
 
   def otherOrganizationNames: Seq[OrganizationName] = Seq()
 
   override def name: String = organizationName.toString
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Organization]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Organization[O, ID]]
 }
 
-trait Company extends Organization
+abstract class Company[C <: Company[C, ID], ID](
+  implicit override protected val identifying: Identifying.Aux[C, ID]
+) extends Organization[C, ID]

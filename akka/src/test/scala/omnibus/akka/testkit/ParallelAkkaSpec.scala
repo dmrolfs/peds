@@ -1,7 +1,6 @@
 package omnibus.akka.testkit
 
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
@@ -13,7 +12,7 @@ import com.typesafe.config.Config
 import org.scalatest.{ fixture, Outcome, ParallelTestExecution }
 import com.github.ghik.silencer.silent
 import scribe.Level
-import scribe.writer.{ ConsoleWriter, FileWriter }
+import scribe.writer.FileWriter
 import omnibus.core.syntax.clazz._
 
 object ParallelAkkaSpec {
@@ -28,7 +27,7 @@ trait ParallelAkkaSpec extends fixture.WordSpec with ParallelTestExecution { out
     scribe.Logger.root
 //      .clearHandlers()
 //      .clearModifiers()
-      .withHandler( writer = FileWriter.default )
+      .withHandler( writer = FileWriter() )
       .withMinimumLevel( Level.Trace )
       .replace()
   }

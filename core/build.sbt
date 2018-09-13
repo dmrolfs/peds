@@ -12,7 +12,7 @@ resolvers += "omen-bintray" at "http://dl.bintray.com/omen/maven"
 
 libraryDependencies ++=
   cats.all ++
-  log.all ++
+  logging.all ++
   Seq(
     facility.newtype
   )
