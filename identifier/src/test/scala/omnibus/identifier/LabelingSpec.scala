@@ -1,18 +1,10 @@
 package omnibus.identifier
 
-import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
-import org.scalatest.{ Matchers, Tag, WordSpec }
-import scribe.Level
-
 import scala.util.Try
+import org.scalatest.{ Matchers, Tag, WordSpec }
+import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
 
 class LabelingSpec extends WordSpec with Matchers {
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
-
   case class Foo( id: Id[Foo], f: String )
 
   object Foo

@@ -11,8 +11,7 @@ import cats.syntax.either._
 import com.typesafe.config.Config
 import org.scalatest.{ fixture, Outcome, ParallelTestExecution }
 import com.github.ghik.silencer.silent
-import scribe.Level
-import scribe.writer.FileWriter
+import journal._
 import omnibus.core.syntax.clazz._
 
 object ParallelAkkaSpec {
@@ -20,19 +19,7 @@ object ParallelAkkaSpec {
 }
 
 trait ParallelAkkaSpec extends fixture.WordSpec with ParallelTestExecution { outer =>
-
-  initializeLogging()
-
-  protected def initializeLogging(): Unit = {
-    scribe.Logger.root
-//      .clearHandlers()
-//      .clearModifiers()
-      .withHandler( writer = FileWriter() )
-      .withMinimumLevel( Level.Trace )
-      .replace()
-  }
-
-  //  Logger.root.withHandler( writer = FileWriter.default ).replace()
+  private val log = Logger[ParallelAkkaSpec]
 
   @silent def slugForTest( test: OneArgTest ): String = {
     s"Par-${getClass.safeSimpleName}-${ParallelAkkaSpec.testPosition.incrementAndGet()}"
@@ -43,7 +30,7 @@ trait ParallelAkkaSpec extends fixture.WordSpec with ParallelTestExecution { out
     slug: String,
     config: Option[Config] = None
   ): ActorSystem = {
-    scribe.debug( s"creating system[${slug}] for test:[${test.name}]" )
+    log.debug( s"creating system[${slug}] for test:[${test.name}]" )
 
     ActorSystem(
       name = slug,
@@ -103,27 +90,27 @@ trait ParallelAkkaSpec extends fixture.WordSpec with ParallelTestExecution { out
     Either
       .catchNonFatal { createAkkaFixture( test, system, slug ) }
       .map { f =>
-        scribe.debug( ".......... before test .........." )
+        log.debug( ".......... before test .........." )
         f before test
-        scribe.debug( "++++++++++ starting test ++++++++++" )
+        log.debug( "++++++++++ starting test ++++++++++" )
         ( test( f ), f )
       }
       .map {
         case ( outcome, f ) =>
-          scribe.debug( "---------- finished test ------------" )
+          log.debug( "---------- finished test ------------" )
           f after test
-          scribe.debug( ".......... after test .........." )
+          log.debug( ".......... after test .........." )
 
           Option( f.system ) foreach { s ⇒
-            scribe.debug( s"terminating actor-system:${s.name}..." )
+            log.debug( s"terminating actor-system:${s.name}..." )
             f.shutdown( actorSystem = s, verifySystemShutdown = false )
-            scribe.debug( s"actor-system:${s.name}.terminated" )
+            log.debug( s"actor-system:${s.name}.terminated" )
           }
 
           outcome
       }
       .valueOr { ex =>
-        scribe.error( s"test[${test.name}] failed", ex )
+        log.error( s"test[${test.name}] failed", ex )
         system.terminate()
         throw ex
       }

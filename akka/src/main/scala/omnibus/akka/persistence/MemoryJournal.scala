@@ -8,12 +8,15 @@ import akka.agent.Agent
 import akka.persistence.{ AtomicWrite, PersistentRepr }
 import akka.persistence.journal.AsyncWriteJournal
 import com.typesafe.config.Config
+import journal._
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 
 /**
   * Created by rolfsd on 1/24/17.
   */
 class MemoryJournal extends AsyncWriteJournal {
+  private val log = Logger[MemoryJournal]
+
   val expectedPids: Int = MemoryJournal expectedPidsFrom context.system.settings.config
   implicit val ec = context.dispatcher
 
@@ -33,7 +36,7 @@ class MemoryJournal extends AsyncWriteJournal {
       } {
         j add p
         if (expectedPids < j.size) {
-          scribe.warn(
+          log.warn(
             s"number of pids:[${j.size.toString}] exceed journal's " +
             s"expected:[${expectedPids.toString}] review and " +
             s"override ${MemoryJournal.ExpectedPIDsPath} in your application.conf"
@@ -81,7 +84,7 @@ class MemoryJournal extends AsyncWriteJournal {
       journal send { j =>
         val toSeqNr = math.min( toSequenceNr, j.highestSequenceNr( persistenceId ) )
         j.deleteTo( persistenceId, toSeqNr )
-        scribe.debug(
+        log.debug(
           s"[${self.path}] for pid:[${persistenceId}] deleted messages to sequenceNr:[${toSeqNr}]"
         )
         j
@@ -94,6 +97,7 @@ class MemoryJournal extends AsyncWriteJournal {
 
 //todo optimize via Agent?
 object MemoryJournal {
+  private val log = Logger[MemoryJournal]
   val MemoryJournalPath = "omnibus.persistence.journal.memory"
 
   val ExpectedPIDsPath = MemoryJournalPath + ".expected-persistence-ids"
@@ -104,7 +108,7 @@ object MemoryJournal {
 
   private[MemoryJournal] class Adapter( initialSize: Int ) {
 
-    scribe.warn( s"MemoryJournal.Adapter expecting up to [${initialSize}] pids" )
+    log.warn( s"MemoryJournal.Adapter expecting up to [${initialSize}] pids" )
 
     private val messages: Object2ObjectOpenHashMap[String, Vector[PersistentRepr]] = {
       new Object2ObjectOpenHashMap[String, Vector[PersistentRepr]]( initialSize )
@@ -119,7 +123,7 @@ object MemoryJournal {
             val result = vs :+ p
 
             val sortedResult = for { last <- vs.lastOption if p.sequenceNr <= last.sequenceNr } yield {
-              scribe.warn(
+              log.warn(
                 s"resorting since added sequenceNr[${p.sequenceNr}] " +
                 s"is less than previous last element:[${vs.last.sequenceNr}]"
               )
@@ -155,7 +159,7 @@ object MemoryJournal {
         }
         .foreach { updated =>
           messages.put( pid, updated )
-          scribe.debug(
+          log.debug(
             s"for pid:[${pid}] deleted toSequenceNr:[${toSequenceNr}] with updated size:[${updated.size}]"
           )
         }

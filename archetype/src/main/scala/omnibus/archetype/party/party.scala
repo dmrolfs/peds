@@ -17,10 +17,10 @@ abstract class Party[P <: Party[P, ID], ID](
   def roles: Seq[PartyRole]
   // def preferences: Seq[Preference]
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Party[P, ID]]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Party[P, _]]
 
   override def equals( rhs: Any ): Boolean = rhs match {
-    case that: Party[P, ID] => {
+    case that: Party[P, _] => {
       if (this eq that) true
       else {
         (that.## == this.##) &&
@@ -48,7 +48,7 @@ abstract class Person[P <: Person[P, ID], ID](
 
   def dateOfBirth: Option[LocalDate] = None
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Person[P, ID]]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Person[P, _]]
 }
 
 abstract class Organization[O <: Organization[O, ID], ID](
@@ -60,7 +60,7 @@ abstract class Organization[O <: Organization[O, ID], ID](
 
   override def name: String = organizationName.toString
 
-  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Organization[O, ID]]
+  override def canEqual( rhs: Any ): Boolean = rhs.isInstanceOf[Organization[O, _]]
 }
 
 abstract class Company[C <: Company[C, ID], ID](

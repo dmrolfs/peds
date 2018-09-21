@@ -6,10 +6,12 @@ import akka.testkit.{ TestActorRef, TestProbe }
 import akka.actor.{ ActorSystem, PoisonPill, Props }
 import omnibus.akka.testkit.ParallelAkkaSpec
 import org.scalatest.{ Matchers, OptionValues, Tag }
+import journal._
 import omnibus.core.syntax.clazz._
 import omnibus.identifier.ShortUUID
 
 class EnvelopingActorSpec extends ParallelAkkaSpec with Matchers with OptionValues {
+  private val log = Logger[EnvelopingActorSpec]
 
   class Fixture( override val slug: String, _system: ActorSystem )
       extends AkkaFixture( slug, _system ) {
@@ -21,7 +23,7 @@ class EnvelopingActorSpec extends ParallelAkkaSpec with Matchers with OptionValu
     val source = system.actorOf( Props( classOf[TestActor], target.ref ), "source" )
 
     override def after( test: OneArgTest ): Unit = {
-      scribe.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
+      log.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
       source ! PoisonPill
     }
   }

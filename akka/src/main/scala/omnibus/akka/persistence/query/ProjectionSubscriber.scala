@@ -4,6 +4,7 @@ import akka.NotUsed
 import akka.persistence.query.{ EventEnvelope, NoOffset, Offset }
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
+import journal._
 
 /**
   * Created by rolfsd on 2/16/17.
@@ -16,18 +17,19 @@ class ProjectionSubscriber(
 )(
   implicit materializer: Materializer
 ) {
+  private val log = Logger[ProjectionSubscriber]
 
   def run(): NotUsed = {
-    scribe.info( "starting active projection subscriber..." )
+    log.info( "starting active projection subscriber..." )
     queryJournal
       .eventsByTag( tag, offset )
       .map { e =>
-        scribe.warn( s"#TEST processing new tagged event: [${e}]" ); e
+        log.warn( s"#TEST processing new tagged event: [${e}]" ); e
       }
       //      .via( filterKnownEventsFlow )
       .to(
         Sink foreach { envelope: EventEnvelope =>
-          scribe.warn(
+          log.warn(
             s"#TEST applying lens @ snr:[${envelope.sequenceNr}] to event-envelope:[${envelope}]"
           )
           applyLensFor( envelope.event )

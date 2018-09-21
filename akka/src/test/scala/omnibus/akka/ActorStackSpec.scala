@@ -6,6 +6,7 @@ import akka.testkit.TestProbe
 import akka.util.Timeout
 import omnibus.akka.testkit.ParallelAkkaSpec
 import org.scalatest.{ Matchers, Tag }
+import journal._
 
 object TestActorStack {
   def props( target: ActorRef ): Props = Props( new TestActorStack( target ) )
@@ -23,6 +24,7 @@ class TestActorStack( target: ActorRef ) extends Actor with ActorStack {
 }
 
 class ActorStackSpec extends ParallelAkkaSpec with Matchers {
+  private val log = Logger[ActorStackSpec]
 
   class Fixture( override val slug: String, _system: ActorSystem )
       extends AkkaFixture( slug, _system ) {
@@ -34,7 +36,7 @@ class ActorStackSpec extends ParallelAkkaSpec with Matchers {
     val probe = TestProbe( "probe" )
 
     override def after( test: OneArgTest ): Unit = {
-      scribe.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
+      log.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
       source ! PoisonPill
     }
   }

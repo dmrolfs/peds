@@ -2,7 +2,6 @@ package omnibus.commons.collection
 
 import org.scalatest._
 import org.scalatest.Matchers
-import scribe.Level
 
 /**
   * There's a lot of math involved in the Jaro-Winkler
@@ -17,11 +16,6 @@ import scribe.Level
   */
 @deprecated( "", "" )
 class StringWithSimilaritySpec extends FlatSpec with Matchers {
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
 
   "A string with similarity" should "Matching window returns valid distance" in {
     val one = "martha"

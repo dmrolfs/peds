@@ -6,9 +6,11 @@ import akka.testkit.TestProbe
 import akka.actor.{ ActorSystem, PoisonPill, Props }
 import omnibus.akka.testkit.ParallelAkkaSpec
 import org.scalatest.{ Matchers, Tag }
+import journal._
 import omnibus.core.syntax.clazz._
 
 class EnvelopeSendingSpec extends ParallelAkkaSpec with Matchers {
+  private val log = Logger[EnvelopeSendingSpec]
 
   class Fixture( override val slug: String, _system: ActorSystem )
       extends AkkaFixture( slug, _system ) {
@@ -18,7 +20,7 @@ class EnvelopeSendingSpec extends ParallelAkkaSpec with Matchers {
     val source = system.actorOf( Props( classOf[TestActor], target.ref ) )
     implicit val probe = TestProbe()
     override def after( test: OneArgTest ): Unit = {
-      scribe.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
+      log.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
       source ! PoisonPill
     }
   }

@@ -19,9 +19,9 @@ libraryDependencies ++=
     "com.github.dmrolfs" %% "shapeless-builder" % "1.0.1",
     "commons-codec" % "commons-codec" % "1.11",
     akka.actor,
-    facility.json4sJackson,
-    facility.math3,
-    facility.squants
+    json4sJackson,
+    math3,
+    squants
   )
 
 

@@ -1,14 +1,10 @@
 package omnibus.identifier
 
 import org.scalatest.{ Matchers, Tag, WordSpec }
-import scribe.Level
+import journal._
 
 class IdSpec extends WordSpec with Matchers {
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
+  private val log = Logger[IdSpec]
 
   case class Foo( id: Foo#TID, f: String ) {
     type TID = Foo.identifying.TID
@@ -145,7 +141,7 @@ class IdSpec extends WordSpec with Matchers {
       import scala.reflect.runtime.universe._
 
       val actualClassTag: ClassTag[Id.Aux[Foo, Long]] = ClassTag( actual.getClass )
-      scribe.debug( s"actual[${actual}] type = ${actualClassTag}" )
+      log.debug( s"actual[${actual}] type = ${actualClassTag}" )
 
       actual shouldBe expected
       actual.value shouldBe fid

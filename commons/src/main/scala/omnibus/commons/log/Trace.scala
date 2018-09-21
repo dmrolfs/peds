@@ -2,9 +2,8 @@ package omnibus.commons.log
 
 import scala.reflect.ClassTag
 import omnibus.core._
-import scribe.Logger
+import journal._
 
-@deprecated( "use scribe.trace", "0.63" )
 class Trace[L: Traceable]( val name: String, logger: L ) {
 
   /** Determine whether trace logging is enabled.
@@ -41,9 +40,8 @@ class Trace[L: Traceable]( val name: String, logger: L ) {
     Trace.briefBlock[R]( name + "." + label )( block )
 }
 
-@deprecated( "use Journal Logger.debug", "0.63" )
 object Trace {
-  type DefaultLogger = scribe.Logger
+  type DefaultLogger = Logger
 
   def apply[L: Traceable]( name: String, logger: L ): Trace[L] = new Trace( name, logger )
 

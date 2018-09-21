@@ -20,7 +20,7 @@ libraryDependencies ++=
   Seq(
     akka.persistenceQuery,
     persistence.cassandra,
-    facility.fastutil
+    fastutil
   ) ++
   commonTestDependencies
 

@@ -2,6 +2,7 @@ package omnibus.akka.envelope
 
 import scala.language.implicitConversions
 import akka.actor.{ ActorContext, ActorRef, ActorSelection }
+import journal._
 
 trait EnvelopeSyntax {
   implicit def actorRefEnvelopeSending( ref: ActorRef ): EnvelopeSyntax.RefSending = {
@@ -32,6 +33,7 @@ object EnvelopeSyntax {
     *
     */
   final class RefSending( val underlying: ActorRef ) extends AnyVal {
+    private def log: Logger = Logger[RefSending]
 
     /**
       * Send a message enclosed in a message envelope containing meta date about the message.
@@ -41,7 +43,7 @@ object EnvelopeSyntax {
     )(
       implicit sender: ActorRef = ActorRef.noSender
     ): Unit = {
-      scribe.debug(
+      log.debug(
         s"sendEnvelope: envelope:[${envelope}] to underlying:[${underlying.path}] sender:[${Option( sender )
           .map { _.path }}]"
       )

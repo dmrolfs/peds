@@ -11,6 +11,7 @@ import omnibus.akka.envelope.pattern.ask
 import omnibus.akka.testkit.ParallelAkkaSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Seconds, Span }
+import journal._
 
 object EnvelopeAskingSpec {
 
@@ -39,6 +40,7 @@ object EnvelopeAskingSpec {
 }
 
 class EnvelopeAskingSpec extends ParallelAkkaSpec with Matchers with ScalaFutures {
+  private val log = Logger[EnvelopeAskingSpec]
 
   class Fixture( override val slug: String, _system: ActorSystem )
       extends AkkaFixture( slug, _system ) {
@@ -52,7 +54,7 @@ class EnvelopeAskingSpec extends ParallelAkkaSpec with Matchers with ScalaFuture
     // val real = TestActorRef[TestActor].underlyingActor
 
     override def after( test: OneArgTest ): Unit = {
-      scribe.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
+      log.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
       source ! PoisonPill
     }
   }

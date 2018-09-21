@@ -9,28 +9,30 @@ import akka.persistence.query.{ EventEnvelope, Offset, PersistenceQuery }
 import akka.persistence.query.scaladsl._
 import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigValueType
+import journal._
 
 /**
   * Created by rolfsd on 2/15/17.
   */
 object QueryJournal {
+  private val log = Logger[QueryJournal.type]
 
   def fromSystem( system: ActorSystem ): Journal = {
     journalFQN( system ) match {
       case fqn if fqn == classOf[CassandraJournal].getName ⇒ {
-        scribe.info( "cassandra journal recognized" )
+        log.info( "cassandra journal recognized" )
         PersistenceQuery( system )
           .readJournalFor[CassandraReadJournal]( CassandraReadJournal.Identifier )
       }
 
       case fqn if fqn == "akka.persistence.journal.leveldb.LeveldbJournal" ⇒ {
-        scribe.info( "leveldb journal recognized" )
+        log.info( "leveldb journal recognized" )
         PersistenceQuery( system )
           .readJournalFor[LeveldbReadJournal]( LeveldbReadJournal.Identifier )
       }
 
       case fqn ⇒ {
-        scribe.warn( s"journal FQN not recognized - creating empty read journal:[${fqn}]" )
+        log.warn( s"journal FQN not recognized - creating empty read journal:[${fqn}]" )
         QueryJournal.empty
       }
     }
@@ -94,16 +96,16 @@ object QueryJournal {
               .cast[String]
               .map { path ⇒
                 if (config.hasPath( path )) {
-                  scribe.debug( s"looking for class in config path:[${path}]" )
+                  log.debug( s"looking for class in config path:[${path}]" )
                   config.getConfig( path ).getString( "class" )
                 } else {
-                  scribe.warn( s"no configuration found for path:[${path}] - return empty FQN" )
+                  log.warn( s"no configuration found for path:[${path}] - return empty FQN" )
                   ""
                 }
               }
               .getOrElse { "" }
           }
-          scribe.info( s"journal plugin string classname found:[${fqn}]" )
+          log.info( s"journal plugin string classname found:[${fqn}]" )
           fqn
         }
 
@@ -111,21 +113,21 @@ object QueryJournal {
           val jconfig = config.getConfig( JournalPluginPath )
           if (jconfig.hasPath( "class" )) {
             val fqn = jconfig.getString( "class" )
-            scribe.info( s"journal plugin class property found:[${fqn}]" )
+            log.info( s"journal plugin class property found:[${fqn}]" )
             fqn
           } else {
-            scribe.warn( "no class specified for journal plugin" )
+            log.warn( "no class specified for journal plugin" )
             ""
           }
         }
 
         case t ⇒ {
-          scribe.warn( s"unrecognized config type:[${t}] for path:[${JournalPluginPath}]" )
+          log.warn( s"unrecognized config type:[${t}] for path:[${JournalPluginPath}]" )
           ""
         }
       }
     } else {
-      scribe.warn( "no journal plugin specified" )
+      log.warn( "no journal plugin specified" )
       ""
     }
   }

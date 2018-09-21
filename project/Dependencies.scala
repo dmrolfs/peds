@@ -120,33 +120,29 @@ object Dependencies {
   }
 
   object logging {
-//    val persistLogging = "com.persist" %% "persist-logging" % "1.3.2"
-//    val typesafe = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
-//    val journal = "io.verizon.journal" %% "core" % "3.0.19"
-
-//    object logback extends SimpleModule {
-//      override val groupId = "ch.qos.logback"
-//      override val artifactIdRoot = "logback"
-//      override val version = "1.2.3"
-//      override val isScala = false
-//      val core = module( "core" )
-//      val classic = module( "classic" )
-//    }
-
-//    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.25" intransitive
-//    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.25"
-
-    object scribe extends SimpleModule {
-      override val groupId: String = "com.outr"
-      override def artifactIdRoot: String = "scribe"
-      override def version: String = "2.6.0"
-      def all = Seq( core, slf4j )
-      val core = module( "" )
-      val slf4j = module( "slf4j" )
+    object logback extends SimpleModule {
+      override val groupId = "ch.qos.logback"
+      override val artifactIdRoot = "logback"
+      override val version = "1.2.3"
+      override val isScala = false
+      val core = module( "core" )
+      val classic = module( "classic" )
     }
 
-    def all = scribe.all
-//    def all = Seq( journal, logback.core, logback.classic, slf4j, log4jOverSlf4j )
+    val journal = "io.verizon.journal" %% "core" % "3.0.19"
+    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.25" intransitive
+    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.25"
+
+//    object scribe extends SimpleModule {
+//      override val groupId: String = "com.outr"
+//      override def artifactIdRoot: String = "scribe"
+//      override def version: String = "2.6.0"
+//      def all = Seq( core, slf4j )
+//      val core = module( "" )
+//      val slf4j = module( "slf4j" )
+//    }
+//    def all = scribe.all
+    def all = Scope.provided( logback.core, logback.classic, slf4j, log4jOverSlf4j ) :+ journal
   }
 
   object metrics extends SimpleModule {
@@ -190,34 +186,33 @@ object Dependencies {
 //    }
   }
 
-  object facility {
-    val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
-    val newtype = "io.estatico" %% "newtype" % "0.4.2"
+  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
+  val newtype = "io.estatico" %% "newtype" % "0.4.2"
+  val snowflake = "com.softwaremill.common" %% "id-generator" % "1.2.0"
 //    val guava = "com.google.guava" % "guava" % "21.0"
-    // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
-    val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.1" withSources() withJavadoc()
-    val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
-    val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.1"
+  // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
+  val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.1" withSources() withJavadoc()
+  val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
+  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.1"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
 //    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
-    val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
-    val config = "com.typesafe" % "config" % "1.3.3"
-    val ficus = "com.iheart" %% "ficus" % "1.4.3"
-    val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
-    val parboiled = "org.parboiled" %% "parboiled" % "2.1.4"
-    val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
-    val squants = "org.typelevel"  %% "squants"  % "1.3.0"
-    val lang = "org.apache.commons" % "commons-lang3" % "3.5"
-    val codec = "commons-codec" % "commons-codec" % "1.11"
-    val math3 = "org.apache.commons" % "commons-math3" % "3.6.1" withSources() withJavadoc()
+  val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
+  val config = "com.typesafe" % "config" % "1.3.3"
+  val ficus = "com.iheart" %% "ficus" % "1.4.3"
+  val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
+  val parboiled = "org.parboiled" %% "parboiled" % "2.1.4"
+  val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
+  val squants = "org.typelevel"  %% "squants"  % "1.3.0"
+  val lang = "org.apache.commons" % "commons-lang3" % "3.5"
+  val codec = "commons-codec" % "commons-codec" % "1.11"
+  val math3 = "org.apache.commons" % "commons-math3" % "3.6.1" withSources() withJavadoc()
 //    val suanshu = "com.numericalmethod" % "suanshu" % "3.4.0" intransitive()  // don't want to use due to $$$
-    val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
-    val pyrolite = "net.razorvine" % "pyrolite" % "4.19"
-    val msgpack = "org.velvia" %% "msgpack4s" % "0.6.0"
-    val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.3"
+  val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
+  val pyrolite = "net.razorvine" % "pyrolite" % "4.19"
+  val msgpack = "org.velvia" %% "msgpack4s" % "0.6.0"
+  val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.3"
 
-    val hadoopClient = "org.apache.hadoop" % "hadoop-client" % "2.8.0" intransitive // exclude( "log4j", "log4j" )
-  }
+  val hadoopClient = "org.apache.hadoop" % "hadoop-client" % "2.8.0" intransitive // exclude( "log4j", "log4j" )
 
   object avro extends SimpleModule {
     override val groupId = "org.apache.avro"
@@ -270,11 +265,11 @@ object Dependencies {
     logging.all ++
     cats.all ++
     Seq(
-      facility.enumeratum,
-      facility.config,
-      facility.ficus,
-      facility.shapeless,
-      facility.prettyprint,
+      enumeratum,
+      config,
+      ficus,
+      shapeless,
+      prettyprint,
       parserCombinators
     ) ++
     commonTestDependencies

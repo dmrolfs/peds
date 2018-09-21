@@ -2,9 +2,13 @@ package omnibus.commons.partial
 
 import scala.annotation.tailrec
 import scala.xml.{ Elem, Node }
+import journal._
+import omnibus.commons.log.Trace
 import omnibus.commons.math.OrderingHelper
 
 trait XmlReducable {
+  private val trace = Trace[XmlReducable]
+
   implicit def xmlReducable( implicit xform: Transformable[Elem] ): Reducable[Elem] =
     new Reducable[Elem] {
       override def elide( data: Elem, spec: PartialCriteria ): Elem = {
@@ -13,14 +17,14 @@ trait XmlReducable {
           spec: PartialCriteria,
           partials: Vector[Node]
         ): Vector[Node] = /*trace.block("loop")*/ {
-          scribe.trace( "spec=" + spec )
-          scribe.trace( "nodes=" + nodes.map( _.label ).mkString( "[", ",", "]" ) )
+          trace( "spec=" + spec )
+          trace( "nodes=" + nodes.map( _.label ).mkString( "[", ",", "]" ) )
 
           nodes match {
             case (head: Elem) :: tail
                 if spec.contains( head.label ) && spec.get( head.label ).get.isComposite => {
-              scribe.trace( "head=" + head.label )
-              scribe.trace( "matched Elem with spec and composite" )
+              trace( "head=" + head.label )
+              trace( "matched Elem with spec and composite" )
               loop(
                 tail,
                 spec,
@@ -28,29 +32,29 @@ trait XmlReducable {
               )
             }
             case head :: tail if spec.contains( head.label ) => {
-              scribe.trace( "head=" + head.label )
-              scribe.trace( "matched Elem with spec and not composite" )
+              trace( "head=" + head.label )
+              trace( "matched Elem with spec and not composite" )
               loop( tail, spec, partials :+ head )
             }
             case head :: tail => {
-              scribe.trace( "head=" + head.label )
-              scribe.trace( "matched Elem but not in spec" )
+              trace( "head=" + head.label )
+              trace( "matched Elem but not in spec" )
               loop( tail, spec, partials )
             }
             case Nil => {
-              scribe.trace( "matched Nil" )
+              trace( "matched Nil" )
               partials
             }
           }
         }
 
-        scribe.trace( "spec=" + spec )
+        trace( "spec=" + spec )
         val partials = loop(
           xform.transform( data, spec ).child.toList,
           spec,
           Vector.empty
         )
-        scribe.trace( "partials=" + partials )
+        trace( "partials=" + partials )
         Elem(
           prefix = data.prefix,
           label = data.label,
