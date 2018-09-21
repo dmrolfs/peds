@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Flow
 import nl.grons.metrics4.scala.{ Meter, MetricName }
 import omnibus.akka.metrics.Instrumented
 import omnibus.core.syntax.clazz._
-import scribe._
+import journal._
 
 /**
   * Created by rolfsd on 12/3/15.
@@ -58,6 +58,8 @@ trait StreamMonitor extends Instrumented {
 }
 
 object StreamMonitor { outer =>
+  private val log = Logger[StreamMonitor]
+
   implicit class MakeFlowMonitor[I, O]( val underlying: Flow[I, O, NotUsed] ) extends AnyVal {
     def watchFlow( label: Symbol ): Flow[I, O, NotUsed] = outer.flow( label ).watch( underlying )
 
@@ -71,11 +73,11 @@ object StreamMonitor { outer =>
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def add( label: Symbol ): Unit = tracked.alter { _ :+ label } foreach { t =>
-    scribe debug csvHeader( t )
+    log.debug( csvHeader( t ) )
   }
 
   def set( labels: Symbol* ): Unit = tracked.alter( labels ) foreach { t =>
-    scribe debug csvHeader( t )
+    log.debug( csvHeader( t ) )
   }
 
   def source( label: Symbol ): StreamMonitor =
@@ -92,7 +94,7 @@ object StreamMonitor { outer =>
     monitor
   }
 
-  def publish(): Unit = scribe.debug( csvLine( tracked.get(), all.get() ) )
+  def publish(): Unit = log.debug( csvLine( tracked.get(), all.get() ) )
   private def csvLine( labels: Seq[Symbol], ms: Map[Symbol, StreamMonitor] ): String = {
     labels
       .map { l =>
@@ -104,7 +106,7 @@ object StreamMonitor { outer =>
       .mkString( ", " )
   }
 
-  @inline def isEnabled: Boolean = getClass.logger includes Level.Trace
+  @inline def isEnabled: Boolean = log.backend.isTraceEnabled
   @inline def notEnabled: Boolean = !isEnabled
 
   private val all: Agent[Map[Symbol, StreamMonitor]] = Agent( Map.empty[Symbol, StreamMonitor] )

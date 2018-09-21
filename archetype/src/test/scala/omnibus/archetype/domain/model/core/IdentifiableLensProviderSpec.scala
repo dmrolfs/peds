@@ -1,7 +1,6 @@
 package omnibus.archetype.domain.model.core
 
 import org.scalatest.{ Matchers, WordSpec }
-import scribe.Level
 import shapeless.{ lens, Lens }
 import io.jvm.uuid.UUID
 import omnibus.identifier.{ Identifying, ShortUUID }
@@ -44,12 +43,6 @@ object IdentifiableLensProviderSpec {
 
 class IdentifiableLensProviderSpec extends WordSpec with Matchers {
   import IdentifiableLensProviderSpec.{ Bar, Foo, Zed }
-
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
 
   "An IdentifiableLensProvider" should {
     "get id from Entity" in {

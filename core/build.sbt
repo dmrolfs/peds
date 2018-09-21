@@ -14,7 +14,7 @@ libraryDependencies ++=
   cats.all ++
   logging.all ++
   Seq(
-    facility.newtype
+    newtype
   )
 
 

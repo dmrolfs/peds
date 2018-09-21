@@ -9,6 +9,7 @@ import scala.concurrent.duration._
 import akka.pattern.pipe
 import akka.util.Timeout
 import akka.actor.Status.Failure
+import journal._
 import omnibus.akka.testkit.ParallelAkkaSpec
 
 class AskRetryTestActor( target: ActorRef ) extends Actor {
@@ -20,6 +21,7 @@ class AskRetryTestActor( target: ActorRef ) extends Actor {
 }
 
 class AskRetrySuite extends ParallelAkkaSpec with Matchers {
+  private val log = Logger[AskRetrySuite]
 
   class Fixture( override val slug: String, _system: ActorSystem )
       extends AkkaFixture( slug, _system ) {
@@ -31,7 +33,7 @@ class AskRetrySuite extends ParallelAkkaSpec with Matchers {
     val probe = TestProbe( "probe" )
 
     override def after( test: OneArgTest ): Unit = {
-      scribe.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
+      log.debug( s"killing fixture[${slug}]'s source actor:[${source.path}]..." )
       source ! PoisonPill
     }
   }

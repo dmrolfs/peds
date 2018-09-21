@@ -2,15 +2,8 @@ package omnibus.commons.partial
 
 import org.scalatest._
 import org.scalatest.Matchers
-import scribe.Level
 
 class PartialParserSpec extends FlatSpec with Matchers {
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
-
   val parser = new PartialParser
 
   "A Partial Spec Parser" should "produce an empty composite with empty spec" in {

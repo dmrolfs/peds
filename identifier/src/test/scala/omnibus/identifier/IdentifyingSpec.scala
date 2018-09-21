@@ -3,16 +3,12 @@ package omnibus.identifier
 import scala.util.Try
 import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
 import org.scalatest.{ Matchers, Tag, WordSpec }
-import scribe.Level
+import journal._
 import io.jvm.uuid.UUID
 import scala.language.existentials
 
 class IdentifyingSpec extends WordSpec with Matchers {
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler( minimumLevel = Some( Level.Trace ) )
-    .replace()
+  private val log = Logger[IdentifyingSpec]
 
   case class Foo( id: Id[Foo], f: String )
 
@@ -56,11 +52,11 @@ class IdentifyingSpec extends WordSpec with Matchers {
       def makeOptionZedIdAux()( implicit i: Identifying.Aux[Option[Zed], UUID] ): i.TID = i.next
 
       val ozid = makeOptionZedId()
-      scribe.info( s"ozid = ${ozid}" )
+      log.info( s"ozid = ${ozid}" )
       "Zed( id = makeOptionZedId(), score = 3.14 )" should compile
 
       val ozidAux = makeOptionZedIdAux()
-      scribe.info( s"ozidAux = ${ozidAux}" )
+      log.info( s"ozidAux = ${ozidAux}" )
       "val z: Id.Aux[Zed, UUID] = ozidAux" should compile
       "Zed( id = makeOptionZedIdAux(), score = 3.14 )" should compile
     }

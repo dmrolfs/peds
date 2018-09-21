@@ -12,11 +12,12 @@ resolvers += "omen-bintray" at "http://dl.bintray.com/omen/maven"
 libraryDependencies ++=
   logging.all ++
   Seq(
-    facility.scalaUuid,
+    scalaUuid,
     cats.core,
-    facility.codec,
-    facility.scalaUuid,
-    facility.newtype
+    codec,
+    scalaUuid,
+    newtype,
+    snowflake
   ) ++
   Dependencies.commonTestDependencies
 
