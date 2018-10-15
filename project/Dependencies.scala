@@ -61,7 +61,7 @@ object Dependencies {
   object akka extends SimpleModule {
     override val groupId = "com.typesafe.akka"
     override val artifactIdRoot = "akka"
-    override val version = "2.5.16"
+    override val version = "2.5.17"
     def all: Seq[ModuleID] = Seq( actor, stream, agent, cluster, clusterSharding, contrib, persistence, remote, slf4j )
 
     val actor = module( "actor" ) withSources() withJavadoc()
@@ -83,6 +83,14 @@ object Dependencies {
     val kryoSerializers = "de.javakaffee" % "kryo-serializers" % "0.41"
   }
 
+  object lagom extends SimpleModule {
+    override def groupId: String = "com.lightbend.lagom"
+    override def artifactIdRoot: String = "lagom-scaladsl"
+    override def version: String = "1.4.8"
+    def all = Seq( server )
+    val server = module( "server" )
+  }
+  
   object persistence {
     val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.89"
     val leveldb = "org.iq80.leveldb" % "leveldb" % "0.9" // "org.iq80.leveldb" % "leveldb" % "0.9"
@@ -225,6 +233,17 @@ object Dependencies {
     val tools = module( "tools" )
     val mapred = module( "mapred" )
     val scavro = "org.oedura" %% "scavro" % "1.0.2"
+  }
+
+  object circe extends SimpleModule {
+    override val groupId: String = "io.circe"
+    override val artifactIdRoot: String = "circe"
+    override val version: String = "0.10.0"
+    def all = Seq( core, generic, parser )
+
+    val core = module( "core" )
+    val generic = module( "generic" )
+    val parser = module( "parser" )
   }
 
   object betterFiles extends SimpleModule {

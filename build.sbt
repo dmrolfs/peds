@@ -22,6 +22,10 @@ lazy val root =
 lazy val core = ( project in file("./core") )
   .settings( defaultSettings ++ publishSettings )
 
+lazy val lagom = ( project in file("./lagom" ) )
+  .dependsOn( core )
+  .settings( defaultSettings ++ publishSettings )
+
 lazy val identifier = ( project in file("./identifier") )
   .dependsOn( core )
   .settings( defaultSettings ++ publishSettings )
