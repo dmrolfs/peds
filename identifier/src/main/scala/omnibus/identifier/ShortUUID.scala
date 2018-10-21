@@ -4,8 +4,10 @@ import io.jvm.uuid._
 import java.nio.ByteBuffer
 
 import cats.syntax.either._
-import omnibus.core.ErrorOr
+import io.circe.Decoder.Result
+import io.circe._
 import org.apache.commons.codec.binary.Base64
+import omnibus.core.ErrorOr
 
 object ShortUUID {
   // implicit val hashids: Hashids = Hashids.reference( "omnibus comprises several items" )
@@ -49,6 +51,26 @@ object ShortUUID {
   implicit def toUUID( short: ShortUUID ): UUID = short.toUUID
 
   val zero: ShortUUID = fromUUID( UUID( 0L, 0L ) )
+
+  implicit val jsonEncoder = new Encoder[ShortUUID] {
+    override def apply( sid: ShortUUID ): Json = Json fromString sid.toString
+  }
+
+  implicit val jsonDecoder = new Decoder[ShortUUID] {
+    override def apply( c: HCursor ): Result[ShortUUID] = {
+      val result = for {
+        rep <- Either.fromOption[DecodingFailure, String](
+          c.value.asString,
+          DecodingFailure( "json value must be a string for ShortUUID", c.history )
+        )
+        sid <- fromString( rep )
+      } yield {
+        sid
+      }
+
+      result leftMap { DecodingFailure.fromThrowable( _, c.history ) }
+    }
+  }
 }
 
 class ShortUUID private[identifier] ( val repr: String ) extends Serializable with Equals {
