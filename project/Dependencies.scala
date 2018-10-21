@@ -28,7 +28,7 @@ object Dependencies {
 
 
   object silencer {
-    private val version = "1.2"
+    private val version = "1.2.1"
 
     val all = Seq(
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % version),
@@ -90,9 +90,9 @@ object Dependencies {
     def all = Seq( server )
     val server = module( "server" )
   }
-  
+
   object persistence {
-    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.89"
+    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.91"
     val leveldb = "org.iq80.leveldb" % "leveldb" % "0.9" // "org.iq80.leveldb" % "leveldb" % "0.9"
     val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
   }
@@ -199,14 +199,14 @@ object Dependencies {
   val snowflake = "com.softwaremill.common" %% "id-generator" % "1.2.0"
 //    val guava = "com.google.guava" % "guava" % "21.0"
   // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
-  val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.1" withSources() withJavadoc()
+  val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.2" withSources() withJavadoc()
   val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
   val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.1"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
 //    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
   val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
   val config = "com.typesafe" % "config" % "1.3.3"
-  val ficus = "com.iheart" %% "ficus" % "1.4.3"
+  val ficus = "com.iheart" %% "ficus" % "1.4.4"
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
   val parboiled = "org.parboiled" %% "parboiled" % "2.1.4"
   val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
@@ -265,7 +265,7 @@ object Dependencies {
     object mockito extends SimpleModule {
       override val groupId = "org.mockito"
       override val artifactIdRoot = "mockito"
-      override val version = "2.22.0"
+      override val version = "2.23.0"
       override val isScala = false
       val core = module( "core" ) withSources() withJavadoc()
     }
