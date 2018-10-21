@@ -4,7 +4,7 @@ import sbt._
 // import spray.revolver.RevolverPlugin._
 
 object BuildSettings {
-  val VERSION = "0.74"
+  val VERSION = "0.75"
 
   val scalacBuildOptions = Seq(
     // "-encoding",
@@ -68,7 +68,7 @@ object BuildSettings {
   lazy val defaultSettings = Defaults.coreDefaultSettings ++ /*Format.settings ++*/ Seq(
     version := VERSION,
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-    crossScalaVersions := Seq( "2.12.6" ),
+    crossScalaVersions := Seq( "2.12.7" ),
     scalaVersion := crossScalaVersions{ (vs: Seq[String]) => vs.head }.value,
     // updateOptions := updateOptions.value.withCachedResolution(true),
     scalacOptions ++= scalacBuildOptions,
