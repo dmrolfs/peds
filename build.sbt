@@ -16,10 +16,14 @@ lazy val root =
     buildInfoPackage := "omnibus"
   )
   .settings( publish := {} )
-  .aggregate( core, commons, identifier, archetype, akka )
+  .aggregate( core, commons, lagom, identifier, archetype, akka )
 
 
 lazy val core = ( project in file("./core") )
+  .settings( defaultSettings ++ publishSettings )
+
+lazy val lagom = ( project in file("./lagom" ) )
+  .dependsOn( core )
   .settings( defaultSettings ++ publishSettings )
 
 lazy val identifier = ( project in file("./identifier") )
