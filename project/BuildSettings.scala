@@ -4,7 +4,7 @@ import sbt._
 // import spray.revolver.RevolverPlugin._
 
 object BuildSettings {
-  val VERSION = "0.75"
+  val VERSION = "0.76"
 
   val scalacBuildOptions = Seq(
     // "-encoding",

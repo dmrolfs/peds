@@ -11,6 +11,7 @@ resolvers += "omen-bintray" at "http://dl.bintray.com/omen/maven"
 
 libraryDependencies ++=
   logging.all ++
+  circe.all ++
   Seq(
     scalaUuid,
     cats.core,
