@@ -39,20 +39,18 @@ object CirceMessageSerializer extends LowPriorityCirceMessageSerializerImplicits
 
       private object JsonDeserializer extends NegotiatedDeserializer[Json, ByteString] {
         override def deserialize( wire: ByteString ): Json = {
-          log.error( s"""parsing wire:"${wire.decodeString( "utf-8" )}"  """ )
-          val r1 = parse( wire.decodeString( "utf-8" ) )
-          log.error( s"parsed wire: ${r1}" )
-
-          r1.fold(
-            ex => {
-              log.error( s"parsed error", ex )
-              throw DeserializationException( ex )
-            },
-            json => {
-              log.error( s"GOOD parsed json: ${json.noSpaces}" )
-              json
-            }
-          )
+          log.debug( s"""parsing wire:"${wire.decodeString( "utf-8" )}"  """ )
+          parse( wire.decodeString( "utf-8" ) )
+            .fold(
+              ex => {
+                log.error(
+                  s"parsed error for wire doc:[${wire.decodeString( "utf-8" )}]",
+                  ex
+                )
+                throw DeserializationException( ex )
+              },
+              identity
+            )
         }
       }
 
@@ -111,13 +109,20 @@ trait LowPriorityCirceMessageSerializerImplicits {
       jsonDeserializer: NegotiatedDeserializer[Json, ByteString]
     ) extends NegotiatedDeserializer[Message, ByteString] {
       override def deserialize( wire: ByteString ): Message = {
-        log.error( s"""deserializing wire:"${wire.decodeString( "utf-8" )}"  """ )
+        log.debug( s"""deserializing wire:"${wire.decodeString( "utf-8" )}"  """ )
         val json = jsonDeserializer deserialize wire
         json
           .as[Message]
           .fold(
-            ex => throw DeserializationException( ex ),
-            msg => msg
+            ex => {
+              log.error(
+                s"decoding error for wire doc:[${wire.decodeString( "utf-8" )}]",
+                ex
+              )
+
+              throw DeserializationException( ex )
+            },
+            identity
           )
       }
     }

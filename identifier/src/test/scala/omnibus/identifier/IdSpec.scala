@@ -1,9 +1,14 @@
 package omnibus.identifier
 
-import org.scalatest.{ Matchers, Tag, WordSpec }
+import org.scalatest.{ EitherValues, Matchers, Tag, WordSpec }
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
 import journal._
 
-class IdSpec extends WordSpec with Matchers {
+import scala.util.Random
+
+class IdSpec extends WordSpec with Matchers with EitherValues {
   private val log = Logger[IdSpec]
 
   case class Foo( id: Foo#TID, f: String ) {
@@ -124,7 +129,7 @@ class IdSpec extends WordSpec with Matchers {
       bid.toString shouldBe s"BarId(${fid.value})"
     }
 
-    "be serializable" taggedAs WIP in {
+    "be serializable" in {
       import java.io._
       val bytes = new ByteArrayOutputStream
       val out = new ObjectOutputStream( bytes )
@@ -146,6 +151,28 @@ class IdSpec extends WordSpec with Matchers {
       actual shouldBe expected
       actual.value shouldBe fid
       actual.toString shouldBe s"FooId(${fid})"
+    }
+
+    "encode to Json" taggedAs WIP in {
+      val fid: Id.Aux[Foo, ShortUUID] = Foo.nextId
+      val bid: Id.Aux[Bar, Long] = Bar.nextId
+
+      fid.asJson shouldBe Json.fromString( fid.value.toString )
+      bid.asJson shouldBe Json.fromString( bid.value.toString )
+
+      val fid2: Id[Foo] = fid
+      fid2.asJson shouldBe Json.fromString( fid.value.toString )
+    }
+
+    "decode from Json" taggedAs WIP in {
+      val sidValue = ShortUUID()
+      val lidValue = Random.nextLong()
+
+      val fidJson = Json fromString sidValue.toString
+      val lidJson = Json fromLong lidValue
+
+      parser.parse( fidJson.noSpaces ).flatMap( _.as[ShortUUID] ).right.get shouldBe sidValue
+      parser.parse( lidJson.noSpaces ).flatMap( _.as[Long] ).right.get shouldBe lidValue
     }
   }
 }

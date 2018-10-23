@@ -1,5 +1,9 @@
 package omnibus.identifier
 
+import io.circe.Decoder.Result
+import io.circe._
+import io.circe.syntax._
+
 import scala.language.{ higherKinds, implicitConversions }
 import scala.reflect.{ classTag, ClassTag }
 import omnibus.core.syntax.clazz._
@@ -93,6 +97,31 @@ object Id {
 
   implicit def wrap[C[_], E: Labeling, I]( id: Id.Aux[E, I] ): Id.Aux[C[E], I] = {
     unsafeCreate( id.value, Labeling[E].label )
+  }
+
+  implicit def jsonEncoder[E]: Encoder[Id[E]] = new Encoder[Id[E]] {
+    override def apply( id: Id[E] ): Json = Json fromString id.value.toString
+  }
+
+  implicit def jsonAuxEncoder[E, I]: Encoder[Id.Aux[E, I]] = new Encoder[Id.Aux[E, I]] {
+    override def apply( id: Id.Aux[E, I] ): Json = Json fromString id.value.toString
+  }
+
+  implicit def jsonAuxDecoder[E, I](
+    implicit i: Identifying.Aux[E, I],
+    l: Labeling[E]
+  ): Decoder[Aux[E, I]] = {
+    new Decoder[Aux[E, I]] {
+      override def apply( c: HCursor ): Result[Aux[E, I]] = {
+        import cats.syntax.either._
+        Either
+          .fromOption[DecodingFailure, String](
+            c.value.asString,
+            DecodingFailure( "not a valid id string", c.history )
+          )
+          .map { fromString( _ )( i, l ) }
+      }
+    }
   }
 
   private[identifier] def unsafeCreate[E, I]( id: I, label: String ): Id.Aux[E, I] = {
