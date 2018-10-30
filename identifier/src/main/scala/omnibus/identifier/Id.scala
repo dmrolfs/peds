@@ -1,12 +1,13 @@
 package omnibus.identifier
 
 import io.circe.Decoder.Result
-import io.circe._
+import io.circe.{ Json => CJson, _ }
 import io.circe.syntax._
 
 import scala.language.{ higherKinds, implicitConversions }
 import scala.reflect.{ classTag, ClassTag }
 import omnibus.core.syntax.clazz._
+import play.api.libs.json.{ Format, JsResult, JsSuccess, JsValue, Writes, Json => PJson }
 
 sealed abstract class Id[E] extends Equals with Product with Serializable {
   //todo: better handle primitive boxing
@@ -58,7 +59,13 @@ sealed abstract class Id[E] extends Equals with Product with Serializable {
   }
 }
 
-object Id {
+trait LowPriorityFormats {
+  implicit def idPlayJsonWrites[E]: Writes[Id[E]] = new Writes[Id[E]] {
+    override def writes( id: Id[E] ): JsValue = PJson toJson id.value.toString
+  }
+}
+
+object Id extends LowPriorityFormats {
 
   type Aux[E, I] = Id[E] {
     type IdType = I
@@ -99,15 +106,26 @@ object Id {
     unsafeCreate( id.value, Labeling[E].label )
   }
 
-  implicit def jsonEncoder[E]: Encoder[Id[E]] = new Encoder[Id[E]] {
-    override def apply( id: Id[E] ): Json = Json fromString id.value.toString
+  implicit def auxPlayJsonFormat[E, I](
+    implicit i: Identifying.Aux[E, I],
+    l: Labeling[E]
+  ): Format[Id.Aux[E, I]] = new Format[Id.Aux[E, I]] {
+    override def reads( json: JsValue ): JsResult[Id.Aux[E, I]] =
+      JsSuccess( fromString[E, I]( json.as[String] ) )
+    override def writes( o: Id.Aux[E, I] ): JsValue = {
+      PJson toJson o.value.toString
+    }
   }
 
-  implicit def jsonAuxEncoder[E, I]: Encoder[Id.Aux[E, I]] = new Encoder[Id.Aux[E, I]] {
-    override def apply( id: Id.Aux[E, I] ): Json = Json fromString id.value.toString
+  implicit def idJsonEncoder[E]: Encoder[Id[E]] = new Encoder[Id[E]] {
+    override def apply( id: Id[E] ): CJson = CJson fromString id.value.toString
   }
 
-  implicit def jsonAuxDecoder[E, I](
+  implicit def auxJsonEncoder[E, I]: Encoder[Id.Aux[E, I]] = new Encoder[Id.Aux[E, I]] {
+    override def apply( id: Id.Aux[E, I] ): CJson = CJson fromString id.value.toString
+  }
+
+  implicit def auxJsonDecoder[E, I](
     implicit i: Identifying.Aux[E, I],
     l: Labeling[E]
   ): Decoder[Aux[E, I]] = {

@@ -14,7 +14,8 @@ libraryDependencies ++=
   circe.all ++
   lagom.all ++
   Seq(
-    akka.actor
+    akka.actor,
+    playjson
   )
 
 testOptions in Test += Tests.Argument( "-oDF" )

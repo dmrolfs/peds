@@ -1,7 +1,11 @@
 package omnibus.identifier
 
 import java.util.UUID
+
 import scala.language.{ higherKinds, implicitConversions }
+import cats.syntax.either._
+import com.softwaremill.id.DefaultIdGenerator
+import com.softwaremill.id.pretty.{ IdPrettifier, PrettyIdGenerator }
 import omnibus.core._
 
 abstract class Identifying[E] extends Serializable {
@@ -75,6 +79,26 @@ object Identifying extends IdentifyingCompanion with LowPriorityIdentifying {
       zeroValueFn = zero,
       nextValueFn = () => UUID.randomUUID(),
       valueFromRepFn = UUID.fromString
+    )
+  }
+
+  def bySnowflake[E: Labeling](
+    workerId: Long = 1L,
+    datacenterId: Long = 1L,
+    prettifier: IdPrettifier = IdPrettifier.default
+  ): Aux[E, String] = {
+    val snowflake = new PrettyIdGenerator(
+      idGenerator = new DefaultIdGenerator( workerId = workerId, datacenterId = datacenterId ),
+      idPrettifier = prettifier
+    )
+
+    pure[E, String](
+      zeroValueFn = "",
+      nextValueFn = () => snowflake.nextId(),
+      valueFromRepFn = { rep =>
+        if (rep.isEmpty || prettifier.isValid( rep )) rep
+        else throw new IllegalStateException( s"invalid prettifier id: ${rep} " )
+      }
     )
   }
 
