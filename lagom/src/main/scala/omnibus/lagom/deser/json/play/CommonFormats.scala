@@ -3,7 +3,7 @@ package omnibus.lagom.deser.json.play
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 import play.api.libs.json._
 import journal._
 
@@ -131,9 +131,9 @@ object CommonFormats {
       Try {
         UUID.fromString( json.as[String] )
       }.fold(
-          ex => JsError( JsonValidationError( ex.getMessage ) ),
-          uuid => JsSuccess( uuid )
-        )
+        ex => JsError( JsonValidationError( ex.getMessage ) ),
+        uuid => JsSuccess( uuid )
+      )
     }
     //  implicit val uuidReads: Reads[UUID] = {
     //    implicitly[Reads[String]]
