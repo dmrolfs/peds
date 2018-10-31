@@ -1,8 +1,9 @@
 package omnibus.lagom.deser.json.play
 
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 import play.api.libs.json._
 import journal._
 
@@ -25,20 +26,38 @@ object CommonFormats {
   //    Format(enumReads(enum), enumWrites)
   //  }
 
+  implicit val timeunitFormat: Format[TimeUnit] = new Format[TimeUnit] {
+    override def reads( json: JsValue ): JsResult[TimeUnit] = {
+      Try {
+        TimeUnit.valueOf( json.as[String] )
+      }.fold(
+        ex => JsError( JsonValidationError( ex.getMessage ) ),
+        JsSuccess( _ )
+      )
+    }
+
+    override def writes( tu: TimeUnit ): JsValue = {
+      Json.toJson( tu.name )
+    }
+  }
+
   implicit val finiteDurationFormat: Format[FiniteDuration] = new Format[FiniteDuration] {
     override def reads( json: JsValue ): JsResult[FiniteDuration] = {
-      JsSuccess(
+      Try {
         FiniteDuration(
           length = (json \ "length").as[Long],
-          unit = (json \ "unit").as[String]
+          unit = (json \ "unit").as[TimeUnit]
         )
+      }.fold(
+        ex => JsError( JsonValidationError( ex.getMessage ) ),
+        JsSuccess( _ )
       )
     }
 
     override def writes( d: FiniteDuration ): JsValue = {
       Json.obj(
         ("length" -> Json.toJson( d.length )),
-        ("unit"   -> Json.toJson( d.unit.toString ))
+        ("unit"   -> Json.toJson( d.unit ))
       )
     }
   }
