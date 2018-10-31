@@ -1,13 +1,14 @@
 package omnibus.identifier
 
+import scala.language.existentials
 import scala.util.Try
-import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
-import org.scalatest.{ Matchers, Tag, WordSpec }
+import org.scalatest.{ EitherValues, Matchers, Tag, WordSpec }
+import com.softwaremill.id.pretty.IdPrettifier
 import journal._
 import io.jvm.uuid.UUID
-import scala.language.existentials
+import omnibus.core.{ AllErrorsOr, AllIssuesOr, ErrorOr }
 
-class IdentifyingSpec extends WordSpec with Matchers {
+class IdentifyingSpec extends WordSpec with Matchers with EitherValues {
   private val log = Logger[IdentifyingSpec]
 
   case class Foo( id: Id[Foo], f: String )
@@ -35,9 +36,13 @@ class IdentifyingSpec extends WordSpec with Matchers {
   }
 
   type OZed = Option[Zed]
-//  object OZed {
-//    implicit val identifying = Identifying[OZed]
-//  }
+
+  case class Snowflake( id: Snowflake.TID, points: Int )
+
+  object Snowflake {
+    type TID = identifying.TID
+    implicit val identifying = Identifying.bySnowflake[Snowflake]()
+  }
 
   object WIP extends Tag( "wip" )
 
@@ -209,6 +214,23 @@ class IdentifyingSpec extends WordSpec with Matchers {
       val Id( actual ) = fid
       actual shouldBe expected
       actual shouldBe a[ShortUUID]
+    }
+
+    "create snowflake ids" in {
+      Snowflake.identifying.zero shouldBe Id.fromString[Snowflake, String]( "" )
+      val sfIdentifying = Identifying[Snowflake]
+      val sid = sfIdentifying.next
+      sid.value should not be ("")
+
+      val sid2 = sfIdentifying.next
+      sid2 should not be (sid)
+
+      val prettifier = IdPrettifier.default
+      prettifier
+        .toIdSeed( sid2.value )
+        .right
+        .get should be > prettifier.toIdSeed( sid.value ).right.get
+      sid2.getClass shouldBe sid.getClass
     }
   }
 }
