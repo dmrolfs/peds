@@ -63,7 +63,6 @@ object CommonFormats {
     Format( singletonReads( singleton ), singletonWrites )
   }
 
-
   //todo find proper json format
   implicit val throwableFormat: Format[Throwable] = new Format[Throwable] {
     override def reads( json: JsValue ): JsResult[Throwable] = {
@@ -112,11 +111,10 @@ object CommonFormats {
     override def reads( json: JsValue ): JsResult[UUID] = {
       Try {
         UUID.fromString( json.as[String] )
-      }
-      .fold(
-        ex => JsError( JsonValidationError( ex.getMessage ) ),
-        uuid => JsSuccess( uuid )
-      )
+      }.fold(
+          ex => JsError( JsonValidationError( ex.getMessage ) ),
+          uuid => JsSuccess( uuid )
+        )
     }
     //  implicit val uuidReads: Reads[UUID] = {
     //    implicitly[Reads[String]]
