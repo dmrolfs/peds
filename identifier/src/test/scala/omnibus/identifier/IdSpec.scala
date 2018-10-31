@@ -1,7 +1,9 @@
 package omnibus.identifier
 
+import io.circe.Json.JString
 import org.scalatest.{ EitherValues, Matchers, Tag, WordSpec }
-import io.circe._
+import play.api.libs.json.{ Json => PJson, _ }
+import io.circe.{ Json => CJson, _ }
 import io.circe.parser._
 import io.circe.syntax._
 import journal._
@@ -26,6 +28,14 @@ class IdSpec extends WordSpec with Matchers with EitherValues {
     type TID = identifying.TID
     def nextId: TID = identifying.next
     implicit val identifying = Identifying.byLong[Bar]
+  }
+
+  case class Zoo( id: Zoo.TID, animal: String )
+
+  object Zoo {
+    type TID = identifying.TID
+    def nextId: TID = identifying.next
+    implicit val identifying = Identifying.bySnowflake[Zoo]()
   }
 
   object WIP extends Tag( "wip" )
@@ -56,6 +66,16 @@ class IdSpec extends WordSpec with Matchers with EitherValues {
       bid.toString shouldBe "BarId(13)"
       bid.value.getClass shouldBe classOf[java.lang.Long]
       bid.value shouldBe 13L
+
+      val zuid = Zoo.nextId.value
+      val zid: Id[Zoo] = Id of zuid
+      zid shouldBe a[Id[_]]
+      zid.toString shouldBe s"ZooId(${zuid})"
+      zid.value shouldBe a[String]
+      zid.value shouldBe zuid
+
+      zid.value shouldBe zuid
+      zuid shouldBe zid.value
     }
 
     "unwrap composites to simple" in {
@@ -91,6 +111,15 @@ class IdSpec extends WordSpec with Matchers with EitherValues {
       b.toString shouldBe s"BarId(${bid})"
       b.value.getClass shouldBe classOf[java.lang.Long]
       b.value shouldBe bid
+
+      val zid = Zoo.nextId.value
+      val zrep = zid.toString
+
+      val z: Id[Zoo] = Id fromString zrep
+      z shouldBe a[Id[_]]
+      z.toString shouldBe s"ZooId(${zid})"
+      z.value shouldBe a[String]
+      z.value shouldBe zid
     }
 
     "invalid id rep type should fail" in {
@@ -153,26 +182,94 @@ class IdSpec extends WordSpec with Matchers with EitherValues {
       actual.toString shouldBe s"FooId(${fid})"
     }
 
-    "encode to Json" taggedAs WIP in {
-      val fid: Id.Aux[Foo, ShortUUID] = Foo.nextId
-      val bid: Id.Aux[Bar, Long] = Bar.nextId
+    "pretty id is serializable" in {
+      import java.io._
+      val bytes = new ByteArrayOutputStream
+      val out = new ObjectOutputStream( bytes )
 
-      fid.asJson shouldBe Json.fromString( fid.value.toString )
-      bid.asJson shouldBe Json.fromString( bid.value.toString )
+      val zid = Zoo.nextId.value
+      val expected: Id.Aux[Zoo, String] = Id of zid
 
-      val fid2: Id[Foo] = fid
-      fid2.asJson shouldBe Json.fromString( fid.value.toString )
+      out.writeObject( expected )
+      out.flush()
+
+      val in = new ObjectInputStream( new ByteArrayInputStream( bytes.toByteArray ) )
+      val actual = in.readObject().asInstanceOf[Id.Aux[Zoo, String]]
+      import scala.reflect.ClassTag
+      import scala.reflect.runtime.universe._
+
+      val actualClassTag: ClassTag[Id.Aux[Zoo, String]] = ClassTag( actual.getClass )
+      log.debug( s"actual[${actual}] type = ${actualClassTag}" )
+
+      actual shouldBe expected
+      actual.value shouldBe zid
+      actual.toString shouldBe s"ZooId(${zid})"
     }
 
-    "decode from Json" taggedAs WIP in {
+    "encode to Circe Json" taggedAs WIP in {
+      val fid: Id.Aux[Foo, ShortUUID] = Foo.nextId
+      val bid: Id.Aux[Bar, Long] = Bar.nextId
+      val zid: Id.Aux[Zoo, String] = Zoo.nextId
+
+      fid.asJson shouldBe CJson.fromString( fid.value.toString )
+      bid.asJson shouldBe CJson.fromString( bid.value.toString )
+      zid.asJson shouldBe CJson.fromString( zid.value.toString )
+
+      val fid2: Id[Foo] = fid
+      fid2.asJson shouldBe CJson.fromString( fid.value.toString )
+
+      val bid2: Id[Bar] = bid
+      bid2.asJson shouldBe CJson.fromString( bid.value.toString )
+
+      val zid2: Id[Zoo] = zid
+      zid2.asJson shouldBe CJson.fromString( zid.value.toString )
+    }
+
+    "decode from Circe Json" taggedAs WIP in {
       val sidValue = ShortUUID()
       val lidValue = Random.nextLong()
+      val zidValue = Zoo.nextId.value
 
-      val fidJson = Json fromString sidValue.toString
-      val lidJson = Json fromLong lidValue
+      val fidJson = CJson fromString sidValue.toString
+      val lidJson = CJson fromLong lidValue
+      val zidJson = CJson fromString zidValue
 
       parser.parse( fidJson.noSpaces ).flatMap( _.as[ShortUUID] ).right.get shouldBe sidValue
       parser.parse( lidJson.noSpaces ).flatMap( _.as[Long] ).right.get shouldBe lidValue
+      parser.parse( zidJson.noSpaces ).flatMap( _.as[String] ).right.get shouldBe zidValue
+    }
+
+    "write to PlayJson" taggedAs WIP in {
+      val fid: Id.Aux[Foo, ShortUUID] = Foo.nextId
+      val bid: Id.Aux[Bar, Long] = Bar.nextId
+      val zid: Id.Aux[Zoo, String] = Zoo.nextId
+
+      PJson.toJson( fid ) shouldBe JsString( fid.value.toString )
+      PJson.toJson( bid ) shouldBe JsString( bid.value.toString )
+      PJson.toJson( zid ) shouldBe JsString( zid.value.toString )
+
+      val fid2: Id[Foo] = fid
+      PJson.toJson( fid2 ) shouldBe JsString( fid.value.toString )
+
+      val bid2: Id[Bar] = bid
+      PJson.toJson( bid2 ) shouldBe JsString( bid.value.toString )
+
+      val zid2: Id[Zoo] = zid
+      PJson.toJson( zid2 ) shouldBe JsString( zid.value.toString )
+    }
+
+    "read from play Json" taggedAs WIP in {
+      val sidValue = ShortUUID()
+      val lidValue = Random.nextLong()
+      val zidValue = Zoo.nextId.value
+
+      val fidJson = PJson toJson sidValue.toString
+      val lidJson = PJson toJson lidValue
+      val zidJson = PJson toJson zidValue
+
+      parser.parse( fidJson.toString ).flatMap( _.as[ShortUUID] ).right.get shouldBe sidValue
+      parser.parse( lidJson.toString ).flatMap( _.as[Long] ).right.get shouldBe lidValue
+      parser.parse( zidJson.toString ).flatMap( _.as[String] ).right.get shouldBe zidValue
     }
   }
 }

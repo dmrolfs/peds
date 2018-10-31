@@ -1,4 +1,4 @@
-package omnibus.lagom.api.deser.json.circe
+package omnibus.lagom.deser.json.circe
 
 import akka.{ Done, NotUsed }
 

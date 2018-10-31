@@ -13,6 +13,7 @@ libraryDependencies ++=
   logging.all ++
   circe.all ++
   Seq(
+    playjson,
     scalaUuid,
     cats.core,
     codec,

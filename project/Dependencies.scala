@@ -235,6 +235,8 @@ object Dependencies {
     val scavro = "org.oedura" %% "scavro" % "1.0.2"
   }
 
+  val playjson = "com.typesafe.play" %% "play-json" % "2.6.10"
+
   object circe extends SimpleModule {
     override val groupId: String = "io.circe"
     override val artifactIdRoot: String = "circe"
