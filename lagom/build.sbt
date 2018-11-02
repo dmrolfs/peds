@@ -13,6 +13,7 @@ resolvers += "omen-bintray" at "http://dl.bintray.com/omen/maven"
 libraryDependencies ++=
   circe.all ++
   lagom.all ++
+  commonTestDependencies ++
   Seq(
     akka.actor,
     playjson
