@@ -4,7 +4,7 @@ import sbt._
 // import spray.revolver.RevolverPlugin._
 
 object BuildSettings {
-  val VERSION = "0.77"
+  val VERSION = "0.78"
 
   val scalacBuildOptions = Seq(
     // "-encoding",
@@ -136,10 +136,6 @@ object BuildSettings {
         publishTo := Some("Bintray API Realm" at "http://api.bintray.com"),
         credentials := List(Path.userHome / ".bintray" / ".credentials").filter(_.exists).map(Credentials(_)),
         pomExtra := {
-          <scm>
-            <url>https://github.com</url>
-            <connection>https://github.com/dmrolfs/omnibus.git</connection>
-          </scm>
           <developers>
             <developer>
               <id>dmrolfs</id>

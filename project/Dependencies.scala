@@ -61,7 +61,7 @@ object Dependencies {
   object akka extends SimpleModule {
     override val groupId = "com.typesafe.akka"
     override val artifactIdRoot = "akka"
-    override val version = "2.5.17"
+    override val version = "2.5.18"
     def all: Seq[ModuleID] = Seq( actor, stream, agent, cluster, clusterSharding, contrib, persistence, remote, slf4j )
 
     val actor = module( "actor" ) withSources() withJavadoc()
@@ -121,8 +121,8 @@ object Dependencies {
   }
 
   object time {
-    val joda = "joda-time" % "joda-time" % "2.10"
-    val jodaConvert = "org.joda" % "joda-convert" % "2.1.1"
+    val joda = "joda-time" % "joda-time" % "2.10.1"
+    val jodaConvert = "org.joda" % "joda-convert" % "2.1.2"
     val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.20.0"
     def all = Seq( joda, jodaConvert, scalaTime )
   }
@@ -201,7 +201,7 @@ object Dependencies {
   // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
   val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.2" withSources() withJavadoc()
   val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
-  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.1"
+  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.2"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
 //    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
   val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
@@ -210,7 +210,7 @@ object Dependencies {
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
   val parboiled = "org.parboiled" %% "parboiled" % "2.1.4"
   val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
-  val squants = "org.typelevel"  %% "squants"  % "1.3.0"
+  val squants = "org.typelevel"  %% "squants"  % "1.4.0"
   val lang = "org.apache.commons" % "commons-lang3" % "3.5"
   val codec = "commons-codec" % "commons-codec" % "1.11"
   val math3 = "org.apache.commons" % "commons-math3" % "3.6.1" withSources() withJavadoc()
@@ -240,7 +240,7 @@ object Dependencies {
   object circe extends SimpleModule {
     override val groupId: String = "io.circe"
     override val artifactIdRoot: String = "circe"
-    override val version: String = "0.10.0"
+    override val version: String = "0.10.1"
     def all = Seq( core, generic, parser )
 
     val core = module( "core" )
