@@ -204,7 +204,7 @@ object Dependencies {
   val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.2"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
 //    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
-  val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
+  val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.3.0"
   val config = "com.typesafe" % "config" % "1.3.3"
   val ficus = "com.iheart" %% "ficus" % "1.4.4"
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
