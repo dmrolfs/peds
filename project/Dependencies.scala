@@ -138,8 +138,8 @@ object Dependencies {
     }
 
     val journal = "io.verizon.journal" %% "core" % "3.0.19"
-    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.25" intransitive
-    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.25"
+    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.26" intransitive
+    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.26"
 
 //    object scribe extends SimpleModule {
 //      override val groupId: String = "com.outr"
