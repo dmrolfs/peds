@@ -195,7 +195,7 @@ object Dependencies {
   }
 
   val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
-  val newtype = "io.estatico" %% "newtype" % "0.4.2"
+  val newtype = "io.estatico" %% "newtype" % "0.4.3"
   val snowflake = "com.softwaremill.common" %% "id-generator" % "1.2.0"
 //    val guava = "com.google.guava" % "guava" % "21.0"
   // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
