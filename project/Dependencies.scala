@@ -36,7 +36,7 @@ object Dependencies {
     )
   }
 
-  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
+  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
 
 //  object omnibus extends SimpleModule {
 //    override val groupId = "com.github.dmrolfs"
