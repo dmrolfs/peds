@@ -122,8 +122,8 @@ object Dependencies {
 
   object time {
     val joda = "joda-time" % "joda-time" % "2.10.1"
-    val jodaConvert = "org.joda" % "joda-convert" % "2.2.1"
-    val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.20.0"
+    val jodaConvert = "org.joda" % "joda-convert" % "2.1.2"
+    val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.22.0"
     def all = Seq( joda, jodaConvert, scalaTime )
   }
 
@@ -206,7 +206,7 @@ object Dependencies {
 //    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
   val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
   val config = "com.typesafe" % "config" % "1.3.3"
-  val ficus = "com.iheart" %% "ficus" % "1.4.4"
+  val ficus = "com.iheart" %% "ficus" % "1.4.7"
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
   val parboiled = "org.parboiled" %% "parboiled" % "2.1.4"
   val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
@@ -218,7 +218,7 @@ object Dependencies {
   val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
   val pyrolite = "net.razorvine" % "pyrolite" % "4.19"
   val msgpack = "org.velvia" %% "msgpack4s" % "0.6.0"
-  val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.3"
+  val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.5"
 
   val hadoopClient = "org.apache.hadoop" % "hadoop-client" % "2.8.0" intransitive // exclude( "log4j", "log4j" )
 
