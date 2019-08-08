@@ -199,7 +199,7 @@ object Dependencies {
   val snowflake = "com.softwaremill.common" %% "id-generator" % "1.2.0"
 //    val guava = "com.google.guava" % "guava" % "21.0"
   // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
-  val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.2" withSources() withJavadoc()
+  val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.3" withSources() withJavadoc()
   val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
   val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.2"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
