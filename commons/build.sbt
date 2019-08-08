@@ -15,9 +15,9 @@ libraryDependencies ++=
   monix.all ++
   time.all ++
   Seq(
-    "org.scala-lang.modules" %% "scala-xml" % "1.1.1",
+    "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
     "com.github.dmrolfs" %% "shapeless-builder" % "1.0.1",
-    "commons-codec" % "commons-codec" % "1.11",
+    "commons-codec" % "commons-codec" % "1.13",
     akka.actor,
     json4sJackson,
     math3,

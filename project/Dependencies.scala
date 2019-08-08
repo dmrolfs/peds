@@ -36,7 +36,7 @@ object Dependencies {
     )
   }
 
-  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
+  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
 
 //  object omnibus extends SimpleModule {
 //    override val groupId = "com.github.dmrolfs"
@@ -92,7 +92,7 @@ object Dependencies {
   }
 
   object persistence {
-    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.91"
+    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.99"
     val leveldb = "org.iq80.leveldb" % "leveldb" % "0.9" // "org.iq80.leveldb" % "leveldb" % "0.9"
     val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
   }
@@ -121,9 +121,9 @@ object Dependencies {
   }
 
   object time {
-    val joda = "joda-time" % "joda-time" % "2.10.1"
-    val jodaConvert = "org.joda" % "joda-convert" % "2.1.2"
-    val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.20.0"
+    val joda = "joda-time" % "joda-time" % "2.10.3"
+    val jodaConvert = "org.joda" % "joda-convert" % "2.2.1"
+    val scalaTime = "com.github.nscala-time" %% "nscala-time" % "2.22.0"
     def all = Seq( joda, jodaConvert, scalaTime )
   }
 
@@ -195,30 +195,30 @@ object Dependencies {
   }
 
   val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
-  val newtype = "io.estatico" %% "newtype" % "0.4.2"
+  val newtype = "io.estatico" %% "newtype" % "0.4.3"
   val snowflake = "com.softwaremill.common" %% "id-generator" % "1.2.0"
 //    val guava = "com.google.guava" % "guava" % "21.0"
   // val offheap = "sh.den" % "scala-offheap_2.11" % "0.1"
-  val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.2" withSources() withJavadoc()
+  val fastutil = "it.unimi.dsi" % "fastutil" % "8.2.3" withSources() withJavadoc()
   val bloomFilter = "com.github.alexandrnikitin" % "bloom-filter_2.11" % "0.10.1" withSources() withJavadoc()
-  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.2"
+  val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.7"
 //    val uuid = "com.eaio.uuid" % "uuid" % "3.4"
 //    val eaioUuid = "com.github.stephenc.eaio-uuid" % "uuid" % "3.4.2"
-  val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.2.4"
-  val config = "com.typesafe" % "config" % "1.3.3"
-  val ficus = "com.iheart" %% "ficus" % "1.4.4"
+  val scalaUuid = "io.jvm.uuid" %% "scala-uuid" % "0.3.0"
+  val config = "com.typesafe" % "config" % "1.3.4"
+  val ficus = "com.iheart" %% "ficus" % "1.4.7"
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.3" withSources() withJavadoc()
   val parboiled = "org.parboiled" %% "parboiled" % "2.1.4"
   val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
   val squants = "org.typelevel"  %% "squants"  % "1.4.0"
   val lang = "org.apache.commons" % "commons-lang3" % "3.5"
-  val codec = "commons-codec" % "commons-codec" % "1.11"
+  val codec = "commons-codec" % "commons-codec" % "1.13"
   val math3 = "org.apache.commons" % "commons-math3" % "3.6.1" withSources() withJavadoc()
 //    val suanshu = "com.numericalmethod" % "suanshu" % "3.4.0" intransitive()  // don't want to use due to $$$
   val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
   val pyrolite = "net.razorvine" % "pyrolite" % "4.19"
   val msgpack = "org.velvia" %% "msgpack4s" % "0.6.0"
-  val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.3"
+  val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.5"
 
   val hadoopClient = "org.apache.hadoop" % "hadoop-client" % "2.8.0" intransitive // exclude( "log4j", "log4j" )
 
@@ -235,7 +235,7 @@ object Dependencies {
     val scavro = "org.oedura" %% "scavro" % "1.0.2"
   }
 
-  val playjson = "com.typesafe.play" %% "play-json" % "2.6.10"
+  val playjson = "com.typesafe.play" %% "play-json" % "2.6.13"
 
   object circe extends SimpleModule {
     override val groupId: String = "io.circe"
@@ -258,7 +258,7 @@ object Dependencies {
   }
 
   object quality {
-    val scalatest = "org.scalatest" %% "scalatest" % "3.0.5" withSources() withJavadoc()
+    val scalatest = "org.scalatest" %% "scalatest" % "3.0.8" withSources() withJavadoc()
     val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.0"
 
     val cats = "com.ironcorelabs" %% "cats-scalatest" % "2.2.0"
