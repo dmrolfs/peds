@@ -1,5 +1,5 @@
 // see: https://github.com/sbt/sbt-git#known-issues
-libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.25"
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.29"
 
 logLevel := Level.Warn
 
