@@ -16,7 +16,7 @@ addSbtPlugin("org.scalastyle"                    %% "scalastyle-sbt-plugin" % "1
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "2.0.2")
 //addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "1.1.0")
 
-addSbtPlugin("com.timushev.sbt"                  % "sbt-updates"            % "0.3.4")
+addSbtPlugin("com.timushev.sbt"                  % "sbt-updates"            % "0.5.0")
 addSbtPlugin("com.typesafe.sbt"                  % "sbt-git"                % "0.9.3")
 addSbtPlugin("net.virtual-void"                  % "sbt-dependency-graph"   % "0.9.0")
 addSbtPlugin("io.get-coursier"                   % "sbt-coursier"           % "1.0.1")
