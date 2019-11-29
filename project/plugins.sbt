@@ -21,7 +21,7 @@ addSbtPlugin("com.typesafe.sbt"                  % "sbt-git"                % "0
 addSbtPlugin("net.virtual-void"                  % "sbt-dependency-graph"   % "0.9.0")
 addSbtPlugin("io.get-coursier"                   % "sbt-coursier"           % "1.0.1")
 
-addSbtPlugin("org.scoverage"                     % "sbt-scoverage"          % "1.5.1")
+addSbtPlugin("org.scoverage"                     % "sbt-scoverage"          % "1.6.1")
 //addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
