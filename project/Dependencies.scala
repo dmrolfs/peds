@@ -258,7 +258,7 @@ object Dependencies {
   }
 
   object quality {
-    val scalatest = "org.scalatest" %% "scalatest" % "3.0.8" withSources() withJavadoc()
+    val scalatest = "org.scalatest" %% "scalatest" % "3.1.0" withSources() withJavadoc()
     val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.0"
 
     val cats = "com.ironcorelabs" %% "cats-scalatest" % "2.2.0"
