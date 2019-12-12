@@ -10,7 +10,7 @@ addSbtPlugin("com.eed3si9n"                      % "sbt-assembly"           % "0
 addSbtPlugin("org.foundweekends"                 % "sbt-bintray"            % "0.5.4")
 //addSbtPlugin("me.lessis"                         % "bintray-sbt"            % "0.3.0")
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.0")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.7")
 addSbtPlugin("org.scalastyle"                    %% "scalastyle-sbt-plugin" % "1.0.0")
 
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "2.0.2")
