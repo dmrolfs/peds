@@ -13,7 +13,7 @@ addSbtPlugin("org.foundweekends"                 % "sbt-bintray"            % "0
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.7")
 addSbtPlugin("org.scalastyle"                    %% "scalastyle-sbt-plugin" % "1.0.0")
 
-addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "2.0.2")
+addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "2.1.0")
 //addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "1.1.0")
 
 addSbtPlugin("com.timushev.sbt"                  % "sbt-updates"            % "0.3.4")
