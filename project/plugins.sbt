@@ -1,5 +1,5 @@
 // see: https://github.com/sbt/sbt-git#known-issues
-libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.29"
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.30"
 
 logLevel := Level.Warn
 
@@ -10,10 +10,10 @@ addSbtPlugin("com.eed3si9n"                      % "sbt-assembly"           % "0
 addSbtPlugin("org.foundweekends"                 % "sbt-bintray"            % "0.5.5")
 //addSbtPlugin("me.lessis"                         % "bintray-sbt"            % "0.3.0")
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.7")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.3.0")
 addSbtPlugin("org.scalastyle"                    %% "scalastyle-sbt-plugin" % "1.0.0")
 
-addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "2.1.0")
+addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "3.0.0")
 //addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"       % "1.1.0")
 
 addSbtPlugin("com.timushev.sbt"                  % "sbt-updates"            % "0.5.0")

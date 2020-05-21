@@ -138,8 +138,8 @@ object Dependencies {
     }
 
     val journal = "io.verizon.journal" %% "core" % "3.0.19"
-    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.29" intransitive
-    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.29"
+    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.30" intransitive
+    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.30"
 
 //    object scribe extends SimpleModule {
 //      override val groupId: String = "com.outr"
@@ -194,7 +194,7 @@ object Dependencies {
 //    }
   }
 
-  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
+  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.14"
   val newtype = "io.estatico" %% "newtype" % "0.4.3"
   val snowflake = "com.softwaremill.common" %% "id-generator" % "1.2.1"
 //    val guava = "com.google.guava" % "guava" % "21.0"
@@ -218,7 +218,7 @@ object Dependencies {
   val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
   val pyrolite = "net.razorvine" % "pyrolite" % "4.19"
   val msgpack = "org.velvia" %% "msgpack4s" % "0.6.0"
-  val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.6"
+  val prettyprint = "com.lihaoyi" %% "pprint" % "0.5.7"
 
   val hadoopClient = "org.apache.hadoop" % "hadoop-client" % "2.8.0" intransitive // exclude( "log4j", "log4j" )
 
@@ -259,7 +259,7 @@ object Dependencies {
 
   object quality {
     val scalatest = "org.scalatest" %% "scalatest" % "3.1.0" withSources() withJavadoc()
-    val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.2"
+    val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.3"
 
     val cats = "com.ironcorelabs" %% "cats-scalatest" % "2.2.0"
     val inmemory = "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.1.0"
