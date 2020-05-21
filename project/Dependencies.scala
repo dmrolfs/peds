@@ -138,8 +138,8 @@ object Dependencies {
     }
 
     val journal = "io.verizon.journal" %% "core" % "3.0.19"
-    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.29" intransitive
-    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.29"
+    val slf4j = "org.slf4j" % "slf4j-api" % "1.7.30" intransitive
+    val log4jOverSlf4j = "org.slf4j" % "log4j-over-slf4j" % "1.7.30"
 
 //    object scribe extends SimpleModule {
 //      override val groupId: String = "com.outr"
@@ -194,7 +194,7 @@ object Dependencies {
 //    }
   }
 
-  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.13"
+  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.15"
   val newtype = "io.estatico" %% "newtype" % "0.4.3"
   val snowflake = "com.softwaremill.common" %% "id-generator" % "1.2.1"
 //    val guava = "com.google.guava" % "guava" % "21.0"
@@ -212,7 +212,7 @@ object Dependencies {
   val inflector = "org.atteo" % "evo-inflector" % "1.2.2"
   val squants = "org.typelevel"  %% "squants"  % "1.6.0"
   val lang = "org.apache.commons" % "commons-lang3" % "3.5"
-  val codec = "commons-codec" % "commons-codec" % "1.13"
+  val codec = "commons-codec" % "commons-codec" % "1.14"
   val math3 = "org.apache.commons" % "commons-math3" % "3.6.1" withSources() withJavadoc()
 //    val suanshu = "com.numericalmethod" % "suanshu" % "3.4.0" intransitive()  // don't want to use due to $$$
   val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
@@ -259,7 +259,7 @@ object Dependencies {
 
   object quality {
     val scalatest = "org.scalatest" %% "scalatest" % "3.1.0" withSources() withJavadoc()
-    val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.2"
+    val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.3"
 
     val cats = "com.ironcorelabs" %% "cats-scalatest" % "2.2.0"
     val inmemory = "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.1.0"
