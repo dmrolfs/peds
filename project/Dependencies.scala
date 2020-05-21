@@ -92,7 +92,7 @@ object Dependencies {
   }
 
   object persistence {
-    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.102"
+    val cassandra = "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.103"
     val leveldb = "org.iq80.leveldb" % "leveldb" % "0.9" // "org.iq80.leveldb" % "leveldb" % "0.9"
     val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" // "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
   }
